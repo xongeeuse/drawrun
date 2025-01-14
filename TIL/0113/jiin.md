@@ -1,4 +1,4 @@
-### 프론트엔드 기술스택 정하기기
+### 프론트엔드 기술스택 정하기
 ![alt text](jiin_image/image.png)
 
 ## Kotlin 추천 이유
