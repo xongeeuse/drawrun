@@ -1,10 +1,10 @@
-package com.moovly.movely_backend;
+package com.dasima.drawrun;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class MovelyBackendApplicationTests {
+class DrawrunApplicationTests {
 
 	@Test
 	void contextLoads() {
