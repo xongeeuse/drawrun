@@ -1,12 +1,6 @@
 spring:
   application:
     name: drawrun
-
-server:
-  servlet:
-    context-path: /drawrun
-  port: 8080
-
   datasource:
     url: jdbc:mysql://localhost:3306/drawrun?serverTimezone=UTC&useUniCode=yes&characterEncoding=UTF-8
     username: ssafy
