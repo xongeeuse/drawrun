@@ -1,27 +1,3 @@
 spring:
-  application:
-    name: drawrun
-
-server:
-  servlet:
-    context-path: /drawrun
-  port: 8080
-
-  datasource:
-    url: jdbc:mysql://localhost:3306/drawrun?serverTimezone=UTC&useUniCode=yes&characterEncoding=UTF-8
-    username: ssafy
-    password: ssafy
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    type: org.apache.commons.dbcp2.BasicDataSource
-    hikari:
-      maximum-pool-size: 10
-      connection-timeout: 5000
-      connection-init-sql: SELECT 1
-      validation-timeout: 2000
-      minimum-idle: 10
-      idle-timeout: 600000
-      max-lifetime: 1800000
-      auto-commit: true
-    mybatis:
-      type-aliases-package: com.dasima.*.model
-      mapper-locations: classpath:mapper/*.xml
+  config:
+    import: application-secret.yml
