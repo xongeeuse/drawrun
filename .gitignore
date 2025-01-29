@@ -1,0 +1,59 @@
+# Common Rule
+
+# backend
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### NetBeans ###
+/backend/nbproject/private/
+/backend/nbbuild/
+/backend/dist/
+/backend/nbdist/
+/backend/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+src/main/resources/application-secret.yml
+
+
+# android
+
+*.iml
+.gradle
+/android/Drawrun/local.properties
+/android/Drawrun/.idea/caches
+/android/Drawrun/.idea/libraries
+/android/Drawrun/.idea/modules.xml
+/android/Drawrun/.idea/workspace.xml
+/android/Drawrun/.idea/navEditor.xml
+/android/Drawrun/.idea/assetWizardSettings.xml
+/android/Drawrun/build
+/android/Drawrun/captures
+.DS_Store
+.externalNativeBuild
+.cxx
+local.properties
+
+
+# DrawRunAndroid
+
+
