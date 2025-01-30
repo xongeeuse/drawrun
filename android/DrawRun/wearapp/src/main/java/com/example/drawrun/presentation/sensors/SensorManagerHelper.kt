@@ -1,6 +1,7 @@
 package com.example.drawrun.presentation.sensors
 
 import android.content.Context
+import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -10,10 +11,11 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
 import android.util.Log
+import androidx.core.content.ContextCompat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.math.sqrt
 
-class SensorManagerHelper(context: Context) {
+class SensorManagerHelper(private val context: Context) {
     private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     private val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
@@ -48,7 +50,7 @@ class SensorManagerHelper(context: Context) {
                         accelerometerFlow.value = listOf(x, y, z)
 
                         // 간단한 걸음 수 계산 (패턴 기반)
-                        if (magnitude > 12) { // 특정 임계값 이상일 때 걸음으로 간주
+                        if (magnitude > 10) { // 특정 임계값 이상일 때 걸음으로 간주
                             stepCount++
                             if (elapsedTime > 0) { // elapsedTime이 0인지 확인
                                 cadenceFlow.value = (stepCount * 60) / elapsedTime
@@ -94,7 +96,11 @@ class SensorManagerHelper(context: Context) {
     }
 
 
+    /**
+     * 센서 및 위치 업데이트 시작
+     */
     fun startSensors() {
+
         heartRateSensor?.let {
             sensorManager.registerListener(sensorEventListener, it, SensorManager.SENSOR_DELAY_NORMAL)
         }
@@ -106,7 +112,7 @@ class SensorManagerHelper(context: Context) {
             locationManager.requestLocationUpdates(
                 LocationManager.GPS_PROVIDER,
                 1000L, // 1초마다 업데이트
-                1f, // 최소 1미터 이동 시 업데이트
+                1f,    // 최소 1미터 이동 시 업데이트
                 locationListener
             )
         } catch (e: SecurityException) {
@@ -114,11 +120,14 @@ class SensorManagerHelper(context: Context) {
         }
     }
 
+    /**
+     * 센서 및 위치 업데이트 중지
+     */
     fun stopSensors() {
         sensorManager.unregisterListener(sensorEventListener)
         locationManager.removeUpdates(locationListener)
+        Log.d("SensorManagerHelper", "Sensors stopped")
     }
-
     fun calculateCadence(elapsedTime: Int): Float? {
         return if (elapsedTime > 0) (stepCount * 60) / elapsedTime.toFloat() else null
     }
@@ -128,17 +137,24 @@ class SensorManagerHelper(context: Context) {
     }
 
     fun calculateCalories(elapsedTime: Int, averageHeartRate: Float, weightKg: Float, age: Int): Float {
-        if (elapsedTime <= 0 || weightKg <= 0) return 0f
+        if (elapsedTime <= 0 || weightKg <= 0 || averageHeartRate <= 0) return 0f
 
-        // 최대 심박수 계산
         val maxHeartRate = 220 - age
-
-        // METS 계산
         val mets = (averageHeartRate / maxHeartRate) * 10
 
-        // 칼로리 계산
         val minutes = elapsedTime / 60f
         return mets * weightKg * minutes
+    }
+
+    
+    // 데이터 초기화 메서드
+    fun resetData() {
+        totalDistance = 0f
+        stepCount = 0
+        heartRateFlow.value = null
+        accelerometerFlow.value = null
+        cadenceFlow.value = null
+        paceFlow.value = null
     }
 
 }
