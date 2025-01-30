@@ -7,5 +7,6 @@ public class test {
         System.out.println("제발 되라");
         System.out.println("이제는 되겠지?");
         System.out.println("이제는 되라진짜ㅋㅋ");
+        System.out.println("제발 ㅠㅠ");
     }
 }
