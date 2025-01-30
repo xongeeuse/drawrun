@@ -10,5 +10,6 @@ public class test {
         System.out.println("제발 ㅠㅠ");
         System.out.println("Docker 아이디 설정 잘못함 ㅋㅋㅋㅋㅋ ㅠㅠ");
         System.out.println("아 3시간째 뭐하고있노;;");
+        System.out.println("mysql만 되면 완성ㅋ");
     }
 }
