@@ -12,6 +12,6 @@ public class test {
         System.out.println("아 3시간째 뭐하고있노;;");
         System.out.println("mysql만 되면 완성ㅋ");
         System.out.println("갑자기 왜이럼?");
-        System.out.println("이미지가 겹치는걸 해결하자ㅇㄴㅁㅇㄴㅁㅇㅁㄴ");
+        System.out.println("이미지가 겹치는걸 해결하자ㅇㄴㅁㅇㄴㅁㅇㄹㅇㄴㅁㄴ");
     }
 }
