@@ -1,39 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-
     <!-- 위치 권한 -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
-    <!-- 인터넷 권한 -->
-    <uses-permission android:name="android.permission.INTERNET" />
-    <!-- 네트워크 상태 확인 권한 -->
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <!-- 포그라운드 서비스 권한 -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <!-- Android 12 이하 외부 저장소 권한 -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-    <!-- Android 13+ 저장소 권한 -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" /> <!-- 인터넷 권한 -->
+    <uses-permission android:name="android.permission.INTERNET" /> <!-- 네트워크 상태 확인 권한 -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> <!-- 포그라운드 서비스 권한 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" /> <!-- Android 12 이하 외부 저장소 권한 -->
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" /> <!-- Android 13+ 저장소 권한 -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
-    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
-
-    <!-- 카메라 권한 -->
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" /> <!-- 카메라 권한 -->
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-feature android:name="android.hardware.camera" android:required="false" />
-    <!-- 진동 권한 -->
-    <uses-permission android:name="android.permission.VIBRATE" />
-    <!-- 웨이크 락 권한 -->
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <!-- 알림 권한 (Android 13+) -->
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <!-- Wear OS 관련 권한 -->
     <uses-feature
-        android:name="android.hardware.type.watch"
-        android:required="false" />
+        android:name="android.hardware.camera"
+        android:required="false" /> <!-- 진동 권한 -->
+    <uses-permission android:name="android.permission.VIBRATE" /> <!-- 웨이크 락 권한 -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" /> <!-- 알림 권한 (Android 13+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" /> <!-- Wear OS 관련 권한 -->
+    <uses-feature
+        android:name="android.hardware.type.watch" />
+
     <uses-permission android:name="com.google.android.permission.PROVIDE_BACKGROUND" />
     <uses-permission android:name="android.permission.BODY_SENSORS" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
@@ -52,6 +46,10 @@
         android:theme="@style/Theme.DrawRun"
         tools:targetApi="31">
 
+        <activity
+            android:name=".ui.auth.RegisterActivity"
+            android:exported="false" />
+
         <!-- Wear OS 메타 데이터 -->
         <meta-data
             android:name="com.google.android.wearable.standalone"
@@ -63,10 +61,10 @@
             android:taskAffinity="">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
     </application>
 
 </manifest>
