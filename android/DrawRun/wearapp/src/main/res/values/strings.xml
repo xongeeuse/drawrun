@@ -1,0 +1,4 @@
+<resources>
+    <string name="hello_world2">From the Square world,\nHello, %1$s!</string>
+    <string name="app_name">Wear App</string>
+</resources>

@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.hilt)
     kotlin("kapt")
+//    alias(libs.plugins.compose.compiler)
 }
 
 android {
@@ -90,4 +91,10 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    // bom 의존성 추가
+    implementation(platform(libs.androidx.compose.bom))
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.material:material")
+    implementation("androidx.compose.ui:ui-tooling-preview")
 }
