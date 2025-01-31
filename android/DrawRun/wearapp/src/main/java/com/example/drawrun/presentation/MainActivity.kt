@@ -1,72 +1,112 @@
-/* While this template provides a good starting point for using Wear Compose, you can always
- * take a look at https://github.com/android/wear-os-samples/tree/main/ComposeStarter to find the
- * most up to date changes to the libraries and their usages.
- */
-
 package com.example.drawrun.presentation
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.wear.compose.material.MaterialTheme
-import androidx.wear.compose.material.Text
-import androidx.wear.compose.material.TimeText
-import androidx.wear.tooling.preview.devices.WearDevices
-import com.example.drawrun.R
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.compose.rememberNavController
+import com.example.drawrun.presentation.navigation.WearNavHost
+import com.example.drawrun.presentation.sensors.SensorManagerHelper
+import com.example.drawrun.presentation.sensors.SensorViewModel
+import com.example.drawrun.presentation.sensors.SensorViewModelFactory
 import com.example.drawrun.presentation.theme.DrawRunTheme
 
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
 
+    companion object {
+        private const val REQUEST_CODE_PERMISSIONS = 1001
+    }
+
+    // 전역필드로 선언안하면 빨간줄 개락 뜸..
+    private lateinit var sensorManagerHelper: SensorManagerHelper
+
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setTheme(android.R.style.Theme_DeviceDefault)
+        // SensorManagerHelper 및 ViewModel 초기화
+        val sensorManagerHelper = SensorManagerHelper(this)
+        val sensorViewModelFactory = SensorViewModelFactory(sensorManagerHelper)
+        val sensorViewModel = ViewModelProvider(this, sensorViewModelFactory)[SensorViewModel::class.java]
 
+        // 권한 요청 수행
+        requestPermissionsIfNeeded(sensorManagerHelper)
+
+        // Compose UI 설정
         setContent {
-            WearApp("Android")
+            val navController = rememberNavController()
+            DrawRunTheme {
+                WearNavHost(navController = navController, sensorViewModel)
+            }
         }
     }
-}
 
-@Composable
-fun WearApp(greetingName: String) {
-    DrawRunTheme {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colors.background),
-            contentAlignment = Alignment.Center
-        ) {
-            TimeText()
-            Greeting(greetingName = greetingName)
+
+    /**
+     * 필수 권한 체크 및 요청 함수
+     */
+    private fun requestPermissionsIfNeeded(sensorManagerHelper: SensorManagerHelper) {
+        val permissionsToRequest = mutableListOf<String>()
+
+        // 권한 확인 (BODY_SENSORS, ACCESS_FINE_LOCATION)
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS) != PackageManager.PERMISSION_GRANTED) {
+            permissionsToRequest.add(Manifest.permission.BODY_SENSORS)
+        }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            permissionsToRequest.add(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+
+        // 요청할 권한이 있을 경우 요청 수행
+        if (permissionsToRequest.isNotEmpty()) {
+            ActivityCompat.requestPermissions(this, permissionsToRequest.toTypedArray(), REQUEST_CODE_PERMISSIONS)
+        } else {
+            // 이미 권한이 허용된 경우 센서 시작
+            sensorManagerHelper.startSensors()
         }
     }
-}
 
-@Composable
-fun Greeting(greetingName: String) {
-    Text(
-        modifier = Modifier.fillMaxWidth(),
-        textAlign = TextAlign.Center,
-        color = MaterialTheme.colors.primary,
-        text = stringResource(R.string.hello_world, greetingName)
-    )
-}
+    /**
+     * 권한 요청 결과 처리 함수
+     */
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
-@Preview(device = WearDevices.SMALL_ROUND, showSystemUi = true)
-@Composable
-fun DefaultPreview() {
-    WearApp("Preview Android")
+        if (requestCode == REQUEST_CODE_PERMISSIONS) {
+            if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
+                Toast.makeText(this, "권한이 승인되었습니다.", Toast.LENGTH_SHORT).show()
+                // 권한 승인 후 센서 업데이트 시작
+                val sensorManagerHelper = SensorManagerHelper(this)
+                sensorManagerHelper.startSensors()
+            } else {
+                Toast.makeText(this, "필수 권한이 거부되었습니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    /**
+     * 액티비티 상태 변화에 따라 센서 시작 및 정지
+     */
+    override fun onResume() {
+        super.onResume()
+        if (::sensorManagerHelper.isInitialized) {
+            sensorManagerHelper.startSensors()
+        } else {
+            Log.e("MainActivity", "sensorManagerHelper가 초기화되지 않았습니다.")
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (::sensorManagerHelper.isInitialized) {
+            sensorManagerHelper.stopSensors()
+        }
+    }
+
+
 }
