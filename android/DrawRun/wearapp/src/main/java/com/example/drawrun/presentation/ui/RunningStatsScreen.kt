@@ -41,10 +41,10 @@ fun RunningStatsScreen(viewModel: SensorViewModel, navigateToHome: () -> Unit) {
         Text(text = "경과 시간: $elapsedTime 초")
         Spacer(modifier = Modifier.height(8.dp))
 
-        Text(text = "케이던스: ${cadence ?: "데이터 없음"} SPM")
+        Text(text = "케이던스: ${cadence?.let { "%.2f".format(it) } ?: "데이터 없음"} SPM")
         Spacer(modifier = Modifier.height(8.dp))
 
-        Text(text = "페이스: ${pace ?: "계산 불가"} 분/km")
+        Text(text = "페이스: ${pace?.let { "%.2f".format(it) } ?: "계산 불가"} 분/km")
         Spacer(modifier = Modifier.height(8.dp))
 
         // 소모 칼로리 계산 및 표시

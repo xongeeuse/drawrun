@@ -70,5 +70,10 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+    implementation("com.google.android.gms:play-services-wearable:18.0.0")  // Data Layer 통신
+    implementation("androidx.work:work-runtime-ktx:2.8.1")  // 백그라운드 작업 필요 시
+    // Retrofit 및 JSON 파싱 관련 의존성
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
 }
