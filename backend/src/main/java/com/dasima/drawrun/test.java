@@ -14,4 +14,4 @@ public class test {
         System.out.println("갑자기 왜이럼?");
         System.out.println("이미지가 겹치는걸 해결하자ㅇㄴㅁㅇㄴㅁㅇㄹㅇㄹㅇㄴㄹㅇㄴㄴㅁㄴ");
     }
-}
+            }
