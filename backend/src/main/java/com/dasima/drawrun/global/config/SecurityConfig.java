@@ -25,7 +25,7 @@ public class SecurityConfig {
   private final JwtFilter jwtFilter;
 
   private final String[] permitAllUrl = {"/api/v1/auth/register",
-      "/api/v1/auth/login"};
+      "/api/v1/auth/login", "/**"};
 
   // 비밀번호 암호화 메서드
   // 단방향 암호화
