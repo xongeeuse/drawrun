@@ -9,4 +9,6 @@ public interface UserService {
 
   public TokenResponseDto login(String id, String password);
 
+  public TokenResponseDto reissue(String refreshToken);
+
 }
