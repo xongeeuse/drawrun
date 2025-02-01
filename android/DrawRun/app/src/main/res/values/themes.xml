@@ -3,6 +3,8 @@
     <style name="Base.Theme.DrawRun" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">#171515</item>
+<!--        <item name="android:windowBackground">#000000</item>-->
     </style>
 
     <style name="Theme.DrawRun" parent="Base.Theme.DrawRun" />
