@@ -112,6 +112,12 @@ public class UserServiceImpl implements UserService {
     return tokenResponseDto;
   }
 
+  private User findByEmail(String email) {
+    return userRepo.findByUserEmail(email).orElseThrow(() -> {
+      return new CustomException(ErrorCode.NOT_EXIST_MEMBER_EMAIL);
+    });
+  }
+
   @Override
   public TokenResponseDto reissue(String refreshToken) {
     // redis에 refresh 토큰이 존재 하지 않는다면 그냥 검증할 수 없음
