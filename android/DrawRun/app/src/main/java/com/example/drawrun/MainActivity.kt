@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.drawrun.ui.auth.RegisterActivity
+import com.example.drawrun.ui.user.UserActivity
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,5 +31,12 @@ class MainActivity : AppCompatActivity() {
                 Log.e("MainActivity", "Error starting RegisterActivity", e)
             }
         }
+
+        // 버튼 클릭 시 UserActivity로 이동
+        findViewById<Button>(R.id.goToUserPageButton).setOnClickListener {
+            val intent = Intent(this, UserActivity::class.java)
+            startActivity(intent)
+        }
+
     }
 }
