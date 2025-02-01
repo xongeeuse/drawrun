@@ -95,6 +95,8 @@ dependencies {
     // Gson
     implementation(libs.gson)
 
+
+
     // Wear OS 관련 의존성
     implementation(libs.play.services.wearable)
     implementation(libs.wear)
