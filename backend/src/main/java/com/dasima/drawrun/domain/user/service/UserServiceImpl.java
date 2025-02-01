@@ -13,7 +13,13 @@ import com.dasima.drawrun.global.security.dto.response.AccessTokenInfoResponseDt
 import com.dasima.drawrun.global.security.dto.response.TokenResponseDto;
 import com.dasima.drawrun.global.security.provider.TokenProvider;
 import com.dasima.drawrun.global.util.RedisUtils;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 import jakarta.transaction.Transactional;
+import java.security.Key;
+import java.util.Date;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -104,6 +110,54 @@ public class UserServiceImpl implements UserService {
     redisUtils.setData(tokenResponseDto.getRefreshTokenInfoResponse(), id, (long) 604800 * 1000);
     //refresh 토큰과 access token 두개를 발급한다.
     return tokenResponseDto;
+  }
+
+  private User findByEmail(String email) {
+    return userRepo.findByUserEmail(email).orElseThrow(() -> {
+      return new CustomException(ErrorCode.NOT_EXIST_MEMBER_EMAIL);
+    });
+  }
+
+  @Override
+  public TokenResponseDto reissue(String refreshToken) {
+    // redis에 refresh 토큰이 존재 하지 않는다면 그냥 검증할 수 없음
+    // 위조, 만료, 전부다 막힘
+    if(redisUtils.getData(refreshToken) == null) {
+      throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
+    }
+    else {
+      // 토큰 파싱
+      byte[] keyBytes = Decoders.BASE64.decode(secret);
+      Key hashKey = Keys.hmacShaKeyFor(keyBytes);
+      Claims claims = Jwts.parserBuilder().setSigningKey(hashKey).build().parseClaimsJws(refreshToken).getBody();
+      String email = claims.getSubject();
+      User user = findByEmail(email);
+      User detailUser = findUserWithRoleNameByUserId(user.getUserId());
+
+      // refresh rotate
+      // 토큰 재발급
+
+      // access token 재발급
+      AccessTokenInfoResponseDto accessTokenInfoResponseDto = tokenProvider.createAccessToken(detailUser);
+
+      // refreshToken의 남은 시간(초)를 계산
+      Date expirationDate = claims.getExpiration();
+      long currentTimeMillis = System.currentTimeMillis();
+      long remainingTimeMillis = expirationDate.getTime() - currentTimeMillis;
+      long remainingSeconds = remainingTimeMillis / 1000;
+
+      // refresh token 발급
+      TokenResponseDto tokenResponseDto = new TokenResponseDto();
+      tokenResponseDto.setRefreshExpireTime(remainingSeconds);
+      tokenResponseDto.setAccessTokenInfoResponse(accessTokenInfoResponseDto);
+      tokenResponseDto.setRefreshTokenInfoResponse(tokenProvider.createRefreshToken(detailUser, remainingSeconds * 1000));
+
+
+      // 기존의 refresh token을 삭제
+      redisUtils.deleteData(refreshToken);
+      redisUtils.setData(tokenResponseDto.getRefreshTokenInfoResponse(), email, remainingSeconds * 1000);
+      return tokenResponseDto;
+    }
   }
 
 }

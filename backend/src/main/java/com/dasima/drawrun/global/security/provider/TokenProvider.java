@@ -92,9 +92,9 @@ public class TokenProvider {
 
     return AccessTokenInfoResponseDto.builder()
         .accessToken(accessToken)
-        // .email(user.getUserEmail())
-        // .accessTokenExpireTime(accessTokenExpireTime)
-        // .tokenId(tokenId)
+        .email(user.getUserEmail())
+        .accessTokenExpireTime(accessTokenExpireTime)
+        .tokenId(tokenId)
         .build();
   }
 
