@@ -9,7 +9,9 @@ import com.dasima.drawrun.global.security.dto.response.TokenResponseDto;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -66,6 +68,22 @@ public class UserController {
       return ResponseEntity.status(500)
           .body(new ApiResponseJson(false, 500, "서버 에러가 발생했습니다.", null));
     }
+  }
+
+  @PostMapping("/reissue")
+  public ResponseEntity<ApiResponseJson> reissue(@CookieValue(value = "refresh") String refresh, HttpServletResponse response) {
+    TokenResponseDto tokenResponseDto = userService.reissue(refresh);
+
+    // refresh 토큰은 쿠키에 저장
+    Cookie cookie = new Cookie("refresh", tokenResponseDto.getRefreshTokenInfoResponse());
+    // cookie 설정
+    cookie.setMaxAge((int)tokenResponseDto.getRefreshExpireTime());
+    cookie.setHttpOnly(true);
+    response.addCookie(cookie);
+
+    return ResponseEntity.ok(
+        new ApiResponseJson(true, 200, "토큰 재발급에 성공했습니다.", tokenResponseDto.getAccessTokenInfoResponse())
+    );
   }
 
 }
