@@ -1,7 +1,7 @@
 package com.example.drawrun.presentation.ui
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Text
+import androidx.wear.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier

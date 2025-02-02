@@ -17,6 +17,9 @@ android {
     }
 
     buildTypes {
+        debug {
+            isMinifyEnabled = false
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
@@ -41,6 +44,7 @@ android {
 }
 
 dependencies {
+    implementation(kotlin("stdlib"))
     // Play Services 및 Wearable
     implementation(libs.play.services.wearable)
 
@@ -48,12 +52,10 @@ dependencies {
     implementation(platform("androidx.compose:compose-bom:2024.04.01"))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation("androidx.compose.material:material")
-    implementation(libs.androidx.compose.material)
-    implementation(libs.androidx.compose.foundation)
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.foundation:foundation")
     implementation(libs.androidx.wear.tooling.preview)
-    implementation(libs.androidx.activity.compose)
+    implementation("androidx.activity:activity-compose")
     implementation(libs.androidx.core.splashscreen)
     implementation("androidx.navigation:navigation-compose")
 
@@ -62,7 +64,9 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")  // ViewModel Compose
     implementation("androidx.navigation:navigation-compose:2.7.0")  // Navigation (선택)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-    implementation(libs.androidx.core)  // Coroutines Android
+    implementation(libs.androidx.core)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.material3.android)  // Coroutines Android
 
     // Android Test 및 Debug
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -71,9 +75,12 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     implementation("com.google.android.gms:play-services-wearable:18.0.0")  // Data Layer 통신
-    implementation("androidx.work:work-runtime-ktx:2.8.1")  // 백그라운드 작업 필요 시
+    implementation("androidx.compose.runtime:runtime")
     // Retrofit 및 JSON 파싱 관련 의존성
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("androidx.wear:wear:1.2.0")
+    implementation("androidx.wear.compose:compose-material:1.1.0")
+    implementation("androidx.compose.ui:ui:1.4.0")
 
 }

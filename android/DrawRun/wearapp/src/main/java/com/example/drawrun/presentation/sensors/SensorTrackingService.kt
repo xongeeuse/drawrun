@@ -66,7 +66,7 @@ class SensorTrackingService : Service() {
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("DrawRun 실행 중")
             .setContentText("GPS 및 센서 데이터를 수집하고 있습니다.")
-            .setSmallIcon(R.drawable.splash_icon)
+            .setSmallIcon(R.mipmap.draw_run_logo)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOngoing(true)
             .build()
