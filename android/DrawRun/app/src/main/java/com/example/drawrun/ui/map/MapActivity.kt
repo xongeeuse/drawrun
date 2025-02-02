@@ -14,6 +14,7 @@ import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapView
 import com.mapbox.maps.Style
+import com.mapbox.maps.extension.localization.localizeLabels
 import com.mapbox.maps.plugin.annotation.annotations
 import com.mapbox.maps.plugin.annotation.generated.PolylineAnnotationManager
 import com.mapbox.maps.plugin.annotation.generated.PolylineAnnotationOptions
@@ -24,6 +25,7 @@ import com.mapbox.maps.plugin.locationcomponent.location
 import com.mapbox.navigation.core.MapboxNavigation
 import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineApi
 import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineView
+import java.util.Locale
 
 class MapActivity : ComponentActivity() {
 
@@ -90,7 +92,13 @@ class MapActivity : ComponentActivity() {
         mapView = MapView(this)
         setContentView(mapView)
 
-        mapView.getMapboxMap().loadStyleUri(Style.MAPBOX_STREETS) { style ->
+        // loadStyleUri(Style.MAPBOX_STREETS)
+        // loadStyleUri(Style.DARK)
+        // loadStyleUri("mapbox://styles/mapbox/navigation-night-v1")
+
+        mapView.getMapboxMap().loadStyleUri(Style.DARK) { style ->
+            style.localizeLabels(Locale("ko"))
+
             mapView.location.updateSettings {
                 enabled = true
                 pulsingEnabled = true
