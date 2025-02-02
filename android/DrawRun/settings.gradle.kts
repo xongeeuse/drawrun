@@ -1,3 +1,5 @@
+import java.util.Properties
+
 pluginManagement {
     repositories {
         google {
@@ -25,15 +27,24 @@ dependencyResolutionManagement {
                 create<BasicAuthentication>("basic")
             }
             credentials {
-                // Do not change the username below.
-                // This should always be `mapbox` (not your username).
                 username = "mapbox"
-                // Use the secret token you stored in gradle.properties as the password
-                password = providers.gradleProperty("MAPBOX_DOWNLOADS_TOKEN").get()
+
+                // local.properties에서 MAPBOX_DOWNLOADS_TOKEN 읽기
+                val localPropertiesFile = rootDir.resolve("local.properties")
+                if (localPropertiesFile.exists()) {
+                    val properties = Properties().apply {
+                        load(localPropertiesFile.inputStream())
+                    }
+                    password = properties.getProperty("MAPBOX_DOWNLOADS_TOKEN")
+                        ?: error("MAPBOX_DOWNLOADS_TOKEN is missing in local.properties")
+                } else {
+                    error("local.properties file not found. Please create it and add MAPBOX_DOWNLOADS_TOKEN.")
+                }
             }
         }
     }
 }
+
 
 rootProject.name = "DrawRun"
 include(":app")
