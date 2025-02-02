@@ -1,5 +1,6 @@
 package com.dasima.drawrun.domain.map.dto;
 
+import com.dasima.drawrun.domain.map.entity.Path;
 import com.dasima.drawrun.domain.map.vo.GeoPoint;
 import jakarta.persistence.Id;
 import lombok.Data;

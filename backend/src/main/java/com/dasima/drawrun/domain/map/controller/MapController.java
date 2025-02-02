@@ -19,8 +19,9 @@ public class MapController {
 
     // save path
     @PostMapping("/save")
-    public ResponseEntity<ApiResponseJson> save(@RequestBody PathSaveRequest dto){
-        mapService.save(dto);
+    public ResponseEntity<?> save(@RequestBody PathSaveRequest dto){
+        System.out.println(dto.getPath());
+        return ResponseEntity.ok(mapService.save(dto));
     }
 
 }
