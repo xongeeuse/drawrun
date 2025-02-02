@@ -129,7 +129,7 @@ class MapActivity : ComponentActivity() {
 
         // 로그 출력 추가
         Log.d("MAP_CLICK", "새 좌표 추가: (${point.latitude()}, ${point.longitude()})")
-        Log.d("MAP_CLICK", "현재 저장된 좌표 개수: ${points.size}")
+        Log.d("MAP_CLICK", "현재 저장된 좌표 개수: ${points.size}, 좌표 목록: ${points}")
 
         if (points.size > 1) { // 두 개 이상의 좌표가 있을 때만 라인 생성 가능
             drawLine(points) // 라인 그리기 호출
