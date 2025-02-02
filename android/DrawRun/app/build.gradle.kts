@@ -95,6 +95,24 @@ dependencies {
     // Gson
     implementation(libs.gson)
 
+    // Mapbox Navigation Core (모든 기능 포함)
+    implementation(libs.mapbox.navigationcore.android)
+
+    // Mapbox Maps SDK (필수)
+    implementation(libs.mapbox.maps)
+//    implementation(libs.mapbox.search)
+//    implementation(libs.mapbox.search.android) {
+//        exclude(group = "com.mapbox.navigationcore")
+//    }
+
+    // 선택적: UI 컴포넌트가 필요한 경우
+    implementation(libs.mapbox.navigationcore.ui.maps) {
+        exclude(group = "com.mapbox.navigationcore", module = "android")
+    }
+    implementation(libs.mapbox.navigationcore.ui.components) {
+        exclude(group = "com.mapbox.navigationcore", module = "android")
+    }
+
     // Wear OS 관련 의존성
     implementation(libs.play.services.wearable)
     implementation(libs.wear)
