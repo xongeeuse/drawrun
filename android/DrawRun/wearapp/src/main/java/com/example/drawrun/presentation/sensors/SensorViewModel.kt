@@ -1,5 +1,6 @@
 package com.example.drawrun.presentation.sensors
 
+import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
@@ -22,9 +23,10 @@ class SensorViewModel(private val sensorManagerHelper: SensorManagerHelper) : Vi
     private val _pace = MutableStateFlow<Float?>(null)
     private val _elapsedTime = MutableStateFlow(0)
     val elapsedTime: StateFlow<Int> = _elapsedTime
-
     private val _isRunning = MutableStateFlow(false)
     val isRunning: StateFlow<Boolean> = _isRunning
+    val stepCount = sensorManagerHelper.stepCountFlow
+    val totalDistance = sensorManagerHelper.totalDistanceFlow
     private var timerJob: Job? = null  // 타이머 Job 추가
     fun startMeasurement() {
         if (_isRunning.value) return // 이미 실행 중이면 중복 실행 방지
@@ -37,6 +39,7 @@ class SensorViewModel(private val sensorManagerHelper: SensorManagerHelper) : Vi
                 delay(1000)
                 _elapsedTime.update { it + 1 }
                 updatePaceAndCadence()
+                Log.d("SensorViewModel", "Elapsed time: $elapsedTime, Step count: ${stepCount.value}")
             }
         }
     }
@@ -63,9 +66,11 @@ class SensorViewModel(private val sensorManagerHelper: SensorManagerHelper) : Vi
     fun updatePaceAndCadence() {
         val newCadence = sensorManagerHelper.calculateCadence(elapsedTime.value)
         val newPace = sensorManagerHelper.calculatePace(elapsedTime.value)
-        sensorManagerHelper.cadenceFlow.value = newCadence?.toInt()
-        sensorManagerHelper.paceFlow.value = newPace
+        // StateFlow 업데이트
+        _cadence.value = newCadence?.toInt()
+        _pace.value = newPace
 
+        Log.d("SensorViewModel", "Updated pace: $newPace, cadence: $newCadence")
     }
 
     fun incrementElapsedTime() {

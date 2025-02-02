@@ -129,6 +129,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // 인텐트에 포함된 메시지 경로 확인 (추가 검증)
+        intent?.extras?.let {
+            Log.d("DrawRun", "MainActivity 인텐트 데이터: ${it.toString()}")
+        }
     }
 
     override fun onResume() {

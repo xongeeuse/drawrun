@@ -54,7 +54,7 @@ kapt {
 
 
 dependencies {
-
+    implementation(kotlin("stdlib"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -95,8 +95,6 @@ dependencies {
     // Gson
     implementation(libs.gson)
 
-
-
     // Wear OS 관련 의존성
     implementation(libs.play.services.wearable)
     implementation(libs.wear)
@@ -117,4 +115,6 @@ dependencies {
 
     implementation("com.github.bumptech.glide:glide:4.14.2")
     kapt ("com.github.bumptech.glide:compiler:4.14.2")
+    implementation("com.google.android.gms:play-services-wearable:18.0.0")
+    implementation("androidx.wear:wear:1.2.0")
 }
