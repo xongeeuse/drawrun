@@ -164,4 +164,16 @@ public class UserServiceImpl implements UserService {
     }
   }
 
+  @Override
+  public void logout(String accessToken) {
+    byte[] keyBytes = Decoders.BASE64.decode(secret);
+    Key hashKey = Keys.hmacShaKeyFor(keyBytes);
+    Claims claims = Jwts.parserBuilder().setSigningKey(hashKey).build().parseClaimsJws(accessToken)
+        .getBody();
+    String email = claims.getSubject();
+    User user = findByEmail(email);
+
+    redisUtils.deleteData(user.getId());
+  }
+
 }
