@@ -11,4 +11,6 @@ public interface UserService {
 
   public TokenResponseDto reissue(String refreshToken);
 
+  public void logout(String accessToken);
+
 }
