@@ -92,10 +92,11 @@ fun DrawRunMainScreen(viewModel: SensorViewModel, context: Context) {
                                 // 연결된 노드 탐색 및 메시지 전송
                                 Wearable.getNodeClient(context).connectedNodes.addOnSuccessListener { nodes ->
                                     nodes.forEach { node ->
+                                        Log.d("DrawRun", "연결된 노드 ID: ${node.id}, 이름: ${node.displayName}")
                                         Wearable.getMessageClient(context).sendMessage(
                                             node.id,
                                             "/launch_app",
-                                            null
+                                            "message from watch".toByteArray()
                                         ).addOnSuccessListener {
                                             Log.d("DrawRun", "모바일 앱 실행 요청 메시지 전송 성공")
                                         }.addOnFailureListener {
