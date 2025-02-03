@@ -5,16 +5,27 @@ import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
+import android.widget.Button
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import com.example.drawrun.R
+import com.mapbox.api.directions.v5.DirectionsCriteria
+import com.mapbox.api.directions.v5.models.RouteOptions
+import com.mapbox.bindgen.Expected
+import com.mapbox.common.location.Location
+//import com.mapbox.common.location.LocationObserver
 import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
+import com.mapbox.maps.ImageHolder
 import com.mapbox.maps.MapView
 import com.mapbox.maps.Style
 import com.mapbox.maps.extension.localization.localizeLabels
+import com.mapbox.maps.plugin.LocationPuck2D
+import com.mapbox.maps.plugin.animation.camera
 import com.mapbox.maps.plugin.annotation.annotations
 import com.mapbox.maps.plugin.annotation.generated.PolylineAnnotationManager
 import com.mapbox.maps.plugin.annotation.generated.PolylineAnnotationOptions
@@ -22,10 +33,29 @@ import com.mapbox.maps.plugin.annotation.generated.createPolylineAnnotationManag
 import com.mapbox.maps.plugin.gestures.gestures
 import com.mapbox.maps.plugin.locationcomponent.OnIndicatorPositionChangedListener
 import com.mapbox.maps.plugin.locationcomponent.location
+import com.mapbox.navigation.base.extensions.applyDefaultNavigationOptions
+import com.mapbox.navigation.base.options.NavigationOptions
+import com.mapbox.navigation.base.route.NavigationRoute
+import com.mapbox.navigation.base.route.NavigationRouterCallback
+import com.mapbox.navigation.base.route.RouterFailure
 import com.mapbox.navigation.core.MapboxNavigation
+import com.mapbox.navigation.core.MapboxNavigationProvider
 import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineApi
 import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineView
+import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineApiOptions
+import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineViewOptions
+import com.mapbox.navigation.utils.internal.toPoint
 import java.util.Locale
+// import 문 수정
+import com.mapbox.navigation.core.trip.session.LocationObserver
+import com.mapbox.navigation.core.trip.session.LocationMatcherResult
+import com.mapbox.navigation.core.trip.session.RouteProgressObserver
+import com.mapbox.navigation.ui.base.util.MapboxNavigationConsumer
+import com.mapbox.navigation.voice.api.MapboxSpeechApi
+import com.mapbox.navigation.voice.api.MapboxVoiceInstructionsPlayer
+import com.mapbox.navigation.voice.model.SpeechAnnouncement
+import com.mapbox.navigation.voice.model.SpeechError
+import com.mapbox.navigation.voice.model.SpeechValue
 
 class MapActivity : ComponentActivity() {
 
@@ -34,6 +64,9 @@ class MapActivity : ComponentActivity() {
     private lateinit var mapboxNavigation: MapboxNavigation
     private lateinit var routeLineApi: MapboxRouteLineApi
     private lateinit var routeLineView: MapboxRouteLineView
+    private lateinit var speechApi: MapboxSpeechApi
+    private lateinit var voiceInstructionsPlayer: MapboxVoiceInstructionsPlayer
+
 
     private val points = mutableListOf<Point>() // 사용자가 클릭한 좌표를 저장할 리스트
 
@@ -53,12 +86,25 @@ class MapActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        checkAndRequestPermissions() // 권한 확인 및 요청 처리 시작
-    }
+        setContentView(R.layout.activity_map) // 레이아웃 설정
 
-    override fun onDestroy() {
-        super.onDestroy()
-        mapView.onDestroy() // MapView 리소스 해제
+        // 음성 안내 컴포넌트 초기화
+        speechApi = MapboxSpeechApi(
+            context = this,
+            language = "ko-KR", // 한국어 로케일 정확히  지정
+        )
+
+        voiceInstructionsPlayer = MapboxVoiceInstructionsPlayer(
+            context = this,
+            language = "ko-KR" // 한국어 로케일 정확히 지정
+        )
+
+        checkAndRequestPermissions() // 권한 확인 및 요청 처리 시작
+
+        // Mapbox 내비게이션 인스턴스 생성
+        mapboxNavigation = MapboxNavigationProvider.create(
+            NavigationOptions.Builder(this.applicationContext).build()
+        )
     }
 
     // 위치 권한 확인 및 요청 처리 함수 -------------------------------------
@@ -89,19 +135,53 @@ class MapActivity : ComponentActivity() {
     // 지도 초기화 및 설정 -------------------------------------------------
     @SuppressLint("MissingPermission")
     private fun initializeMap() {
-        mapView = MapView(this)
-        setContentView(mapView)
+//        mapView = MapView(this)
+//        setContentView(mapView)
+        mapView = findViewById(R.id.mapView)
+
+        // 버튼 참조 가져오기
+        val startButton = findViewById<Button>(R.id.startNavigationButton)
+        val stopButton = findViewById<Button>(R.id.stopNavigationButton)
 
         // loadStyleUri(Style.MAPBOX_STREETS)
         // loadStyleUri(Style.DARK)
         // loadStyleUri("mapbox://styles/mapbox/navigation-night-v1")
 
-        mapView.getMapboxMap().loadStyleUri(Style.DARK) { style ->
+        mapView.getMapboxMap().loadStyleUri(Style.MAPBOX_STREETS) { style ->
             style.localizeLabels(Locale("ko"))
 
             mapView.location.updateSettings {
                 enabled = true
                 pulsingEnabled = true
+            }
+
+            // initializeMap() 함수 내부 스타일 로드 후 추가
+            val routeLineOptions = MapboxRouteLineViewOptions.Builder(this)
+                .routeLineBelowLayerId("road-label")
+                .build()
+            routeLineApi = MapboxRouteLineApi(MapboxRouteLineApiOptions.Builder().build())
+            routeLineView = MapboxRouteLineView(routeLineOptions)
+
+            // 버튼 클릭 이벤트 설정
+            startButton.setOnClickListener {
+                if (points.size >= 2) {
+                    requestRoute(points.first(), points.last())
+                    Toast.makeText(this, "내비게이션 시작", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "출발지와 도착지를 먼저 선택해주세요", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            stopButton.setOnClickListener {
+                mapboxNavigation.apply {
+                    stopTripSession()
+                    unregisterRouteProgressObserver(routeProgressObserver)
+                    unregisterLocationObserver(locationObserver)
+                }
+                points.clear()
+                polylineAnnotationManager.deleteAll()
+                voiceInstructionsPlayer.clear()
+                Toast.makeText(this, "내비게이션 종료", Toast.LENGTH_SHORT).show()
             }
 
             // 1. 리스너 객체를 변수에 저장
@@ -133,18 +213,24 @@ class MapActivity : ComponentActivity() {
 
     // 지도 클릭 이벤트 처리 -----------------------------------------------
     private fun handleMapClick(point: Point) {
-        points.add(point) // 클릭한 좌표를 리스트에 추가
-
-        // 로그 출력 추가
-        Log.d("MAP_CLICK", "새 좌표 추가: (${point.latitude()}, ${point.longitude()})")
-        Log.d("MAP_CLICK", "현재 저장된 좌표 개수: ${points.size}, 좌표 목록: ${points}")
-
-        if (points.size > 1) { // 두 개 이상의 좌표가 있을 때만 라인 생성 가능
-            drawLine(points) // 라인 그리기 호출
+        when (points.size) {
+            0 -> {
+                points.add(point)
+                Toast.makeText(this, "출발지 설정", Toast.LENGTH_SHORT).show()
+            }
+            1 -> {
+                points.add(point)
+                requestRoute(points[0], points[1])
+                Toast.makeText(this, "도착지 설정 - 경로 검색 시작", Toast.LENGTH_SHORT).show()
+            }
+            else -> {
+                points.clear()
+                points.add(point)
+                Toast.makeText(this, "새 출발지 설정", Toast.LENGTH_SHORT).show()
+            }
         }
-
-        Toast.makeText(this, "좌표 추가: ${point.latitude()}, ${point.longitude()}", Toast.LENGTH_SHORT).show()
     }
+
 
     // 라인 그리기 ---------------------------------------------------------
     private fun drawLine(points: List<Point>) {
@@ -156,4 +242,142 @@ class MapActivity : ComponentActivity() {
         polylineAnnotationManager.deleteAll() // 기존 라인 삭제 (중복 방지)
         polylineAnnotationManager.create(polylineOptions) // 새로운 라인 생성 및 지도에 추가
     }
+
+    // Navigation 도전합니다.
+    private fun requestRoute(origin: Point, destination: Point) {
+        mapboxNavigation.requestRoutes(
+            RouteOptions.builder()
+                .applyDefaultNavigationOptions()
+                .profile("mapbox/walking")  // 보행자 프로필로 변경
+                .language("ko") // 한국어 명시적 지정
+                .steps(true)    // 반드시 true로 설정
+                .voiceUnits(DirectionsCriteria.METRIC)  // 미터법으로 설정
+                .coordinatesList(listOf(origin, destination))
+                .build(),
+            object : NavigationRouterCallback {
+                @SuppressLint("MissingPermission")
+                override fun onRoutesReady(routes: List<NavigationRoute>, routerOrigin: String) {
+                    routes.firstOrNull()?.let { route ->
+                        // 경로 렌더링
+                        routeLineApi.setNavigationRoutes(listOf(route)) { value ->
+                            mapView.getMapboxMap().getStyle()?.apply {
+                                routeLineView.renderRouteDrawData(this, value)
+                            }
+                        }
+                        // 내비게이션 시작
+                        mapboxNavigation.startTripSession()
+
+                        // 경로 설정 및 관찰자 등록
+                        mapboxNavigation.setNavigationRoutes(listOf(route))
+                        mapboxNavigation.registerRouteProgressObserver(routeProgressObserver)
+                    }
+                }
+
+                // 필수 구현 메서드들 추가
+                override fun onFailure(reasons: List<RouterFailure>, routeOptions: RouteOptions) {
+                    // 실패 처리
+                }
+
+                override fun onCanceled(routeOptions: RouteOptions, routerOrigin: String) {
+                    // 취소 처리
+                }
+            }
+        )
+    }
+
+    // 위치 업데이트 관찰자 추가
+    private val locationObserver = object : LocationObserver {
+        override fun onNewLocationMatcherResult(result: LocationMatcherResult) {
+            // 실시간 위치 업데이트 처리
+            mapView.location.updateSettings {
+                locationPuck = LocationPuck2D(
+                    bearingImage = ImageHolder.from(R.drawable.run_with_icon)
+                )
+            }
+
+            // 카메라 추적
+            mapView.camera.easeTo(
+                CameraOptions.Builder()
+                    .center(result.enhancedLocation.toPoint())
+                    .zoom(15.0)
+                    .build()
+            )
+        }
+
+        // 필수 구현 메서드 추가
+//        override fun onLocationUpdateReceived(locations: List<Location>) {
+//            // 빈 구현도 가능
+//        }
+
+        // 새로 추가해야 할 메서드
+        override fun onNewRawLocation(rawLocation: Location) {
+            // 원시 위치 데이터 처리 (필요한 경우)
+        }
+    }
+    // 여기 봐라
+    // 음성 안내 시스템
+
+    private val routeProgressObserver = RouteProgressObserver { routeProgress ->
+        routeProgress.voiceInstructions?.let { voiceInstructions ->
+            speechApi.generate(
+                voiceInstructions,
+                object : MapboxNavigationConsumer<Expected<SpeechError, SpeechValue>> {
+                    override fun accept(expected: Expected<SpeechError, SpeechValue>) {
+                        expected.fold({ error ->
+                            // 오류 발생 시 기본 TTS로 실행
+                            voiceInstructionsPlayer.play(
+                                error.fallback,
+                                object : MapboxNavigationConsumer<SpeechAnnouncement> {
+                                    override fun accept(value: SpeechAnnouncement) {
+                                        speechApi.clean(value)
+                                    }
+                                }
+                            )
+                        }, { value ->
+                            // 정상적인 음성 파일 재생
+                            voiceInstructionsPlayer.play(
+                                value.announcement,
+                                object : MapboxNavigationConsumer<SpeechAnnouncement> {
+                                    override fun accept(value: SpeechAnnouncement) {
+                                        speechApi.clean(value)
+                                    }
+                                }
+                            )
+                        })
+                    }
+                }
+            )
+        }
+    }
+
+
+
+
+
+
+
+    override fun onStart() {
+        super.onStart()
+        mapboxNavigation.apply {
+            registerLocationObserver(locationObserver)
+            registerRouteProgressObserver(routeProgressObserver)
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        mapboxNavigation.apply {
+            unregisterLocationObserver(locationObserver)
+            unregisterRouteProgressObserver(routeProgressObserver)
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        voiceInstructionsPlayer.shutdown()
+        mapView.onDestroy()
+    }
+
+
+
 }
