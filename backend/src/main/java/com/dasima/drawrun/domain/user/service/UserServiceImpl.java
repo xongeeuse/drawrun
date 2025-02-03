@@ -107,7 +107,7 @@ public class UserServiceImpl implements UserService {
         tokenProvider.createRefreshToken(detailUser, 604800 * 1000));
 
     // refresh 토큰을 redis에 저장
-    redisUtils.setData(tokenResponseDto.getRefreshTokenInfoResponse(), id, (long) 604800 * 1000);
+    redisUtils.setData(id, tokenResponseDto.getRefreshTokenInfoResponse(), (long) 604800 * 1000);
     //refresh 토큰과 access token 두개를 발급한다.
     return tokenResponseDto;
   }
