@@ -168,7 +168,10 @@ public class UserServiceImpl implements UserService {
   public void logout(String accessToken) {
     byte[] keyBytes = Decoders.BASE64.decode(secret);
     Key hashKey = Keys.hmacShaKeyFor(keyBytes);
-    Claims claims = Jwts.parserBuilder().setSigningKey(hashKey).build().parseClaimsJws(accessToken)
+    Claims claims = Jwts.parserBuilder()
+        .setSigningKey(hashKey)
+        .build()
+        .parseClaimsJws(accessToken.substring(6))
         .getBody();
     String email = claims.getSubject();
     User user = findByEmail(email);
