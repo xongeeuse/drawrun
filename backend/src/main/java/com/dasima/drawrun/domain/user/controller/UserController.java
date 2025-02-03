@@ -6,7 +6,9 @@ import com.dasima.drawrun.domain.user.service.UserService;
 import com.dasima.drawrun.global.common.ApiResponseJson;
 import com.dasima.drawrun.global.exception.CustomException;
 import com.dasima.drawrun.global.security.dto.response.TokenResponseDto;
+import com.dasima.drawrun.global.security.filter.JwtFilter;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -83,6 +85,15 @@ public class UserController {
 
     return ResponseEntity.ok(
         new ApiResponseJson(true, 200, "토큰 재발급에 성공했습니다.", tokenResponseDto.getAccessTokenInfoResponse())
+    );
+  }
+
+  @PostMapping("/logout")
+  public ResponseEntity<ApiResponseJson> logout(HttpServletRequest request) {
+    userService.logout(JwtFilter.AUTHORIZATION_HEADER);
+
+    return ResponseEntity.ok(
+        new ApiResponseJson(true, 200, "로그아웃에 성공했습니다.", null)
     );
   }
 
