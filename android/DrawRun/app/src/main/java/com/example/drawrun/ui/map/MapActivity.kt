@@ -10,14 +10,12 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.example.drawrun.R
 import com.mapbox.api.directions.v5.DirectionsCriteria
 import com.mapbox.api.directions.v5.models.RouteOptions
 import com.mapbox.bindgen.Expected
 import com.mapbox.common.location.Location
 //import com.mapbox.common.location.LocationObserver
-import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.ImageHolder
@@ -165,10 +163,13 @@ class MapActivity : ComponentActivity() {
             // 버튼 클릭 이벤트 설정
             startButton.setOnClickListener {
                 if (points.size >= 2) {
-                    requestRoute(points.first(), points.last())
-                    Toast.makeText(this, "내비게이션 시작", Toast.LENGTH_SHORT).show()
+                    // destination 파라미터 제거 (불필요)
+                    requestRoute(points) // points 리스트 전체 전달
+                    Log.d("NAVINAVI", "${points}")
+
+                    Toast.makeText(this, "경유지 포함 내비게이션 시작", Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(this, "출발지와 도착지를 먼저 선택해주세요", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "최소 출발지와 도착지를 선택해주세요", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -209,27 +210,20 @@ class MapActivity : ComponentActivity() {
         }
     }
 
-
-
     // 지도 클릭 이벤트 처리 -----------------------------------------------
     private fun handleMapClick(point: Point) {
+        points.add(point)
         when (points.size) {
-            0 -> {
-                points.add(point)
-                Toast.makeText(this, "출발지 설정", Toast.LENGTH_SHORT).show()
-            }
-            1 -> {
-                points.add(point)
-                requestRoute(points[0], points[1])
-                Toast.makeText(this, "도착지 설정 - 경로 검색 시작", Toast.LENGTH_SHORT).show()
-            }
-            else -> {
-                points.clear()
-                points.add(point)
-                Toast.makeText(this, "새 출발지 설정", Toast.LENGTH_SHORT).show()
-            }
+            1 -> Toast.makeText(this, "출발지 설정", Toast.LENGTH_SHORT).show()
+            2 -> Toast.makeText(this, "경유지 또는 도착지를 선택하세요", Toast.LENGTH_SHORT).show()
+            else -> Toast.makeText(this, "경유지 ${points.size-1} 추가", Toast.LENGTH_SHORT).show()
+        }
+        // 클릭할 때마다 라인 그리기 업데이트
+        if (points.size > 1) {
+            drawLine(points)
         }
     }
+
 
 
     // 라인 그리기 ---------------------------------------------------------
@@ -244,7 +238,7 @@ class MapActivity : ComponentActivity() {
     }
 
     // Navigation 도전합니다.
-    private fun requestRoute(origin: Point, destination: Point) {
+    private fun requestRoute(points: List<Point>) {
         mapboxNavigation.requestRoutes(
             RouteOptions.builder()
                 .applyDefaultNavigationOptions()
@@ -252,7 +246,15 @@ class MapActivity : ComponentActivity() {
                 .language("ko") // 한국어 명시적 지정
                 .steps(true)    // 반드시 true로 설정
                 .voiceUnits(DirectionsCriteria.METRIC)  // 미터법으로 설정
-                .coordinatesList(listOf(origin, destination))
+                .coordinatesList(points)  // 전체 웨이포인트 리스트 전달
+                .waypointIndicesList((0 until points.size).toList())  // 웨이포인트 인덱스 설정
+                .waypointNamesList(List(points.size) { index ->
+                    when (index) {
+                        0 -> "출발지"
+                        points.size - 1 -> "도착지"
+                        else -> "경유지 $index"
+                    }
+                })
                 .build(),
             object : NavigationRouterCallback {
                 @SuppressLint("MissingPermission")
@@ -318,6 +320,14 @@ class MapActivity : ComponentActivity() {
     // 음성 안내 시스템
 
     private val routeProgressObserver = RouteProgressObserver { routeProgress ->
+        // 현재 경로 구간 인덱스 가져오기
+        val currentLegIndex = routeProgress.currentLegProgress?.legIndex
+
+        // 남은 거리와 시간
+        val distanceRemaining = routeProgress.distanceRemaining
+        val durationRemaining = routeProgress.durationRemaining
+        Log.d("NAVINAVI", "현재 경로 구간 인덱스 :${currentLegIndex}, 남은 거리: ${distanceRemaining}, 시간: ${durationRemaining}")
+
         routeProgress.voiceInstructions?.let { voiceInstructions ->
             speechApi.generate(
                 voiceInstructions,
