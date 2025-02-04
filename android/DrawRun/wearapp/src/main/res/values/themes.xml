@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 스플래시 화면용 테마 -->
+    <style name="CustomSplashTheme" parent="android:Theme.DeviceDefault">
+        <item name="android:windowIsTranslucent">true</item>
+    </style>
+</resources>
