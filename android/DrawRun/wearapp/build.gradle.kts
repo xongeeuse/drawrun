@@ -66,7 +66,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation(libs.androidx.core)
     implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.material3.android)  // Coroutines Android
+    implementation(libs.androidx.material3.android)
+//    implementation(project(":app"))  // Coroutines Android
 
     // Android Test 및 Debug
     androidTestImplementation(platform(libs.androidx.compose.bom))

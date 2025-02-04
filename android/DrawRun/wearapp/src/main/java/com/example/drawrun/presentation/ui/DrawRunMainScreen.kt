@@ -90,6 +90,7 @@ fun DrawRunMainScreen(viewModel: SensorViewModel, context: Context) {
                         modifier = Modifier
                             .size(24.dp)
                             .clickable {
+
                                 // 연결된 노드 탐색 및 메시지 전송
                                 Wearable.getNodeClient(context).connectedNodes.addOnSuccessListener { nodes ->
                                     nodes.forEach { node ->
