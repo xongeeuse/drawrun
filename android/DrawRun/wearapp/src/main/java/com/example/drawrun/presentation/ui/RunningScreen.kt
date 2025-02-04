@@ -17,7 +17,7 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun RunningScreen(onCountdownFinished: () -> Unit) {
-    var countdownValue by remember { mutableStateOf(5) }
+    var countdownValue by remember { mutableStateOf(3) }
 
     Scaffold(
         timeText = { TimeText() },
