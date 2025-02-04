@@ -31,7 +31,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService {
+public class AuthServiceImpl implements AuthService {
 
   @Value("${jwt.secret}")
   private String secret;
@@ -107,7 +107,7 @@ public class UserServiceImpl implements UserService {
         tokenProvider.createRefreshToken(detailUser, 604800 * 1000));
 
     // refresh 토큰을 redis에 저장
-    redisUtils.setData(tokenResponseDto.getRefreshTokenInfoResponse(), id, (long) 604800 * 1000);
+    redisUtils.setData(id, tokenResponseDto.getRefreshTokenInfoResponse(), (long) 604800 * 1000);
     //refresh 토큰과 access token 두개를 발급한다.
     return tokenResponseDto;
   }
@@ -120,19 +120,22 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public TokenResponseDto reissue(String refreshToken) {
+    // 토큰 파싱
+    byte[] keyBytes = Decoders.BASE64.decode(secret);
+    Key hashKey = Keys.hmacShaKeyFor(keyBytes);
+    Claims claims = Jwts.parserBuilder().setSigningKey(hashKey).build().parseClaimsJws(refreshToken)
+        .getBody();
+    String email = claims.getSubject();
+    User user = findByEmail(email);
+    User detailUser = findUserWithRoleNameByUserId(user.getUserId());
+    String userId = user.getId();
+
     // redis에 refresh 토큰이 존재 하지 않는다면 그냥 검증할 수 없음
     // 위조, 만료, 전부다 막힘
-    if(redisUtils.getData(refreshToken) == null) {
+    if (redisUtils.getData(userId) == null) {
       throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
     }
     else {
-      // 토큰 파싱
-      byte[] keyBytes = Decoders.BASE64.decode(secret);
-      Key hashKey = Keys.hmacShaKeyFor(keyBytes);
-      Claims claims = Jwts.parserBuilder().setSigningKey(hashKey).build().parseClaimsJws(refreshToken).getBody();
-      String email = claims.getSubject();
-      User user = findByEmail(email);
-      User detailUser = findUserWithRoleNameByUserId(user.getUserId());
 
       // refresh rotate
       // 토큰 재발급
@@ -154,10 +157,26 @@ public class UserServiceImpl implements UserService {
 
 
       // 기존의 refresh token을 삭제
-      redisUtils.deleteData(refreshToken);
-      redisUtils.setData(tokenResponseDto.getRefreshTokenInfoResponse(), email, remainingSeconds * 1000);
+      redisUtils.deleteData(userId);
+      redisUtils.setData(userId, tokenResponseDto.getRefreshTokenInfoResponse(),
+          remainingSeconds * 1000);
       return tokenResponseDto;
     }
+  }
+
+  @Override
+  public void logout(String accessToken) {
+    byte[] keyBytes = Decoders.BASE64.decode(secret);
+    Key hashKey = Keys.hmacShaKeyFor(keyBytes);
+    Claims claims = Jwts.parserBuilder()
+        .setSigningKey(hashKey)
+        .build()
+        .parseClaimsJws(accessToken.substring(6))
+        .getBody();
+    String email = claims.getSubject();
+    User user = findByEmail(email);
+
+    redisUtils.deleteData(user.getId());
   }
 
 }

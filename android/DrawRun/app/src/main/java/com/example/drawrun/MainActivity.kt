@@ -62,6 +62,7 @@ import com.example.drawrun.ui.auth.RegisterActivity
 import com.example.drawrun.utils.SecureStorage
 import org.json.JSONObject
 import android.util.Base64
+import com.example.drawrun.ui.map.MapActivity
 import com.example.drawrun.ui.user.UserActivity
 
 class MainActivity : AppCompatActivity() {
@@ -129,6 +130,24 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // 유저 페이지 버튼 클릭 이벤트
+        findViewById<Button>(R.id.btnGoToMap).setOnClickListener {
+            val accessToken = SecureStorage.getAccessToken(this)
+            if (accessToken != null) {
+                // 로그인 상태일 경우 MapActivity로 이동
+                val intent = Intent(this, MapActivity::class.java)
+                startActivity(intent)
+            } else {
+                // 비로그인 상태일 경우 LoginActivity로 이동
+                val intent = Intent(this, LoginActivity::class.java)
+                startActivity(intent)
+            }
+        }
+
+        // 인텐트에 포함된 메시지 경로 확인 (추가 검증)
+        intent?.extras?.let {
+            Log.d("DrawRun", "MainActivity 인텐트 데이터: ${it.toString()}")
+        }
     }
 
     override fun onResume() {
