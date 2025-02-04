@@ -85,6 +85,16 @@
             android:foregroundServiceType="location|health"
             android:enabled="true"/>
 
+        <activity
+            android:name=".presentation.RunningActivity"
+            android:exported="true">
+        </activity>
+
+        <activity
+            android:name=".presentation.NavigationActivity"
+            android:exported="true">
+        </activity>
+
     </application>
 
 </manifest>
