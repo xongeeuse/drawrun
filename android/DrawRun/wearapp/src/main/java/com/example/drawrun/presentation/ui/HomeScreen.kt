@@ -11,6 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.wear.compose.material.Button
+import androidx.wear.compose.material.Text
 import com.example.drawrun.presentation.navigation.Screen
 import com.example.drawrun.presentation.sensors.SensorViewModel
 
