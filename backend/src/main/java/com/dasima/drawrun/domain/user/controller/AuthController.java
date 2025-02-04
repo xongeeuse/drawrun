@@ -43,6 +43,7 @@ public class AuthController {
     }
   }
 
+
   @PostMapping("/login")
   public ResponseEntity<ApiResponseJson> login(@RequestBody LoginRequestDto loginRequestDto,
       HttpServletResponse response) {
@@ -89,7 +90,7 @@ public class AuthController {
 
   @PostMapping("/logout")
   public ResponseEntity<ApiResponseJson> logout(HttpServletRequest request) {
-    authService.logout(JwtFilter.AUTHORIZATION_HEADER);
+    authService.logout(request.getHeader(JwtFilter.AUTHORIZATION_HEADER));
 
     return ResponseEntity.ok(
         new ApiResponseJson(true, 200, "로그아웃에 성공했습니다.", null)
