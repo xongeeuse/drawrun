@@ -3,9 +3,26 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.dasima.drawrun.domain.mypage.mapper.MyPageMapper">
-    <resultMap id="User" type="com.dasima.drawrun.domain.user.entity.User">
-        <id column="user_path_id" property="userPathId"/>
+    <resultMap id="UserResultMap" type="com.dasima.drawrun.domain.user.entity.User">
+        <id column="user_id" property="userId"/>
+        <result column="id" property="id"/>
+        <result column="user_email" property="userEmail"/>
+        <result column="user_name" property="userName"/>
+        <result column="user_nickname" property="userNickname"/>
+        <result column="user_password" property="userPassword"/>
+        <result column="profile_img_url" property="profileImgUrl"/>
+        <result column="social_type" property="socialType"/>
+        <result column="badge_id" property="badgeId"/>
+        <result column="create_date" property="createDate"/>
+        <result column="update_date" property="updateDate"/>
+        <result column="is_deleted" property="isDeleted"/>
     </resultMap>
+    
+    <select id="showinfo" parameterType="integer" resultMap="UserResultMap">
+        select *
+        from user
+        where user_id = #{userId};
+    </select>
 
 
 </mapper>

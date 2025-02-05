@@ -1,7 +1,8 @@
 package com.dasima.drawrun.domain.mypage.service;
 
+import com.dasima.drawrun.domain.mypage.dto.response.ShowInfoResponse;
 import com.dasima.drawrun.domain.user.entity.User;
 
 public interface MyPageService {
-    User showinfo(int userId);
+    ShowInfoResponse showinfo(int userId); // findByUserId
 }
