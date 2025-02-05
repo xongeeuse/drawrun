@@ -1,7 +1,6 @@
 package com.example.drawrun.presentation.sensors
 
 import android.content.Context
-import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -13,25 +12,35 @@ import android.os.Bundle
 import android.util.Log
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlin.math.sqrt
 
 class SensorManagerHelper(private val context: Context) {
     private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     private val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
+    // 상태 플래그 추가 (센서 동작 여부)
+    private var isSensorRunning = false
+
     // 심박수, 가속도, GPS 데이터 Flow
     val heartRateFlow = MutableStateFlow<Float?>(null)
     val accelerometerFlow = MutableStateFlow<List<Float>?>(null)
-    val paceFlow = MutableStateFlow<Float?>(null) // 페이스
-    val cadenceFlow = MutableStateFlow<Int?>(null) // 케이던스
+    val paceFlow = MutableStateFlow<Float?>(null)
+    val cadenceFlow = MutableStateFlow<Int?>(null)
 
-    private var lastLocation: Location? = null // 이전 GPS 위치
-    private var totalDistance: Float = 0f // 총 이동 거리
-    private var stepCount: Int = 0 // 걸음 수
-
-    var elapsedTime: Int = 0 // 경과 시간 (초)
+    private var lastLocation: Location? = null
+    var totalDistance: Float = 0f
+    val stepCountFlow = MutableStateFlow(0)
+    val totalDistanceFlow = MutableStateFlow(0f)
+    var elapsedTime: Int = 0
     private val heartRateSensor = sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE)
     private val accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+    private val stepDetectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR)
+
+    init {
+        val sensorList = sensorManager.getSensorList(Sensor.TYPE_ALL)
+        sensorList.forEach {
+            Log.d("SensorManagerHelper", "Available sensor: ${it.name}")
+        }
+    }
 
     private val sensorEventListener = object : SensorEventListener {
         override fun onSensorChanged(event: SensorEvent?) {
@@ -41,29 +50,12 @@ class SensorManagerHelper(private val context: Context) {
                         heartRateFlow.value = it.values[0]
                         Log.d("SensorManagerHelper", "Heart rate data: ${it.values[0]}")
                     }
-                    Sensor.TYPE_ACCELEROMETER -> {
-                        val x = it.values[0]
-                        val y = it.values[1]
-                        val z = it.values[2]
-                        val magnitude = sqrt(x * x + y * y + z * z) // 가속도 벡터 크기
-
-                        accelerometerFlow.value = listOf(x, y, z)
-
-                        // 간단한 걸음 수 계산 (패턴 기반)
-                        if (magnitude > 10) { // 특정 임계값 이상일 때 걸음으로 간주
-                            stepCount++
-                            if (elapsedTime > 0) { // elapsedTime이 0인지 확인
-                                cadenceFlow.value = (stepCount * 60) / elapsedTime
-                            } else {
-                                cadenceFlow.value = null // 아직 경과 시간이 없을 경우 null로 설정
-                            }
-                        } else {
-                            Log.d("SensorManagerHelper", "Magnitude below threshold: $magnitude")
-                        }
+                    Sensor.TYPE_STEP_DETECTOR -> {
+                        stepCountFlow.value += 1
+                        Log.d("SensorManagerHelper", "Step detected! Total steps: ${stepCountFlow.value}")
                     }
-                    else -> {
-                        Log.d("SensorManagerHelper", "Unhandled sensor type: ${it.sensor.type}")
-                    }
+
+                    else -> {}
                 }
             }
         }
@@ -73,33 +65,40 @@ class SensorManagerHelper(private val context: Context) {
         }
     }
 
-
     private val locationListener = object : LocationListener {
         override fun onLocationChanged(location: Location) {
+            val minDistanceThreshold = 0.5f
             if (lastLocation == null) {
-                lastLocation = location // 최초 위치 초기화
+                lastLocation = location
             } else {
                 val distance = lastLocation!!.distanceTo(location)
-                totalDistance += distance
+                if (distance > minDistanceThreshold) {
+                    val newTotalDistance = totalDistanceFlow.value + distance
+                    totalDistanceFlow.value = newTotalDistance
+                    lastLocation = location
+                    Log.d("SensorManagerHelper", "Distance moved: $distance meters")
+                }
                 paceFlow.value = if (elapsedTime > 0 && totalDistance > 0) {
                     (elapsedTime / 60f) / (totalDistance / 1000f)
-                } else {
-                    0f
-                }
-                lastLocation = location
+                } else null
             }
         }
 
-        override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
         override fun onProviderEnabled(provider: String) {}
         override fun onProviderDisabled(provider: String) {}
     }
-
 
     /**
      * 센서 및 위치 업데이트 시작
      */
     fun startSensors() {
+        if (isSensorRunning) {
+            Log.d("SensorManagerHelper", "Sensors are already running")
+            return
+        }
+
+        isSensorRunning = true
+        Log.d("SensorManagerHelper", "Starting sensors...")
 
         heartRateSensor?.let {
             sensorManager.registerListener(sensorEventListener, it, SensorManager.SENSOR_DELAY_NORMAL)
@@ -107,16 +106,21 @@ class SensorManagerHelper(private val context: Context) {
         accelerometerSensor?.let {
             sensorManager.registerListener(sensorEventListener, it, SensorManager.SENSOR_DELAY_NORMAL)
         }
+        stepDetectorSensor?.let {
+            sensorManager.registerListener(sensorEventListener, it, SensorManager.SENSOR_DELAY_NORMAL)
+            Log.d("SensorManagerHelper", "Step Detector sensor registered successfully")
+        } ?: Log.e("SensorManagerHelper", "Step detector sensor not available")
 
         try {
             locationManager.requestLocationUpdates(
                 LocationManager.GPS_PROVIDER,
-                1000L, // 1초마다 업데이트
-                1f,    // 최소 1미터 이동 시 업데이트
+                1000L,
+                1f,
                 locationListener
             )
+            Log.d("SensorManagerHelper", "Location updates started successfully")
         } catch (e: SecurityException) {
-            Log.e("SensorManagerHelper", "Location permission not granted")
+            Log.e("SensorManagerHelper", "Location permission not granted : ${e.message}")
         }
     }
 
@@ -124,16 +128,34 @@ class SensorManagerHelper(private val context: Context) {
      * 센서 및 위치 업데이트 중지
      */
     fun stopSensors() {
+        if (!isSensorRunning) {
+            Log.d("SensorManagerHelper", "Sensors are not running")
+            return
+        }
+
+        isSensorRunning = false
+        Log.d("SensorManagerHelper", "Stopping sensors...")
+
         sensorManager.unregisterListener(sensorEventListener)
         locationManager.removeUpdates(locationListener)
-        Log.d("SensorManagerHelper", "Sensors stopped")
-    }
-    fun calculateCadence(elapsedTime: Int): Float? {
-        return if (elapsedTime > 0) (stepCount * 60) / elapsedTime.toFloat() else null
+        Log.d("SensorManagerHelper", "Sensors stopped successfully")
     }
 
-    fun calculatePace(elapsedTime: Int): Float? {
-        return if (totalDistance > 0) (elapsedTime / (totalDistance / 1000f)) else null
+    fun calculateCadence(elapsedTimeInSeconds: Int): Float? {
+        if (elapsedTimeInSeconds > 0) {
+            val elapsedTimeInMinutes = elapsedTimeInSeconds / 60f
+            return if (stepCountFlow.value > 0) stepCountFlow.value / elapsedTimeInMinutes else 0f
+        }
+        return null
+    }
+
+    fun calculatePace(elapsedTimeInSeconds: Int): Float? {
+        if (totalDistance > 0 && elapsedTimeInSeconds > 0) {
+            val elapsedTimeInMinutes = elapsedTimeInSeconds / 60f
+            val distanceInKm = totalDistance / 1000f
+            return elapsedTimeInMinutes / distanceInKm
+        }
+        return null
     }
 
     fun calculateCalories(elapsedTime: Int, averageHeartRate: Float, weightKg: Float, age: Int): Float {
@@ -146,15 +168,13 @@ class SensorManagerHelper(private val context: Context) {
         return mets * weightKg * minutes
     }
 
-    
-    // 데이터 초기화 메서드
     fun resetData() {
         totalDistance = 0f
-        stepCount = 0
+        stepCountFlow.value = 0
         heartRateFlow.value = null
         accelerometerFlow.value = null
         cadenceFlow.value = null
         paceFlow.value = null
+        totalDistanceFlow.value = 0f
     }
-
 }

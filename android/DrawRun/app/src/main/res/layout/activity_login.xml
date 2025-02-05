@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#171515"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="24dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
+
+            <!-- Title -->
+            <TextView
+                android:id="@+id/pageTitleTextView"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:fontFamily="@font/praise_regular"
+                android:text="Draw Run"
+                android:textColor="@color/logo_color"
+                android:textSize="55sp" />
+
+            <!-- Subtitle -->
+            <TextView
+                android:id="@+id/subTitleTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/pretendard_regular"
+                android:text="당신의 발걸음으로 도시를 캔버스로,\nGPS 아트 러닝"
+                android:textColor="#00C853"
+                android:textSize="15sp"
+                android:gravity="center"
+                android:layout_marginBottom="20dp" />
+
+            <!-- User ID Input Section -->
+            <LinearLayout
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="24dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ID"
+                    android:fontFamily="@font/pretendard_regular"
+                    android:textColor="@android:color/white"
+                    android:textSize="22sp" />
+
+                <EditText
+                    android:id="@+id/etUserId"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/pretendard_regular"
+                    android:hint="영어 대소문자, 숫자 | 4자 이상, 16자 이하"
+                    android:inputType="text"
+                    android:padding="4dp"
+                    android:textSize="16sp"
+                    android:textColor="@android:color/darker_gray"
+                    android:textColorHint="#B0B0B0"
+                    android:background="@android:color/transparent"
+                    android:layout_marginBottom="6dp" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="2dp"
+                    android:background="@android:color/white" />
+
+            </LinearLayout>
+
+            <!-- Password Input Section with Icons Inside -->
+            <LinearLayout
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="24dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Password"
+                    android:fontFamily="@font/pretendard_regular"
+                    android:textColor="@android:color/white"
+                    android:textSize="22sp" />
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <EditText
+                        android:id="@+id/etPassword"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/pretendard_regular"
+                        android:padding="4dp"
+                        android:hint="비밀번호를 입력하세요."
+                        android:inputType="textPassword"
+                        android:paddingEnd="80dp"
+                        android:textSize="16sp"
+                        android:textColor="@android:color/white"
+                        android:textColorHint="#B0B0B0"
+                        android:background="@android:color/transparent"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginBottom="6dp" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="2dp"
+                        android:layout_below="@id/etPassword"
+                        android:background="@android:color/white" />
+                </RelativeLayout>
+            </LinearLayout>
+
+            <!-- Auto-login Checkbox -->
+            <CheckBox
+                android:id="@+id/checkboxAutoLogin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/pretendard_regular"
+                android:text="자동로그인"
+                android:textColor="@android:color/white"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Find ID/Password -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_horizontal">
+
+                <TextView
+                    android:id="@+id/tvFindId"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/pretendard_regular"
+                    android:text="아이디 찾기"
+                    android:textColor="@android:color/white"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="  |  "
+                    android:textColor="@android:color/white" />
+
+                <TextView
+                    android:id="@+id/tvFindPassword"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/pretendard_regular"
+                    android:text="비밀번호 찾기"
+                    android:textColor="@android:color/white"
+                    android:textSize="15sp" />
+            </LinearLayout>
+
+            <!-- Login Button -->
+            <Button
+                android:id="@+id/btnLogin"
+                android:layout_width="280dp"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/pretendard_regular"
+                android:text="로그인"
+                android:textSize="18sp"
+                android:backgroundTint="@android:color/white"
+                android:textColor="@android:color/black"
+                android:layout_marginTop="24dp"
+                android:padding="12dp" />
+
+            <!-- Progress Bar -->
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>
