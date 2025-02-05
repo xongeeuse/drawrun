@@ -17,12 +17,30 @@
         <result column="update_date" property="updateDate"/>
         <result column="is_deleted" property="isDeleted"/>
     </resultMap>
+
+    <resultMap id="UserPathResultMap" type="com.dasima.drawrun.domain.mypage.entity.UserPath">
+        <id column="user_path_id" property="userPathId"/>
+        <result column="user_id" property="userId"/>
+        <result column="path_id" property="pathId"/>
+        <result column="path_img_url" property="pathImgUrl"/>
+        <result column="name" property="name"/>
+        <result column="create_date" property="createDate"/>
+    </resultMap>
+    
+    <resultMap id="BookMarkResultMap" type="com.dasima.drawrun.domain.mypage.entity.BookMark">
+        <id column="bookmark_id" property="bookmarkId"/>
+        <result column="user_path_id" property="userPathId"/>
+        <result column="create_date" property="createDate"/>
+        
+        <association property="userPath" resultMap="UserPathResultMap"/>
+    </resultMap>
     
     <select id="showinfo" parameterType="integer" resultMap="UserResultMap">
         select *
         from user
         where user_id = #{userId};
     </select>
+
 
 
 </mapper>

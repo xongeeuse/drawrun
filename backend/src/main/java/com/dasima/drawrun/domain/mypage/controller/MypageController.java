@@ -21,4 +21,10 @@ public class MypageController {
         return ResponseEntity.ok(myPageService.showinfo(userId));
     }
 
+    @GetMapping("/bookmark/{userId}")
+    public ResponseEntity<?> bookmark(@PathVariable("userId") int userId)
+    {
+
+    }
+    
 }
