@@ -404,6 +404,7 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import com.example.drawrun.R
 import com.mapbox.api.directions.v5.DirectionsCriteria
@@ -584,6 +585,7 @@ class MapActivity : ComponentActivity() {
 
             val listener = object : OnIndicatorPositionChangedListener {
                 override fun onIndicatorPositionChanged(point: Point) {
+
                     mapView.getMapboxMap().setCamera(
                         CameraOptions.Builder()
                             .center(point)
@@ -741,10 +743,12 @@ class MapActivity : ComponentActivity() {
             val totalDistance = routeProgress.route.distance() // 총 이동 거리 (미터)
             val totalDuration = routeProgress.route.duration() // 총 소요 시간 (초)
 
+            val totalDistanceInKm = totalDistance / 1000 // 미터 -> 킬로미터 변환
             val totalTimeInMinutes = (totalDuration / 60).toInt() // 분 단위 변환
-            val toastMessage = "목적지 도착!\n총 이동 거리: ${totalDistance.toInt()}m\n총 소요 시간: ${totalTimeInMinutes}분"
+//            val toastMessage = "목적지 도착!\n총 이동 거리: ${totalDistance.toInt()}m\n총 소요 시간: ${totalTimeInMinutes}분"
             stopNavigation()
-            Toast.makeText(this, toastMessage, Toast.LENGTH_LONG).show()
+            showArrivalDialog(totalDistanceInKm, totalTimeInMinutes)  // 이동 거리 및 소요 시간 안내 모달 표시
+//            Toast.makeText(this, toastMessage, Toast.LENGTH_LONG).show()
 //            Toast.makeText(this, "목적지에 도착했습니다. 내비게이션을 종료합니다.", Toast.LENGTH_SHORT).show()
         }
 
@@ -783,6 +787,21 @@ class MapActivity : ComponentActivity() {
             }
         }
     }
+
+    // 도착 시 모달 다이얼로그 표시 함수 추가
+    private fun showArrivalDialog(distanceInKm: Double, time:Int) {
+        val formattedDistance = String.format("%.2f", distanceInKm) // 소수점 둘째 자리까지 나타냄
+
+        AlertDialog.Builder(this)
+            .setTitle("📍 목적지 도착!")
+            .setMessage("총 이동 거리: ${formattedDistance}km\n총 소요 시간: ${time}분")
+            .setPositiveButton("확인") { dialog, _ ->
+                dialog.dismiss() // 확인 버튼 클릭 시 다이얼로그 닫기
+            }
+            .setCancelable(false) // 사용자가 다이얼로그 외부를 눌러도 닫히지 않게 설정
+            .show()
+    }
+
 
     // stopButton 클릭 시 경로 초기화 기능 유지
     private fun stopNavigation() {
