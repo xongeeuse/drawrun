@@ -1,5 +1,7 @@
 package com.dasima.drawrun.domain.user.service;
 
+import com.dasima.drawrun.domain.user.dto.request.EmailAuthNumberRequestDto;
+import com.dasima.drawrun.domain.user.dto.request.EmailSendRequestDto;
 import com.dasima.drawrun.domain.user.dto.request.RegisterRequestDto;
 import com.dasima.drawrun.domain.user.entity.Role;
 import com.dasima.drawrun.domain.user.entity.RoleRegister;
@@ -12,26 +14,32 @@ import com.dasima.drawrun.global.exception.ErrorCode;
 import com.dasima.drawrun.global.security.dto.response.AccessTokenInfoResponseDto;
 import com.dasima.drawrun.global.security.dto.response.TokenResponseDto;
 import com.dasima.drawrun.global.security.provider.TokenProvider;
+import com.dasima.drawrun.global.util.RandomStringGenerator;
 import com.dasima.drawrun.global.util.RedisUtils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
-import java.security.Key;
-import java.util.Date;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.security.Key;
+import java.util.Date;
+import java.util.Map;
 
 @Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
+  private final long LIMIT_TIME = 180000; // mail 인증 만료시간
 
   @Value("${jwt.secret}")
   private String secret;
@@ -41,6 +49,7 @@ public class AuthServiceImpl implements AuthService {
   private final RoleRepository roleRepo;
   private final BCryptPasswordEncoder passwordEncoder;
   private final RedisUtils redisUtils;
+  private final JavaMailSender javaMailSender;
 
   @Override
   public Object register(RegisterRequestDto dto) {
@@ -177,6 +186,37 @@ public class AuthServiceImpl implements AuthService {
     User user = findByEmail(email);
 
     redisUtils.deleteData(user.getId());
+  }
+
+  @Override
+  public void sendmail(EmailSendRequestDto dto) {
+    if (redisUtils.getData(dto.getEmail()) != null)
+      redisUtils.deleteData(dto.getEmail());
+
+    String authNumber = RandomStringGenerator.generateRandomNumber(); // 6자리수 생성
+    redisUtils.setData(dto.getEmail(), authNumber, LIMIT_TIME);
+
+    try {
+      MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+      MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+      messageHelper.setSubject("이메일 주소 확인");
+      messageHelper.setTo(dto.getEmail());
+      messageHelper.setText(authNumber);
+      javaMailSender.send(mimeMessage);
+    } catch (Exception e) {
+      throw new CustomException(ErrorCode.FAIL_EMAIL_SEND);
+    }
+  }
+
+  @Override
+  public void mailcheck(EmailAuthNumberRequestDto dto) {
+    String authNumber = redisUtils.getData(dto.getEmail());
+
+    log.info(authNumber);
+
+    if (authNumber.equals(dto.getAuthNumber()))
+      return;
+    throw new CustomException(ErrorCode.FAIL_EMAIL_AUTH);
   }
 
 }
