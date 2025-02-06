@@ -9,4 +9,5 @@ import java.util.List;
 public interface MyPageService {
     ShowInfoResponse showinfo(int userId); // findByUserId
     List<BookMarkResponse> bookmark(int userId);
+    BookMarkResponse onebookmark(int userId, int bookmarkId);
 }

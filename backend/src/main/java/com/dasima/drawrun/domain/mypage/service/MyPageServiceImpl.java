@@ -24,4 +24,9 @@ public class MyPageServiceImpl implements MyPageService{
         List<BookMark> bookMarks = myPageMapper.bookmark(userId);
         return bookMarks.stream().map(BookMark::toBookMarkEntity).collect(Collectors.toList());
     }
+
+    public BookMarkResponse onebookmark(int userId, int bookmarkId){
+        BookMark bookMark= myPageMapper.onebookmark(userId, bookmarkId);
+        return bookMark.toBookMarkEntity();
+    }
 }

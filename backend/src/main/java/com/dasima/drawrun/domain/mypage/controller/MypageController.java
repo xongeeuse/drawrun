@@ -24,9 +24,13 @@ public class MypageController {
     }
 
     @GetMapping("/bookmark")
-    public ResponseEntity<?> bookmark(@AuthenticationPrincipal UserPrinciple userPrinciple)
+                                                public ResponseEntity<?> bookmark(@AuthenticationPrincipal UserPrinciple userPrinciple)
     {
         return ResponseEntity.ok(myPageService.bookmark(userPrinciple.getUserId()));
     }
-    
+
+    @GetMapping("/bookmark/{bookmarkId}")
+    public ResponseEntity<?> bookmarksearch(@AuthenticationPrincipal UserPrinciple userPrinciple, @PathVariable int bookmarkId){
+        return ResponseEntity.ok(myPageService.onebookmark(userPrinciple.getUserId(), bookmarkId));
+    }
 }
