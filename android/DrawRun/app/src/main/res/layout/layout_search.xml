@@ -41,7 +41,7 @@
             android:imeOptions="actionSearch"/>
 
         <ImageView
-            android:id="@+id/search_icon"
+            android:id="@+id/search_btn"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:padding="12dp"

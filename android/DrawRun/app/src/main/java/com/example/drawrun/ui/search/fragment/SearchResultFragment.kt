@@ -1,39 +1,21 @@
 package com.example.drawrun.ui.search.fragment
 
+import android.app.appsearch.SearchResult
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.drawrun.R
 import com.example.drawrun.databinding.FragmentSearchResultBinding
-import com.example.drawrun.ui.search.adaptor.SearchResultAdapter
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [SearchResultFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
+
 class SearchResultFragment : Fragment() {
     private var _binding: FragmentSearchResultBinding? = null
     private val binding get() = _binding!!
-    private lateinit var adapter: SearchResultAdapter
-
-    companion object {
-        private const val ARG_QUERY = "query"
-
-        fun newInstance(query: String) = SearchResultFragment().apply {
-            arguments = Bundle().apply {
-                putString(ARG_QUERY, query)
-            }
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -48,20 +30,32 @@ class SearchResultFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupRecyclerView()
-        performSearch()
-    }
+        setupToolbar()
 
-    private fun setupRecyclerView() {
-        adapter = SearchResultAdapter()
-        binding.searchResultRecyclerView.apply {
-            layoutManager = LinearLayoutManager(context)
-            adapter = this@SearchResultFragment.adapter
+        // 전달받은 검색어 표시
+        arguments?.getString("query")?.let { query ->
+            binding.toolbar.title = "'$query'에 대한 검색 결과"
         }
     }
 
-    private fun performSearch() {
-        val query = arguments?.getString(ARG_QUERY) ?: return
-        // TODO: 검색 결과 로드 구현
+    private fun setupRecyclerView() {
+        binding.searchResultRecyclerView.apply {
+            layoutManager = LinearLayoutManager(context)
+            // TODO: adapter 설정
+        }
+    }
+
+    private fun setupToolbar() {
+        // 거리 필터 스피너 설정
+        val distances = arrayOf("전체", "5km 이하", "10km 이하", "15km 이하")
+        val spinnerAdapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_item,
+            distances
+        ).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
+        binding.distanceSpinner.adapter = spinnerAdapter
     }
 
     override fun onDestroyView() {
@@ -69,3 +63,4 @@ class SearchResultFragment : Fragment() {
         _binding = null
     }
 }
+
