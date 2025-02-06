@@ -46,6 +46,7 @@ package com.example.drawrun
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import com.example.drawrun.ui.mypage.SettingsActivity
 import com.google.android.gms.wearable.MessageClient
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.Wearable

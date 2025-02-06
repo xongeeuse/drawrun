@@ -1,4 +1,4 @@
-package com.example.drawrun.data.model
+package com.example.drawrun.data.dto.response.auth
 
 data class LoginResponse(
     val isSuccess: Boolean,  // 요청 성공 여부
