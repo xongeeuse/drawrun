@@ -2,6 +2,8 @@ package com.example.drawrun.utils
 
 import android.content.Context
 import com.example.drawrun.data.api.AuthApi
+import com.example.drawrun.data.api.CourseApi
+import com.example.drawrun.data.api.SearchApi
 import com.example.drawrun.data.api.UserApi
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -35,4 +37,7 @@ object RetrofitInstance {
     }
 
     fun UserApi(context: Context): UserApi = getRetrofit(context).create(UserApi::class.java)
+    fun SearchApi(context: Context): SearchApi = getRetrofit(context).create(SearchApi::class.java)
+    fun CourseApi(context: Context): CourseApi = getRetrofit(context).create(CourseApi::class.java)
+
 }

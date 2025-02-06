@@ -3,7 +3,7 @@ package com.example.drawrun.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.drawrun.data.model.LoginRequest
+import com.example.drawrun.data.dto.request.auth.LoginRequest
 import com.example.drawrun.data.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
