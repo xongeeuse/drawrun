@@ -1,5 +1,7 @@
 package com.dasima.drawrun.domain.user.service;
 
+import com.dasima.drawrun.domain.user.dto.request.EmailAuthNumberRequestDto;
+import com.dasima.drawrun.domain.user.dto.request.EmailSendRequestDto;
 import com.dasima.drawrun.domain.user.dto.request.RegisterRequestDto;
 import com.dasima.drawrun.global.security.dto.response.TokenResponseDto;
 
@@ -12,5 +14,9 @@ public interface AuthService {
   public TokenResponseDto reissue(String refreshToken);
 
   public void logout(String accessToken);
+
+  public void sendmail(EmailSendRequestDto dto);
+
+  public void mailcheck(EmailAuthNumberRequestDto dto);
 
 }
