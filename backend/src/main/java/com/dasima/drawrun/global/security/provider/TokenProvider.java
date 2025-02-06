@@ -34,7 +34,8 @@ public class TokenProvider {
   private static final String AUTHORITIES_KEY = "auth"; // payload에 auth : role
   private static final String TOKEN_ID_KEY = "tokenId"; // payload에 tokenId : 해시값
   private static final String USERNAME_KEY = "username"; // payload에 username : user 이름
-  private static final String USERID_KEY = "userId";
+  private static final String USERPK_KEY = "userPK";
+
 
   private final Key hashKey; // 서명 알고리즘에 쓰이는 key 값
   private final long accessTokenValidationInMilliseconds; // token 유효기간
@@ -86,6 +87,7 @@ public class TokenProvider {
         .claim(AUTHORITIES_KEY, role)
         .claim(USERNAME_KEY, user.getUserName())
         .claim(TOKEN_ID_KEY, tokenId)
+            .claim(USERPK_KEY, user.getUserId())
         .signWith(hashKey, SignatureAlgorithm.HS512) // 여기서 header가 결정돼기 떄문에 header를 설정안해줘도 됨
         .setExpiration(accessTokenExpireTime)
         .compact();
@@ -135,7 +137,7 @@ public class TokenProvider {
         .map(SimpleGrantedAuthority::new)
         .collect(Collectors.toList());
 
-    UserPrinciple principle = new UserPrinciple(claims.getSubject(), claims.get(USERNAME_KEY, String.class), authorities);
+    UserPrinciple principle = new UserPrinciple(claims.getSubject(), claims.get(USERNAME_KEY, String.class),claims.get(USERPK_KEY, Integer.class) ,authorities);
 
     return new UsernamePasswordAuthenticationToken(principle, token, authorities);
   }

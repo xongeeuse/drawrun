@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dasima.drawrun.domain.mypage.mapper.MyPageMapper">
+    <resultMap id="UserResultMap" type="com.dasima.drawrun.domain.user.entity.User">
+        <id column="user_id" property="userId"/>
+        <result column="id" property="id"/>
+        <result column="user_email" property="userEmail"/>
+        <result column="user_name" property="userName"/>
+        <result column="user_nickname" property="userNickname"/>
+        <result column="user_password" property="userPassword"/>
+        <result column="profile_img_url" property="profileImgUrl"/>
+        <result column="social_type" property="socialType"/>
+        <result column="badge_id" property="badgeId"/>
+        <result column="create_date" property="createDate"/>
+        <result column="update_date" property="updateDate"/>
+        <result column="is_deleted" property="isDeleted"/>
+    </resultMap>
+
+    <resultMap id="UserPathResultMap" type="com.dasima.drawrun.domain.mypage.entity.UserPath">
+        <id column="user_path_id" property="userPathId"/>
+        <result column="user_id" property="userId"/>
+        <result column="path_id" property="pathId"/>
+        <result column="path_img_url" property="pathImgUrl"/>
+        <result column="name" property="name"/>
+        <result column="create_date" property="createDate"/>
+    </resultMap>
+    
+    <resultMap id="BookMarkResultMap" type="com.dasima.drawrun.domain.mypage.entity.BookMark">
+        <id column="bookmark_id" property="bookmarkId"/>
+        <result column="user_path_id" property="userPathId"/>
+        <result column="create_date" property="createDate"/>
+        
+        <association property="userPath" resultMap="UserPathResultMap"/>
+    </resultMap>
+    
+    <select id="showinfo" parameterType="integer" resultMap="UserResultMap">
+        select *
+        from user
+        where user_id = #{userId};
+    </select>
+
+    <select id="bookmark" parameterType="integer" resultMap="BookMarkResultMap">
+        SELECT
+            b.bookmark_id,
+            b.user_path_id,
+            b.user_id,
+            b.create_date,
+            up.path_id,
+            up.path_img_url,
+            up.name,
+            up.user_id,
+            up.create_date
+        FROM bookmark b
+            LEFT OUTER JOIN user_path up
+            ON b.user_path_id = up.user_path_id
+        where b.user_id = #{userId};
+    </select>
+    
+    <select id="onebookmark" resultMap="BookMarkResultMap">
+        SELECT
+            b.bookmark_id,
+            b.user_path_id,
+            b.user_id,
+            b.create_date,
+            up.path_id,
+            up.path_img_url,
+            up.name,
+            up.user_id,
+            up.create_date
+        FROM bookmark b
+                 LEFT OUTER JOIN user_path up
+                                 ON b.user_path_id = up.user_path_id
+        where b.user_id = #{userId} and b.bookmark_id = #{bookmarkId} ;
+    </select>
+
+
+
+
+
+</mapper>

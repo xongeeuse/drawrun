@@ -1,5 +1,6 @@
 package com.dasima.drawrun.domain.user.entity;
 
+import com.dasima.drawrun.domain.mypage.dto.response.ShowInfoResponse;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -49,5 +50,14 @@ public class User {
 
   @OneToMany(mappedBy = "user")
   private List<RoleRegister> roleRegister;
+
+  public ShowInfoResponse toShowInfoResponseDto(){
+    return ShowInfoResponse
+            .builder()
+            .nickname(userName)
+            .profileImgUrl(profileImgUrl)
+            .userId(userId)
+            .build();
+  }
 
 }
