@@ -35,3 +35,5 @@ fun WearNavHost(navController: NavHostController, sensorViewModel: SensorViewMod
     }
 }
 
+
+

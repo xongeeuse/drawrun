@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.wear.compose.material.*
 import com.example.drawrun.R
+import com.example.drawrun.presentation.RunningActivity
 import com.example.drawrun.presentation.sensors.SensorViewModel
 import com.example.drawrun.presentation.theme.praise
 import com.example.drawrun.presentation.theme.pretendard
@@ -42,7 +43,7 @@ fun DrawRunMainScreen(viewModel: SensorViewModel, context: Context) {
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)  // 각 요소 간격 추가
+                verticalArrangement = Arrangement.spacedBy(12.dp)  // 각 요소 간격 추가
             ) {
                 // 타이틀 텍스트
                 Text(
@@ -52,13 +53,13 @@ fun DrawRunMainScreen(viewModel: SensorViewModel, context: Context) {
                         fontFamily = praise,
                         fontSize = 30.sp
                     ),
-                    modifier = Modifier.padding(bottom = 10.dp)
+//                    modifier = Modifier.padding(bottom = 5.dp)
                 )
 
                 // 심박수와 경로 선택 버튼을 Row로 배치
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)  // 요소 간격 추가
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)  // 요소 간격 추가
                 ) {
                     // 심박수 아이콘
                     Image(
@@ -89,13 +90,15 @@ fun DrawRunMainScreen(viewModel: SensorViewModel, context: Context) {
                         modifier = Modifier
                             .size(24.dp)
                             .clickable {
+
                                 // 연결된 노드 탐색 및 메시지 전송
                                 Wearable.getNodeClient(context).connectedNodes.addOnSuccessListener { nodes ->
                                     nodes.forEach { node ->
+                                        Log.d("DrawRun", "연결된 노드 ID: ${node.id}, 이름: ${node.displayName}")
                                         Wearable.getMessageClient(context).sendMessage(
                                             node.id,
                                             "/launch_app",
-                                            null
+                                            "message from watch".toByteArray()
                                         ).addOnSuccessListener {
                                             Log.d("DrawRun", "모바일 앱 실행 요청 메시지 전송 성공")
                                         }.addOnFailureListener {
@@ -117,6 +120,29 @@ fun DrawRunMainScreen(viewModel: SensorViewModel, context: Context) {
                         )
                     )
                 }
+
+                // 러닝 시작 버튼
+                Button(
+                    onClick = {
+                        val runningIntent = Intent(context, RunningActivity::class.java)
+                        context.startActivity(runningIntent)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth(0.5f)
+                        .height(40.dp),
+//                        .padding(top = 5.dp),
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF01280E))
+                ) {
+                    Text(
+                        text = "러닝 시작",
+                        style = MaterialTheme.typography.body1.copy(
+                            fontFamily = pretendard,
+                            fontSize = 12.sp,
+                            color = Color.White
+                        )
+                    )
+                }
+
             }
         }
     }
