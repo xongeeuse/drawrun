@@ -1,5 +1,6 @@
 package com.dasima.drawrun.domain.mypage.entity;
 
+import com.dasima.drawrun.domain.mypage.dto.response.BookMarkResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,4 +20,14 @@ public class BookMark {
 
     // join
     private UserPath userPath;
+
+    public BookMarkResponse toBookMarkEntity(){
+        return BookMarkResponse
+                .builder()
+                .bookmarkPK(bookmarkId)
+                .userPathId(userPathId)
+                .pathImgUrl(userPath.getPathImgUrl())
+                .name(userPath.getName())
+                .build();
+    }
 }

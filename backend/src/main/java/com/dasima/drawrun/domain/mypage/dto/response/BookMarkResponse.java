@@ -10,5 +10,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 public class BookMarkResponse {
-
+    private int bookmarkPK;
+    private int userPathId;
+    private String pathImgUrl;
+    private String name;
 }

@@ -41,6 +41,25 @@
         where user_id = #{userId};
     </select>
 
+    <select id="bookmark" parameterType="integer" resultMap="BookMarkResultMap">
+        SELECT
+            b.bookmark_id,
+            b.user_path_id,
+            b.user_id,
+            b.create_date,
+            up.path_id,
+            up.path_img_url,
+            up.name,
+            up.user_id,
+            up.create_date
+        FROM bookmark b
+            LEFT OUTER JOIN user_path up
+            ON b.user_path_id = up.user_path_id
+        where b.user_id = #{userId};
+    </select>
+
+
+
 
 
 </mapper>
