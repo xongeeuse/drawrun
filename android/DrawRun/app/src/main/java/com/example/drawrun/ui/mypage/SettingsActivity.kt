@@ -1,14 +1,13 @@
-package com.example.drawrun
+package com.example.drawrun.ui.mypage
 
+import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import com.example.drawrun.R
-import com.example.drawrun.data.model.UserResponse
 import com.example.drawrun.ui.common.BaseActivity
-import com.example.drawrun.utils.MockRetrofitInstance
 import com.google.android.gms.wearable.Wearable
 import retrofit2.Call
 import retrofit2.Callback
@@ -24,19 +23,8 @@ class SettingsActivity : BaseActivity() {
         val emailTextView: TextView = findViewById(R.id.emailValueTextView)
         val idTextView: TextView = findViewById(R.id.idValueTextView)
 
-        // 사용자 데이터 가져오기
-        MockRetrofitInstance.api.getUserData().enqueue(object : Callback<UserResponse> {
-            override fun onResponse(call: Call<UserResponse>, response: Response<UserResponse>) {
-                response.body()?.let { user ->
-                    emailTextView.text = user.userEmail
-                    idTextView.text = user.userId.toString()
-                }
-            }
+        // 실제 API 호출 (코루틴 사용)
 
-            override fun onFailure(call: Call<UserResponse>, t: Throwable) {
-                // 에러 처리
-            }
-        })
 
         val btnStartRunning = findViewById<Button>(R.id.btnStartRunning)
         btnStartRunning.setOnClickListener {
@@ -66,6 +54,8 @@ class SettingsActivity : BaseActivity() {
                 }
             }
         }
+
+
 
     }
 }

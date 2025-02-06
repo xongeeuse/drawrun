@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="#171515"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".ui.user.UserActivity">
+    tools:context=".ui.mypage.UserActivity">
 
     <TextView
         android:id="@+id/pageTitleTextView"
@@ -123,6 +123,7 @@
             android:orientation="vertical">
 
             <ImageView
+                android:id="@+id/badgeIcon"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:contentDescription="Badge Icon"

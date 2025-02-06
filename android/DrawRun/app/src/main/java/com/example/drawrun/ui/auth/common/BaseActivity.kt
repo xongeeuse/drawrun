@@ -6,7 +6,7 @@ import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.drawrun.R
 import com.example.drawrun.MainActivity
-import com.example.drawrun.ui.user.UserActivity
+import com.example.drawrun.ui.mypage.UserActivity
 
 abstract class BaseActivity : AppCompatActivity() {
 

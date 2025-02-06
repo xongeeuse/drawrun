@@ -1,4 +1,4 @@
-package com.example.drawrun.ui.user
+package com.example.drawrun.ui.mypage
 
 import android.content.Intent
 import android.graphics.Color
@@ -7,15 +7,13 @@ import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.Glide
 import com.example.drawrun.R
-import com.example.drawrun.data.model.UserResponse
 import com.example.drawrun.ui.common.BaseActivity
-import com.example.drawrun.utils.MockRetrofitInstance
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import android.graphics.LinearGradient
 import android.graphics.Shader
-import com.example.drawrun.SettingsActivity
+import com.example.drawrun.utils.RetrofitInstance
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class UserActivity : BaseActivity() {
@@ -31,24 +29,27 @@ class UserActivity : BaseActivity() {
         val userNameTextView: TextView = findViewById(R.id.userNameTextView)
         val userProfileImageView: ImageView = findViewById(R.id.userProfileImageView)
 
-        // Mock 데이터 가져오기
-        MockRetrofitInstance.api.getUserData().enqueue(object : Callback<UserResponse> {
-            override fun onResponse(call: Call<UserResponse>, response: Response<UserResponse>) {
-                val userData = response.body()
-                if (userData != null) {
-                    // 이름과 프로필 이미지
+        // 실제 API 호출 (코루틴 사용)
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                // 백엔드에서 사용자 데이터 가져오기
+                val userData = RetrofitInstance.UserApi(this@UserActivity).getMyPageData()
+
+                // UI 업데이트 (메인 스레드에서 실행)
+                withContext(Dispatchers.Main) {
                     userNameTextView.text = userData.userNickname
                     Glide.with(this@UserActivity)
                         .load(userData.profileImgUrl)
-                        .placeholder(R.drawable.ic_default_profile) // 기본 이미지
+                        .placeholder(R.drawable.ic_default_profile)
                         .into(userProfileImageView)
                 }
+            } catch (e: Exception) {
+                // 에러 처리 (UI에서 표시)
+                withContext(Dispatchers.Main) {
+                    userNameTextView.text = "데이터를 불러오지 못했습니다."
+                }
             }
-
-            override fun onFailure(call: Call<UserResponse>, t: Throwable) {
-                // 에러 처리
-            }
-        })
+        }
 
         // 설정 페이지 이동
         val settingsIcon: ImageView = findViewById(R.id.settingsIcon)
@@ -71,6 +72,19 @@ class UserActivity : BaseActivity() {
         )
         pageTitleTextView.paint.shader = gradient
         pageTitleTextView.invalidate()
+
+
+        // badge activity 이동
+
+        // ImageView 가져오기
+        val badgeIcon: ImageView = findViewById(R.id.badgeIcon)
+
+        // 클릭 이벤트 설정
+        badgeIcon.setOnClickListener {
+            // BadgeActivity로 이동
+            val intent = Intent(this, BadgeActivity::class.java)
+            startActivity(intent)
+        }
     }
 
 

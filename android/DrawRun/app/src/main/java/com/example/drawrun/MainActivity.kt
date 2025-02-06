@@ -15,7 +15,7 @@ import com.example.drawrun.utils.SecureStorage
 import org.json.JSONObject
 import android.util.Base64
 import com.example.drawrun.ui.map.MapActivity
-import com.example.drawrun.ui.user.UserActivity
+import com.example.drawrun.ui.mypage.UserActivity
 
 class MainActivity : AppCompatActivity() {
     private lateinit var btnLoginLogout: Button
