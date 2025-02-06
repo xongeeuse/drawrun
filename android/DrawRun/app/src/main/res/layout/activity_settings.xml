@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#171515"
-    tools:context=".SettingsActivity">
+    tools:context=".ui.mypage.SettingsActivity">
 
     <!-- 설정 제목 -->
     <TextView

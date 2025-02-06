@@ -62,9 +62,9 @@
             android:name=".ui.auth.LoginActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
-        <activity android:name=".ui.user.UserActivity" />
-        <activity android:name=".SettingsActivity" />
-
+        <activity android:name=".ui.mypage.UserActivity" />
+        <activity android:name=".ui.mypage.SettingsActivity" />
+        <activity android:name=".ui.mypage.BadgeActivity"/>
         <service
             android:name=".LaunchAppService"
             android:enabled="true"

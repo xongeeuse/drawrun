@@ -1,6 +1,9 @@
 package com.example.drawrun.utils
 
+import android.content.Context
 import com.example.drawrun.data.api.AuthApi
+import com.example.drawrun.data.api.UserApi
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -14,4 +17,22 @@ object RetrofitInstance {
             .build()
             .create(AuthApi::class.java)
     }
+
+    // OkHttp 클라이언트 생성 (토큰 필요)
+    private fun getOkHttpClient(context: Context): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addInterceptor(AuthInterceptor(context))
+            .build()
+    }
+
+    // Retrofit 인스턴스 생성 (토큰 필요)
+    private fun getRetrofit(context: Context): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(getOkHttpClient(context))
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    fun UserApi(context: Context): UserApi = getRetrofit(context).create(UserApi::class.java)
 }

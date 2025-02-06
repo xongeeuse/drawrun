@@ -1,10 +1,12 @@
 package com.example.drawrun.data.api
 
+import com.example.drawrun.data.model.MypageResponse
 import retrofit2.Call
-import com.example.drawrun.data.model.UserResponse
 import retrofit2.http.GET
+import retrofit2.http.Path
 
+//http://localhost:8080/api/v1/
 interface UserApi {
-    @GET("user/mypage")
-    fun getUserData(): Call<UserResponse>
+    @GET("mypage")
+    suspend fun getMyPageData(): MypageResponse
 }
