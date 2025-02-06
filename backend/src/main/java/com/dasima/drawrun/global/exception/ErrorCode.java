@@ -14,8 +14,10 @@ public enum ErrorCode {
   INCORRECT_MEMBER_PASSWORD(2005, "비밀번호가 일치하지 않습니다."),
 
   INVALID_REFRESH_TOKEN(2006, "유효하지 않는 토큰입니다."),
-  NOT_EXIST_MEMBER_EMAIL(2007, "존재하지 않는 이메일입니다.");
+  NOT_EXIST_MEMBER_EMAIL(2007, "존재하지 않는 이메일입니다."),
 
+  S3_ERROR(3001, "S3 처리 과정에 오류가 생겼습니다."),
+  INVALID_STORAGE_URL(3002, "파일이 존재하지 않습니다.");
 
   private final int code;
   private final String defaultMessage;
