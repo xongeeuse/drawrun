@@ -453,7 +453,7 @@ class MapActivity : ComponentActivity() {
 
     // MapBox 관련 변수 초기화
     private lateinit var mapView: MapView
-    private lateinit var polylineAnnotationManager: PolylineAnnotationManager
+    private lateinit var polylineAnnotationManager: PolylineAnnotationManager  // 지도에 경로를 표시할 관리 객체
     private lateinit var mapboxNavigation: MapboxNavigation
     private lateinit var routeLineApi: MapboxRouteLineApi
     private lateinit var routeLineView: MapboxRouteLineView
@@ -461,6 +461,7 @@ class MapActivity : ComponentActivity() {
     private lateinit var voiceInstructionsPlayer: MapboxVoiceInstructionsPlayer
 
     private val points = mutableListOf<Point>() // 사용자가 선택한 지점들을 저장하는 리스트
+    private val trackingPoints = mutableListOf<Point>() // 사용자의 이동 경로를 저장하는 리스트
     private var lastAnnouncement: String? = null // 마지막 안내 메시지 저장 변수
 
     // 위치 권한 요청을 처리하기 위하 ActivityResultLanuncher
@@ -613,7 +614,7 @@ class MapActivity : ComponentActivity() {
             else -> Toast.makeText(this, "경유지 ${points.size-1} 추가", Toast.LENGTH_SHORT).show()
         }
         if (points.size >= 1) {
-            drawLine(points)
+            drawLine(points)  // 경로 그리기
         }
     }
 
@@ -624,8 +625,8 @@ class MapActivity : ComponentActivity() {
             .withLineColor("#FF0000") // 경로 색상(빨간색)
             .withLineWidth(4.0)  // 경로 두께
 
-        polylineAnnotationManager.deleteAll()
-        polylineAnnotationManager.create(polylineOptions)
+        polylineAnnotationManager.deleteAll()  // 기존 경로 삭제
+        polylineAnnotationManager.create(polylineOptions)  // 새로운 경로 추가
     }
 
     // 경로 요청
@@ -637,7 +638,7 @@ class MapActivity : ComponentActivity() {
                 .language("ko")
                 .steps(true)
                 .voiceUnits(DirectionsCriteria.METRIC)  // 거리 단위(미터)
-                .coordinatesList(points)
+                .coordinatesList(points) // 좌표 리스트 설정
                 .waypointIndicesList((0 until points.size).toList())
                 .waypointNamesList(List(points.size) { index ->
                     when (index) {
@@ -680,7 +681,7 @@ class MapActivity : ComponentActivity() {
                 CameraOptions.Builder()
                     .center(currentLocation)
                     .zoom(15.0)
-                    .bearing(bearing) // 사용자의 휴대폰 방향으로 카메라 회전
+                    .bearing(bearing) // 사용자의 방향에 맞춰 카메라 회전
                     .build()
             )
 
@@ -691,10 +692,19 @@ class MapActivity : ComponentActivity() {
                     scaleExpression = null
                 )
             }
+
+            // 🚀 사용자의 이동 경로를 추가하고 초록색으로 트래킹
+            if (trackingPoints.isNotEmpty() && trackingPoints.last() != currentLocation) {
+                trackingPoints.add(currentLocation)
+                drawTrackingLine(trackingPoints) // 초록색 경로 그리기
+            } else if (trackingPoints.isEmpty()) {
+                trackingPoints.add(currentLocation)
+            }
         }
 
 
-        override fun onNewRawLocation(rawLocation: Location) {
+
+    override fun onNewRawLocation(rawLocation: Location) {
             val userLocation = Point.fromLngLat(rawLocation.longitude, rawLocation.latitude)
 
             if (points.isNotEmpty() && points.last() != userLocation) {
@@ -704,8 +714,20 @@ class MapActivity : ComponentActivity() {
         }
     }
 
-    // 경로 진행 상황을 감시하는 옵저버
-    // 경로 진행 상황을 감시하는 옵저버
+    // ✅ 이동한 경로를 초록색으로 그리는 함수
+    private fun drawTrackingLine(points: List<Point>) {
+        val polylineOptions = PolylineAnnotationOptions()
+            .withPoints(points)
+            .withLineColor("#00FF00") // 초록색
+            .withLineWidth(4.0)
+
+        polylineAnnotationManager.deleteAll()  // 기존 트래킹 경로 삭제
+        polylineAnnotationManager.create(polylineOptions)  // 새로운 경로 추가
+    }
+
+
+
+    // 경로 진행 상황을 감시하는 옵저버 + 목적지 도착 시 트래킹 중지 기능 추가
     private val routeProgressObserver = RouteProgressObserver { routeProgress ->
         val currentLegIndex = routeProgress.currentLegProgress?.legIndex
         val distanceRemaining = routeProgress.distanceRemaining
@@ -715,8 +737,15 @@ class MapActivity : ComponentActivity() {
 
         // 목적지 도착 시 안내 종료
         if (distanceRemaining < 5) { // 남은 거리가 5m 미만일 경우 종료
+
+            val totalDistance = routeProgress.route.distance() // 총 이동 거리 (미터)
+            val totalDuration = routeProgress.route.duration() // 총 소요 시간 (초)
+
+            val totalTimeInMinutes = (totalDuration / 60).toInt() // 분 단위 변환
+            val toastMessage = "목적지 도착!\n총 이동 거리: ${totalDistance.toInt()}m\n총 소요 시간: ${totalTimeInMinutes}분"
             stopNavigation()
-            Toast.makeText(this, "목적지에 도착했습니다. 내비게이션을 종료합니다.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, toastMessage, Toast.LENGTH_LONG).show()
+//            Toast.makeText(this, "목적지에 도착했습니다. 내비게이션을 종료합니다.", Toast.LENGTH_SHORT).show()
         }
 
         routeProgress.voiceInstructions?.let { voiceInstructions ->
@@ -761,7 +790,7 @@ class MapActivity : ComponentActivity() {
             stopTripSession()
             unregisterRouteProgressObserver(routeProgressObserver)
             unregisterLocationObserver(realTimeLocationObserver)
-            setNavigationRoutes(emptyList())
+            setNavigationRoutes(emptyList()) // 경로 초기화
         }
         routeLineApi.clearRouteLine { expected ->
             expected.fold(
@@ -769,8 +798,8 @@ class MapActivity : ComponentActivity() {
                 { _ -> Log.d("NAVINAVI", "경로가 성공적으로 삭제되었습니다.") }
             )
         }
-        points.clear()
-        polylineAnnotationManager.deleteAll()
+        points.clear()  // 지점 초기화
+//        polylineAnnotationManager.deleteAll() // 지도에 표시된 모든 폴라라인 주석 삭제 역할
         voiceInstructionsPlayer.clear()
         Toast.makeText(this, "내비게이션 종료", Toast.LENGTH_SHORT).show()
     }
@@ -799,7 +828,6 @@ class MapActivity : ComponentActivity() {
         mapView.onDestroy()
     }
 }
-
 
 //class MapActivity : ComponentActivity() {
 //
