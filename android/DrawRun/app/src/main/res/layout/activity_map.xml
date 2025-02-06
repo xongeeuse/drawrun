@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- MapView 기본 구성 -->
     <com.mapbox.maps.MapView
         android:id="@+id/mapView"
         android:layout_width="match_parent"
@@ -14,45 +13,31 @@
         app:mapbox_cameraTargetLng="126.9780"
         app:mapbox_cameraZoom="11.0" />
 
-    <!-- 버튼 컨트롤 그룹 -->
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
         android:orientation="horizontal"
-        android:padding="16dp">
+        android:padding="16dp"
+        android:layout_marginBottom="32dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent">
 
-        <!-- 경로 그리기 토글 버튼 -->
         <Button
-            android:id="@+id/btnDraw"
+            android:id="@+id/startNavigationButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="경로 그리기"
-            android:backgroundTint="@color/black"
-            android:textColor="@color/white" />
+            android:layout_marginEnd="8dp"
+            android:text="내비게이션 시작"
+            android:backgroundTint="@color/white"/>
 
-        <!-- 되돌리기 버튼 -->
         <Button
-            android:id="@+id/btnUndo"
+            android:id="@+id/stopNavigationButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="되돌리기"
-            android:layout_marginStart="8dp"
-            android:enabled="false"
-            android:backgroundTint="@color/black"
-            android:textColor="@color/white" />
-
-        <!-- 경로 생성 버튼 -->
-        <Button
-            android:id="@+id/btnGenerate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="경로 생성"
-            android:layout_marginStart="8dp"
-            android:enabled="false"
-            android:backgroundTint="@color/mapbox_blue"
-            android:textColor="@android:color/white" />
+            android:text="중지"
+            android:backgroundTint="@color/white"/>
 
     </LinearLayout>
 
-</FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
