@@ -22,14 +22,14 @@ public class AmazonS3UploaderTest {
     @Test
     public void testUploadImage() throws Exception {
         // 테스트용 이미지 파일 경로 (src/test/resources/sample.jpg)
-        File file = new File("src/test/resources/sample.jpg");
+        File file = new File("src/test/resources/sample.osm");
         assertTrue(file.exists(), "테스트 이미지 파일이 존재해야 합니다.");
 
         try (InputStream inputStream = new FileInputStream(file)) {
             // MockMultipartFile 생성: 필드명, 원본 파일명, 컨텐츠 타입, 파일 내용(InputStream)
-            MockMultipartFile multipartFile = new MockMultipartFile("file", file.getName(), "image/jpeg", inputStream);
+            MockMultipartFile multipartFile = new MockMultipartFile("file", file.getName(), "application/xml", inputStream);
             // S3에 업로드
-            String url = amazonS3Uploader.uploadImage(multipartFile);
+            String url = amazonS3Uploader.uploadFile(multipartFile);
             System.out.println("업로드된 이미지 URL: " + url);
             // URL이 null이 아니고, amazonaws.com을 포함하는지 검증
             assertNotNull(url, "업로드된 URL은 null이 아니어야 합니다.");

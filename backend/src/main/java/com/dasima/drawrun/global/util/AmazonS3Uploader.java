@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,20 +29,20 @@ public class AmazonS3Uploader {
     private String bucketName;
 
     /**
-     * AWS S3에 이미지를 올리고 해당 이미지 URL을 반환하는 메서드
+     * Uploads a file (image or OSM) to AWS S3 and returns the file URL.
      *
-     * @param image 이미지 파일
-     * @return 업로드된 이미지 URL
+     * @param file the file to upload
+     * @return the URL of the uploaded file
      */
-    public String uploadImage(MultipartFile image) {
-        validateImage(image);
-        String originalFilename = image.getOriginalFilename();
+    public String uploadFile(MultipartFile file) {
+        validateFile(file);
+        String originalFilename = file.getOriginalFilename();
         String fileExtension = extractFileExtension(originalFilename);
         String uploadedFilename = System.currentTimeMillis() + "_" + originalFilename;
 
         ObjectMetadata objectMetadata = new ObjectMetadata();
-        objectMetadata.setContentType("image/" + fileExtension);
-        try (InputStream is = image.getInputStream()) {
+        objectMetadata.setContentType(getMimeType(fileExtension));
+        try (InputStream is = file.getInputStream()) {
             byte[] bytes = IOUtils.toByteArray(is);
             objectMetadata.setContentLength(bytes.length);
 
@@ -69,18 +68,28 @@ public class AmazonS3Uploader {
         return lowercaseExtension;
     }
 
-    private void validateImage(MultipartFile image) {
-        String originalFilename = image.getOriginalFilename();
-        if (image.isEmpty() || originalFilename == null) {
+    private void validateFile(MultipartFile file) {
+        String originalFilename = file.getOriginalFilename();
+        if (file.isEmpty() || originalFilename == null) {
             throw new CustomException(ErrorCode.INVALID_STORAGE_URL);
         }
-        validateImageFile(image);
+        String fileExtension = extractFileExtension(originalFilename);
+        if (isImageExtension(fileExtension)) {
+            validateImageFile(file);
+        } else if ("osm".equals(fileExtension)) {
+            validateOsmFile(file);
+        } else {
+            throw new CustomException(ErrorCode.INVALID_STORAGE_URL);
+        }
+    }
+
+    private boolean isImageExtension(String extension) {
+        return List.of("bmp", "gif", "jpeg", "jpg", "png", "webp").contains(extension);
     }
 
     private void validateImageFile(MultipartFile image) {
         try (InputStream is = image.getInputStream()) {
-            BufferedImage bufferedImage = ImageIO.read(is);
-            if (bufferedImage == null) {
+            if (ImageIO.read(is) == null) {
                 throw new CustomException(ErrorCode.INVALID_STORAGE_URL);
             }
         } catch (IOException e) {
@@ -88,4 +97,32 @@ public class AmazonS3Uploader {
         }
     }
 
+    private void validateOsmFile(MultipartFile osmFile) {
+        try (InputStream is = osmFile.getInputStream()) {
+            // Perform any necessary validation for OSM files here
+            // For example, you might check if the file contains valid XML content
+        } catch (IOException e) {
+            throw new CustomException(ErrorCode.S3_ERROR);
+        }
+    }
+
+    private String getMimeType(String fileExtension) {
+        switch (fileExtension) {
+            case "bmp":
+                return "image/bmp";
+            case "gif":
+                return "image/gif";
+            case "jpeg":
+            case "jpg":
+                return "image/jpeg";
+            case "png":
+                return "image/png";
+            case "webp":
+                return "image/webp";
+            case "osm":
+                return "application/vnd.osm+xml";
+            default:
+                throw new CustomException(ErrorCode.INVALID_STORAGE_URL);
+        }
+    }
 }
