@@ -1,10 +1,14 @@
 package com.example.drawrun.data.api
 
-import com.example.drawrun.data.model.MypageResponse
-import retrofit2.Call
+import com.example.drawrun.data.dto.response.search.SearchResponse
+import retrofit2.Response
 import retrofit2.http.GET
-import retrofit2.http.Path
+import retrofit2.http.Query
 
-//http://localhost:8080/api/v1/
 interface SearchApi {
+    @GET("course/search")
+    suspend fun searchCoursesByKeyword(@Query("keyword") keyword: String): Response<List<SearchResponse>>
+
+    @GET("course/search")
+    suspend fun searchCoursesByLocation(@Query("location") location: String): Response<List<SearchResponse>>
 }
