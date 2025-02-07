@@ -1,6 +1,6 @@
 package com.dasima.drawrun.domain.course.service;
 
-import com.dasima.drawrun.domain.course.dto.CourseSaveRequest;
+import com.dasima.drawrun.domain.course.dto.request.CourseSaveRequest;
 
 public interface CourseService {
     int save(CourseSaveRequest dto, int userId);

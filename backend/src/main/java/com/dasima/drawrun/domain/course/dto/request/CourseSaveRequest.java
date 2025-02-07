@@ -1,4 +1,4 @@
-package com.dasima.drawrun.domain.course.dto;
+package com.dasima.drawrun.domain.course.dto.request;
 
 import com.dasima.drawrun.domain.course.vo.GeoPoint;
 import lombok.Data;

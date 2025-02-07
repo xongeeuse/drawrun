@@ -1,6 +1,6 @@
 package com.dasima.drawrun.domain.course.service;
 
-import com.dasima.drawrun.domain.course.dto.CourseSaveRequest;
+import com.dasima.drawrun.domain.course.dto.request.CourseSaveRequest;
 import com.dasima.drawrun.domain.course.entity.Path;
 import com.dasima.drawrun.domain.course.entity.UserPath;
 import com.dasima.drawrun.domain.course.mapper.CourseMapper;
