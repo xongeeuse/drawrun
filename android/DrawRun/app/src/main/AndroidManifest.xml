@@ -71,7 +71,7 @@
         <activity android:name=".ui.mypage.UserActivity" />
         <activity android:name=".ui.mypage.SettingsActivity" />
         <activity android:name=".ui.mypage.BadgeActivity" />
-
+        <activity android:name=".ui.mypage.MyArtCustomActivity"/>
         <service
             android:name=".LaunchAppService"
             android:enabled="true"
