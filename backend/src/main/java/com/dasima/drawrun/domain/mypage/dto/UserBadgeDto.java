@@ -1,3 +1,12 @@
+package com.dasima.drawrun.domain.mypage.dto;
+
+import com.dasima.drawrun.domain.mypage.entity.BadgeInventory;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+
+import java.time.LocalDateTime;
+
 @Builder
 @Getter
 @AllArgsConstructor
@@ -10,6 +19,7 @@ public class UserBadgeDto {
     private String badgeImg;
     private LocalDateTime badgeTime;
 
+    public static UserBadgeDto fromEntity(BadgeInventory badgeInventory, BadgeInfoDto badgeInfoDto) {
         return UserBadgeDto.builder()
                 .badgeId(badgeInventory.getBadgeId())
                 .userId(badgeInventory.getUserId())
@@ -20,3 +30,4 @@ public class UserBadgeDto {
                 .build();
     }
 
+}
