@@ -1,4 +1,4 @@
-package com.dasima.drawrun.domain.map.vo;
+package com.dasima.drawrun.domain.course.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,3 +11,4 @@ public class GeoPoint {
     private double latitude;
     private double longitude;
 }
+

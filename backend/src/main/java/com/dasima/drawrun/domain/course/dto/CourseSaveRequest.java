@@ -1,6 +1,6 @@
 package com.dasima.drawrun.domain.course.dto;
 
-import com.dasima.drawrun.domain.map.vo.GeoPoint;
+import com.dasima.drawrun.domain.course.vo.GeoPoint;
 import lombok.Data;
 
 import java.util.List;
