@@ -10,14 +10,19 @@ import com.example.drawrun.R
 import com.example.drawrun.data.dto.response.search.CourseData
 import com.example.drawrun.databinding.ItemCourseBinding
 
-class CourseAdapter : ListAdapter<CourseData, CourseViewHolder>(CourseDiffCallback()) {
+// 생성자에 콜백 추가
+class CourseAdapter(
+    private val onBookmarkClick: (CourseData) -> Unit
+) : ListAdapter<CourseData, CourseViewHolder>(CourseDiffCallback()) {
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CourseViewHolder {
         return CourseViewHolder(
             ItemCourseBinding.inflate(
                 LayoutInflater.from(parent.context),
                 parent,
                 false
-            )
+            ),
+            onBookmarkClick  // ViewHolder 생성 시 콜백 전달
         )
     }
 
@@ -27,7 +32,8 @@ class CourseAdapter : ListAdapter<CourseData, CourseViewHolder>(CourseDiffCallba
 }
 
 class CourseViewHolder(
-    private val binding: ItemCourseBinding
+    private val binding: ItemCourseBinding,
+    private val onBookmarkClick: (CourseData) -> Unit  // 북마크 클릭 콜백 추가
 ) : RecyclerView.ViewHolder(binding.root) {
     fun bind(course: CourseData) {
         binding.apply {
@@ -37,6 +43,11 @@ class CourseViewHolder(
             distance.text = "${course.distance}km"
             nickname.text = course.userNickname  // 작성자 닉네임
             bookmarkCount.text = course.bookmarkCount.toString()
+
+            // 북마크 버튼 클릭 리스너
+            btnBookmark.setOnClickListener {
+                onBookmarkClick(course)  // 콜백 호출
+            }
 
             // 북마크 상태 처리
             btnBookmark.setImageResource(

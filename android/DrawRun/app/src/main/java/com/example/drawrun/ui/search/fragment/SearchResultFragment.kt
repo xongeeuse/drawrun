@@ -47,7 +47,7 @@ class SearchResultFragment : Fragment() {
 
     private fun setupToolbar() {
         // 거리 필터 스피너 설정
-        val distances = arrayOf("전체", "5km 이하", "10km 이하", "15km 이하")
+        val distances = arrayOf("전체", "3km 이하", "5km 이하", "10km 이하", "15km 이하", "20km 이하")
         val spinnerAdapter = ArrayAdapter(
             requireContext(),
             android.R.layout.simple_spinner_item,

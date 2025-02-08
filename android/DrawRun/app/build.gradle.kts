@@ -79,6 +79,9 @@ dependencies {
     // Room database
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
+    implementation(libs.androidx.activity.ktx)
+    implementation(libs.androidx.activity.ktx)
+    implementation(libs.androidx.activity.ktx)
     kapt(libs.room.compiler)
 
     // Hilt

@@ -23,7 +23,7 @@
         android:layout_height="wrap_content"
         android:textColor="@color/white"
         android:textSize="16sp"
-        android:text="작성자"
+        android:text="작성자닉네임"
         android:layout_marginStart="8dp"
         app:layout_constraintStart_toEndOf="@id/profile_image"
         app:layout_constraintTop_toTopOf="@id/profile_image"
@@ -113,6 +113,7 @@
                 android:padding="4dp"
                 android:scaleType="fitCenter"
                 android:src="@drawable/bookmark_outlined_icon"
+                android:contentDescription="북마크 버튼"
                 app:tint="@color/white"/>
 
             <TextView

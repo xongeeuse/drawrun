@@ -7,8 +7,8 @@ import retrofit2.http.Query
 
 interface SearchApi {
     @GET("course/search")
-    suspend fun searchCoursesByKeyword(@Query("keyword") keyword: String): Response<List<SearchResponse>>
+    suspend fun searchCoursesByKeyword(@Query("keyword") keyword: String): Response<SearchResponse>
 
     @GET("course/search")
-    suspend fun searchCoursesByLocation(@Query("location") location: String): Response<List<SearchResponse>>
+    suspend fun searchCoursesByLocation(@Query("location") location: String): Response<SearchResponse>
 }
