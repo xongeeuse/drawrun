@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 public class UserBadgeDto {
 
     private int badgeId;
-    private int userId;
     private String badgeName;
     private String badgeDes;
     private String badgeImg;
@@ -22,7 +21,6 @@ public class UserBadgeDto {
     public static UserBadgeDto fromEntity(BadgeInventory badgeInventory, BadgeInfoDto badgeInfoDto) {
         return UserBadgeDto.builder()
                 .badgeId(badgeInventory.getBadgeId())
-                .userId(badgeInventory.getUserId())
                 .badgeName(badgeInfoDto.getBadgeName())
                 .badgeDes(badgeInfoDto.getBadgeDes())
                 .badgeImg(badgeInfoDto.getBadgeImg())
