@@ -5,7 +5,6 @@ import lombok.Data;
 @Data
 public class CourseResultSaveRequest {
 
-  private String userId;
   private Integer pathId;
   private String startImgUrl;
   private String endImgUrl;
