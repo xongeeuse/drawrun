@@ -13,5 +13,4 @@ public class Bookmark {
     private int bookmarkId;
     private int userId;
     private int userPathId;
-
 }

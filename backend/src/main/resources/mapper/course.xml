@@ -37,4 +37,6 @@
         insert into user_path
         values (0, #{userId}, #{pathId}, #{pathImgUrl}, #{name}, now(), #{distance}, #{address})
     </insert>
+
+    <select id="list" parameterType=""
 </mapper>

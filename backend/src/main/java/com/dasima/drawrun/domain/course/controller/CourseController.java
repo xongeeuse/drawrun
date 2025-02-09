@@ -22,6 +22,13 @@ public class CourseController {
         return ResponseEntity.ok(courseService.save(dto, userPrinciple.getUserId()));
     }
 
+    // 코스 리스트 조회(bookmark 수 기준)
+    @GetMapping("/list")
+    public ResponseEntity<?> list(){
+        
+    }
+
+
     // 북마크 저장
     @PostMapping("/bookmark")
     public ResponseEntity<?> bookmark(@AuthenticationPrincipal UserPrinciple userPrinciple, @RequestBody BookmarkCreateRequest dto){
@@ -33,4 +40,5 @@ public class CourseController {
     public ResponseEntity<?> bookmarkcancle(@AuthenticationPrincipal UserPrinciple userPrinciple, @RequestBody BookmarkCancleRequest dto){
         return ResponseEntity.ok(courseService.bookmarkcancle(dto, userPrinciple.getUserId()));
     }
+
 }

@@ -11,4 +11,5 @@ public interface CourseMapper {
     int bookmark(Bookmark bookmark);
 
     int bookmarkcancle(Bookmark bookmark);
+    UserPath list();
 }
