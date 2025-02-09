@@ -27,8 +27,8 @@ public class CourseResult {
   @Column(name = "stat_id")
   private Integer statId;
   private Float distanceKm;
-  private Integer timeS;
-  private Integer paceS;
+  private Long timeS;
+  private Long paceS;
   private Float calorie;
   private Integer state;
   @CreationTimestamp
@@ -37,6 +37,7 @@ public class CourseResult {
   private Integer heartbeat;
   private String runImgUrl;
   private Integer cadence;
+  private Integer userId;
   private Integer userPathId;
 
 }
