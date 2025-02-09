@@ -7,8 +7,8 @@ import org.springframework.stereotype.Service;
 public class CourseServiceImpl implements CourseService {
 
   @Override
-  public int courseResultSave(CourseResultSaveRequest resultDto) {
-    return 0;
+  public int courseResultSave(int UserPK, CourseResultSaveRequest resultDto) {
+
   }
 
 
