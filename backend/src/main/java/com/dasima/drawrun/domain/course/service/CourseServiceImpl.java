@@ -1,5 +1,6 @@
 package com.dasima.drawrun.domain.course.service;
 
+import com.dasima.drawrun.domain.course.dto.request.BookmarkCancleRequest;
 import com.dasima.drawrun.domain.course.dto.request.BookmarkCreateRequest;
 import com.dasima.drawrun.domain.course.dto.request.CourseSaveRequest;
 import com.dasima.drawrun.domain.course.entity.Bookmark;
@@ -88,5 +89,14 @@ public class CourseServiceImpl implements CourseService{
                 .build();
 
         return courseMapper.bookmark(bookmark);
+    }
+
+    public int bookmarkcancle(BookmarkCancleRequest dto, int userId){
+        Bookmark bookmark = Bookmark.builder()
+                .userPathId(dto.getUserPathId())
+                .userId(userId)
+                .build();
+
+        return courseMapper.bookmarkcancle(bookmark);
     }
 }

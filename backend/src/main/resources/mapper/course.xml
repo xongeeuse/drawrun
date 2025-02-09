@@ -27,6 +27,12 @@
         values (0, #{userPathId}, #{userId}, now());
     </insert>
 
+    <delete id="bookmarkcancle" parameterType="Bookmark">
+        delete from bookmark
+        where user_id = #{userId} and user_path_id = #{userPathId}
+
+    </delete>
+
     <insert id="save" parameterType="UserPath">
         insert into user_path
         values (0, #{userId}, #{pathId}, #{pathImgUrl}, #{name}, now(), #{distance}, #{address})

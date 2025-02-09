@@ -9,4 +9,6 @@ import org.apache.ibatis.annotations.Mapper;
 public interface CourseMapper {
     int save(UserPath userPath);
     int bookmark(Bookmark bookmark);
+
+    int bookmarkcancle(Bookmark bookmark);
 }

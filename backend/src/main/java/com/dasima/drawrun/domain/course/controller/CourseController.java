@@ -1,5 +1,6 @@
 package com.dasima.drawrun.domain.course.controller;
 
+import com.dasima.drawrun.domain.course.dto.request.BookmarkCancleRequest;
 import com.dasima.drawrun.domain.course.dto.request.BookmarkCreateRequest;
 import com.dasima.drawrun.domain.course.dto.request.CourseSaveRequest;
 import com.dasima.drawrun.domain.course.service.CourseService;
@@ -25,6 +26,11 @@ public class CourseController {
     @PostMapping("/bookmark")
     public ResponseEntity<?> bookmark(@AuthenticationPrincipal UserPrinciple userPrinciple, @RequestBody BookmarkCreateRequest dto){
         return ResponseEntity.ok(courseService.bookmark(dto, userPrinciple.getUserId()));
+    }
 
+    // 북마크 취소
+    @PostMapping("/bookmark/cancle")
+    public ResponseEntity<?> bookmarkcancle(@AuthenticationPrincipal UserPrinciple userPrinciple, @RequestBody BookmarkCancleRequest dto){
+        return ResponseEntity.ok(courseService.bookmarkcancle(dto, userPrinciple.getUserId()));
     }
 }
