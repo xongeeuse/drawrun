@@ -15,6 +15,18 @@
         <result column="distance" property="distance"/>
     </resultMap>
 
+    <resultMap id="BookmarkResultMap" type="com.dasima.drawrun.domain.course.entity.Bookmark">
+        <id column="bookmark_id" property="bookmarkId"/>
+        <result column="user_path_id" property="userPathId"/>
+        <result column="user_id" property="userId"/>
+        <result column="create_date" property="createDate"/>
+    </resultMap>
+
+    <insert id="bookmark" parameterType="Bookmark">
+        insert into bookmark
+        values (0, #{userPathId}, #{userId}, now());
+    </insert>
+
     <insert id="save" parameterType="UserPath">
         insert into user_path
         values (0, #{userId}, #{pathId}, #{pathImgUrl}, #{name}, now(), #{distance}, #{address})

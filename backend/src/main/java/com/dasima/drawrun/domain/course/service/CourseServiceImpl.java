@@ -1,6 +1,8 @@
 package com.dasima.drawrun.domain.course.service;
 
+import com.dasima.drawrun.domain.course.dto.request.BookmarkCreateRequest;
 import com.dasima.drawrun.domain.course.dto.request.CourseSaveRequest;
+import com.dasima.drawrun.domain.course.entity.Bookmark;
 import com.dasima.drawrun.domain.course.entity.Path;
 import com.dasima.drawrun.domain.course.entity.UserPath;
 import com.dasima.drawrun.domain.course.mapper.CourseMapper;
@@ -76,8 +78,15 @@ public class CourseServiceImpl implements CourseService{
                 .build();
 
         return courseMapper.save(userPath);
+    }
 
+    public int bookmark(BookmarkCreateRequest dto, int userId){
+        // Dto를 Entity로 바꿈
+        Bookmark bookmark = Bookmark.builder()
+                .userPathId(dto.getUserPathId())
+                .userId(userId)
+                .build();
 
-
+        return courseMapper.bookmark(bookmark);
     }
 }
