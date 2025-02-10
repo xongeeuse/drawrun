@@ -133,11 +133,16 @@ public class CourseServiceImpl implements CourseService{
             }
 
             CourseListResponse courseListResponse = CourseListResponse.builder()
-                    .username(user.getUserName())
+                    .userNickname(user.getUserNickname())
+                    .userPK(user.getUserId())
+                    .profileImgUrl(user.getProfileImgUrl())
                     .courseName(userPath.getName())
-                    .area(gu)
+                    .location(gu)
                     .isBookmark(courseMapper.isBookmark(userId, userPath.getUserPathId()))
+                    .createdAt(userPath.getCreateDate())
                     .distance(userPath.getDistance())
+                    .courseImgUrl(userPath.getPathImgUrl())
+                    .bookmarkCount(userPath.getBookmarkCount())
                     .build();
 
             courseListResponses.add(courseListResponse);
