@@ -130,7 +130,6 @@ class SoloRunBottomSheet(private val courseRepository: CourseRepository) : Botto
                     )
                 }
 
-
                 // ViewModel의 saveCourse 호출
                 courseViewModel.saveCourse(
                     path = points,           // MapActivity에서 전달받아야 할 경로 데이터

@@ -16,9 +16,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.lifecycleScope
 import com.example.drawrun.R
 import com.example.drawrun.data.model.ParcelablePoint
 import com.example.drawrun.ui.map.fragment.CourseCompleteBottomSheet
+import com.example.drawrun.utils.RetrofitInstance
 import com.mapbox.api.directions.v5.DirectionsCriteria
 import com.mapbox.api.directions.v5.models.RouteOptions
 import com.mapbox.bindgen.Expected
@@ -61,6 +63,10 @@ import com.mapbox.navigation.voice.api.MapboxVoiceInstructionsPlayer
 import com.mapbox.navigation.voice.model.SpeechAnnouncement
 import com.mapbox.navigation.voice.model.SpeechError
 import com.mapbox.navigation.voice.model.SpeechValue
+import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
 import java.io.FileOutputStream
 
@@ -170,25 +176,21 @@ class MapActivity : AppCompatActivity() {
             startButton.setOnClickListener {
                 if (points.size >= 2) {
                     requestRoute(points)
-                    // 경로가 그려진 후 약간의 딜레이를 두고 캡쳐
-                    Handler(Looper.getMainLooper()).postDelayed({
-                        captureMapView()?.let { bitmap ->
-                            // 캡처된 비트맵 처리
-                            saveMapImage(bitmap)
-                            // route.distance()로 총 거리를 얻어옴 (미터 단위)
-                            val distanceInKm = 12.34
-                            // MapBox에서 제공하는 Point 객체를 감싸는 새로운 클래스 활용
+                    lifecycleScope.launch {
+                        val imageUrl = captureMapView()
+                        if (imageUrl != null) {
+                            val distanceInKm = 12.34 // 실제 거리 계산 로직으로 대체
                             val parcelablePoints = points.map { ParcelablePoint(it) }
-                            // 거리 정보와 캡처된 이미지로 바텀시트 표시
-                            showCourseCompleteBottomSheet(distanceInKm, bitmap, parcelablePoints)
+                            showCourseCompleteBottomSheet(distanceInKm, imageUrl, parcelablePoints)
+                        } else {
+                            Toast.makeText(this@MapActivity, "이미지 업로드 실패", Toast.LENGTH_SHORT).show()
                         }
-                    }, 500) // 500ms 딜레이
-                    Log.d("NAVINAVI", "${points}")
-                    Toast.makeText(this, "경유지 포함 내비게이션 시작", Toast.LENGTH_SHORT).show()
+                    }
                 } else {
                     Toast.makeText(this, "최소 출발지와 도착지를 선택해주세요", Toast.LENGTH_SHORT).show()
                 }
             }
+
 
             // 내비게이션 종료 버튼 클릭 시 경로 초기화
             stopButton.setOnClickListener {
@@ -257,110 +259,122 @@ class MapActivity : AppCompatActivity() {
         polylineAnnotationManager.create(polylineOptions)  // 새로운 경로 추가
     }
 
-    // 화면 캡쳐 함수 추가
-private fun captureMapView(): Bitmap? {
-    //        val mapView = binding.mapView
-    return try {
-        // 지도 뷰의 크기만큼 비트맵 생성
-        val bitmap = Bitmap.createBitmap(
-            mapView.width,
-            mapView.height,
-            Bitmap.Config.ARGB_8888
-        )
+    // 화면 캡쳐 함수 수정
+    private suspend fun captureMapView(): String? {
+        val bitmap = Bitmap.createBitmap(mapView.width, mapView.height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         mapView.draw(canvas)
-        bitmap
-    } catch (e: Exception) {
-        e.printStackTrace()
-        null
+
+        return uploadImage(bitmap)
     }
-}
 
-// 이미지 저장 함수 수정
-private fun saveMapImage(bitmap: Bitmap): String {
-    val file = File(cacheDir, "course_map.jpg")
-    FileOutputStream(file).use { out ->
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
-    }
-    Log.d("MapImage", "이미지 저장 성공: ${file.absolutePath}")
-    Log.d("MapImage", "이미지 크기: ${file.length() / 1024}KB")
-    return file.absolutePath // 파일 경로 반환
-}
+    private suspend fun uploadImage(bitmap: Bitmap): String? {
+        val file = File(cacheDir, "temp_image.jpg")
+        FileOutputStream(file).use { out ->
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+        }
 
+        Log.d("ImageUpload", "임시 파일 생성: ${file.absolutePath}")
+        Log.d("ImageUpload", "파일 크기: ${file.length() / 1024}KB")
 
-// BottomSheet 호출
-private fun showCourseCompleteBottomSheet(distance: Double, capturedImage: Bitmap, parcelablePoints: List<ParcelablePoint>) {
-    // 캐시에서 이미지 파일 읽기
-    val imagePath = saveMapImage(capturedImage)
+        val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+        val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
 
-    val file = File(cacheDir, "course_map.jpg")
-    if (file.exists()) {
-        try {
-            val bitmap = BitmapFactory.decodeFile(file.absolutePath)
-            bitmap?.let {
-                CourseCompleteBottomSheet.newInstance(distance, imagePath, parcelablePoints)
-                    .show(supportFragmentManager, "CourseCompleteBottomSheet")
+        return try {
+            val imageUploadApi = RetrofitInstance.ImageUploadApi(this)
+            Log.d("ImageUpload", "업로드 시작")
+            val response = imageUploadApi.uploadImage(body)
+            if (response.isSuccess) {
+                Log.d("ImageUpload", "업로드 성공: ${response.data?.url}")
+                response.data?.url
+            } else {
+                Log.e("ImageUpload", "업로드 실패: ${response.message}")
+                null
             }
         } catch (e: Exception) {
-            Log.e("MapActivity", "Failed to load image: ${e.message}")
+            Log.e("ImageUpload", "업로드 중 오류 발생: ${e.message}")
+            null
+        } finally {
+            file.delete()
+            Log.d("ImageUpload", "임시 파일 삭제")
         }
     }
-}
 
 
 
-// 경로 요청 시 화면 캡쳐 함수 호출
-
-private fun requestRoute(points: List<Point>) {
-    mapboxNavigation.requestRoutes(
-        RouteOptions.builder()
-            .applyDefaultNavigationOptions()
-            .profile(DirectionsCriteria.PROFILE_WALKING) // 도보 경로 설정
-            .language("ko")
-            .steps(true)
-            .voiceUnits(DirectionsCriteria.METRIC)  // 거리 단위(미터)
-            .coordinatesList(points) // 좌표 리스트 설정
-            .waypointIndicesList((0 until points.size).toList())
-            .waypointNamesList(List(points.size) { index ->
-                when (index) {
-                    0 -> "출발지"
-                    points.size - 1 -> "도착지"
-                    else -> "경유지 $index"
-                }
-            })
-            .build(),
-        object : NavigationRouterCallback {
-            @SuppressLint("MissingPermission")
-            override fun onRoutesReady(routes: List<NavigationRoute>, routerOrigin: String) {
-                routes.firstOrNull()?.let { route ->
-                    routeLineApi.setNavigationRoutes(listOf(route)) { value ->
-                        mapView.getMapboxMap().getStyle()?.apply {
-                            routeLineView.renderRouteDrawData(this, value)
-
-//                                    // 경로가 그려진 후 약간의 딜레이를 두고 캡쳐
-//                                    Handler(Looper.getMainLooper()).postDelayed({
-//                                        captureMapView()?.let { bitmap ->
-//                                            // 캡처된 비트맵 처리
-//                                            saveMapImage(bitmap)
-//                                            // route.distance()로 총 거리를 얻어옴 (미터 단위)
-//                                            val distanceInKm = route.directionsRoute.distance() / 1000
-//                                            // 거리 정보와 캡처된 이미지로 바텀시트 표시
-//                                            showCourseCompleteBottomSheet(distanceInKm, bitmap)
-//                                        }
-//                                    }, 500) // 500ms 딜레이
-                        }
-                    }
-                    mapboxNavigation.startTripSession()
-                    mapboxNavigation.setNavigationRoutes(listOf(route))
-                    mapboxNavigation.registerRouteProgressObserver(routeProgressObserver)
-                }
-            }
-
-            override fun onFailure(reasons: List<RouterFailure>, routeOptions: RouteOptions) {}
-            override fun onCanceled(routeOptions: RouteOptions, routerOrigin: String) {}
+    // 이미지 저장 함수 수정
+    private fun saveMapImage(bitmap: Bitmap): String {
+        val file = File(cacheDir, "course_map.jpg")
+        FileOutputStream(file).use { out ->
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
         }
-    )
-}
+        Log.d("MapImage", "이미지 저장 성공: ${file.absolutePath}")
+        Log.d("MapImage", "이미지 크기: ${file.length() / 1024}KB")
+        return file.absolutePath // 파일 경로 반환
+    }
+
+
+    // BottomSheet 호출
+    private fun showCourseCompleteBottomSheet(distance: Double, imageUrl: String, parcelablePoints: List<ParcelablePoint>) {
+        CourseCompleteBottomSheet.newInstance(distance, imageUrl, parcelablePoints)
+            .show(supportFragmentManager, "CourseCompleteBottomSheet")
+    }
+
+
+
+
+    // 경로 요청 시 화면 캡쳐 함수 호출
+
+    private fun requestRoute(points: List<Point>) {
+        mapboxNavigation.requestRoutes(
+            RouteOptions.builder()
+                .applyDefaultNavigationOptions()
+                .profile(DirectionsCriteria.PROFILE_WALKING) // 도보 경로 설정
+                .language("ko")
+                .steps(true)
+                .voiceUnits(DirectionsCriteria.METRIC)  // 거리 단위(미터)
+                .coordinatesList(points) // 좌표 리스트 설정
+                .waypointIndicesList((0 until points.size).toList())
+                .waypointNamesList(List(points.size) { index ->
+                    when (index) {
+                        0 -> "출발지"
+                        points.size - 1 -> "도착지"
+                        else -> "경유지 $index"
+                    }
+                })
+                .build(),
+            object : NavigationRouterCallback {
+                @SuppressLint("MissingPermission")
+                override fun onRoutesReady(routes: List<NavigationRoute>, routerOrigin: String) {
+                    routes.firstOrNull()?.let { route ->
+                        routeLineApi.setNavigationRoutes(listOf(route)) { value ->
+                            mapView.getMapboxMap().getStyle()?.apply {
+                                routeLineView.renderRouteDrawData(this, value)
+
+    //                                    // 경로가 그려진 후 약간의 딜레이를 두고 캡쳐
+    //                                    Handler(Looper.getMainLooper()).postDelayed({
+    //                                        captureMapView()?.let { bitmap ->
+    //                                            // 캡처된 비트맵 처리
+    //                                            saveMapImage(bitmap)
+    //                                            // route.distance()로 총 거리를 얻어옴 (미터 단위)
+    //                                            val distanceInKm = route.directionsRoute.distance() / 1000
+    //                                            // 거리 정보와 캡처된 이미지로 바텀시트 표시
+    //                                            showCourseCompleteBottomSheet(distanceInKm, bitmap)
+    //                                        }
+    //                                    }, 500) // 500ms 딜레이
+                            }
+                        }
+                        mapboxNavigation.startTripSession()
+                        mapboxNavigation.setNavigationRoutes(listOf(route))
+                        mapboxNavigation.registerRouteProgressObserver(routeProgressObserver)
+                    }
+                }
+
+                override fun onFailure(reasons: List<RouterFailure>, routeOptions: RouteOptions) {}
+                override fun onCanceled(routeOptions: RouteOptions, routerOrigin: String) {}
+            }
+        )
+    }
 
 
 

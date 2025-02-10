@@ -19,7 +19,6 @@ class CourseCompleteBottomSheet : BottomSheetDialogFragment() {
     private val binding get() = _binding!!
 
     // 거리와 이미지를 전달받기 위한 companion object
-    // 여기에 companion object 작성
     companion object {
         fun newInstance(distance: Double, imagePath: String, points: List<ParcelablePoint>): CourseCompleteBottomSheet {
             return CourseCompleteBottomSheet().apply {

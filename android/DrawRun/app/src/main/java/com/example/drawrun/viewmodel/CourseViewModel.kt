@@ -1,5 +1,6 @@
 package com.example.drawrun.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -32,6 +33,10 @@ class CourseViewModel(
                     distance = distance,
 //                    isPublic = isPublic,
                 )
+
+                // 리퀘스트 내용을 로그로 출력
+                Log.d("CourseViewModel", "Save Course Request: $request")
+
                 val response = courseRepository.saveCourse(request)
                 _saveCourseResult.value = Result.success(response)
             } catch (e: Exception) {
