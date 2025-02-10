@@ -17,4 +17,5 @@ public interface CourseMapper {
     List<UserPath> list();
     Boolean isBookmark(@Param("userId") int userId, @Param("userPathId") int userPathId);
     List<UserPath> keyword(String keyword);
+    List<UserPath> area(String area);
 }

@@ -116,6 +116,7 @@ public class CourseServiceImpl implements CourseService{
         List<UserPath> userPaths = null;
         if(type == 1) userPaths = courseMapper.list();
         else if(type == 2) userPaths = courseMapper.keyword(keywordOrArea);
+        else userPaths = courseMapper.area(keywordOrArea);
         List<CourseListResponse> courseListResponses = new ArrayList<>();
         for(UserPath userPath : userPaths){
             // username 추출

@@ -25,12 +25,17 @@ public class CourseController {
     // 코스 리스트 조회(bookmark 수 기준)
     @GetMapping("/list")
     public ResponseEntity<?> list(@AuthenticationPrincipal UserPrinciple userPrinciple,
-                                  @RequestParam(required = false) String keyword){
-        if(keyword == null || keyword.isEmpty())
-            return ResponseEntity.ok(courseService.list(userPrinciple.getUserId(), 1, keyword));
-        else{
+                                  @RequestParam(required = false) String keyword,
+                                  @RequestParam(required = false) String area)
+    {
+
+        if(keyword == null && area == null)
+            return ResponseEntity.ok(courseService.list(userPrinciple.getUserId(), 1, null));
+        else if(keyword != null)
             return ResponseEntity.ok(courseService.list(userPrinciple.getUserId(), 2, keyword));
-        }
+        else if(area != null)
+            return ResponseEntity.ok(courseService.list(userPrinciple.getUserId(), 3, area));
+        else return null;
     }
 
     // 북마크 저장
