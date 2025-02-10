@@ -1,6 +1,7 @@
 package com.dasima.drawrun.domain.user.controller;
 
 import com.dasima.drawrun.domain.user.dto.request.*;
+import com.dasima.drawrun.domain.user.entity.User;
 import com.dasima.drawrun.domain.user.service.AuthService;
 import com.dasima.drawrun.global.common.ApiResponseJson;
 import com.dasima.drawrun.global.exception.CustomException;
@@ -136,6 +137,21 @@ public class AuthController {
 
       return ResponseEntity.ok(
               new ApiResponseJson(true, 200, "비밀번호를 변경했습니다.", null)
+      );
+    } catch (CustomException e) {
+      return ResponseEntity.ok(
+              new ApiResponseJson(e.getErrorCode(), null)
+      );
+    }
+  }
+
+  @PostMapping("/find-id")
+  public ResponseEntity<ApiResponseJson> findId(@RequestBody FindIdRequestDto dto) {
+    try {
+      User user = authService.findId(dto.getEmail(), dto.getUsername());
+
+      return ResponseEntity.ok(
+              new ApiResponseJson(true, 200, "아이디 조회에 성공했습니다.", Map.of("user_id", user.getId()))
       );
     } catch (CustomException e) {
       return ResponseEntity.ok(
