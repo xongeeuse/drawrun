@@ -2,10 +2,14 @@ package com.example.drawrun.ui.map
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
+import android.view.Window
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
@@ -21,6 +25,7 @@ import com.mapbox.bindgen.Expected
 import com.mapbox.common.location.Location
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
+import com.mapbox.maps.EdgeInsets
 import com.mapbox.maps.ImageHolder
 import com.mapbox.maps.MapView
 import com.mapbox.maps.Style
@@ -168,7 +173,7 @@ class MapActivity : AppCompatActivity() {
         val startButton = findViewById<Button>(R.id.startNavigationButton)
         val stopButton = findViewById<Button>(R.id.stopNavigationButton)
 
-        mapView.getMapboxMap().loadStyleUri(Style.MAPBOX_STREETS) { style ->
+        mapView.getMapboxMap().loadStyleUri(Style.DARK) { style ->
             style.localizeLabels(Locale("ko")) // 지도 라벨 한글화
 
             mapView.location.updateSettings {
@@ -304,6 +309,9 @@ class MapActivity : AppCompatActivity() {
                                 .build()
                         )
 
+                        // ✅ 경로가 생성되면 지도 스냅샷을 찍고 모달로 띄우기
+                        captureMapSnapshotAndShow()
+
                     }
                 }
 
@@ -312,6 +320,86 @@ class MapActivity : AppCompatActivity() {
             }
         )
     }
+
+    private fun captureMapSnapshotAndShow() {
+        if (points.size < 2) return
+
+        // 1️⃣ 바운딩 박스(경로 영역) 계산
+        val routeBounds = points.fold(null as Pair<Point, Point>?) { bounds, point ->
+            when (bounds) {
+                null -> Pair(point, point)
+                else -> Pair(
+                    Point.fromLngLat(
+                        minOf(bounds.first.longitude(), point.longitude()),
+                        minOf(bounds.first.latitude(), point.latitude())
+                    ),
+                    Point.fromLngLat(
+                        maxOf(bounds.second.longitude(), point.longitude()),
+                        maxOf(bounds.second.latitude(), point.latitude())
+                    )
+                )
+            }
+        }
+
+        routeBounds?.let { (southWest, northEast) ->
+            // 2️⃣ 지도 카메라를 바운딩 박스에 맞게 자동 조정 (Mapbox 제공 기능)
+            val cameraOptions = mapView.getMapboxMap().cameraForCoordinates(
+                points, // 경로에 포함된 모든 좌표 사용
+                EdgeInsets(300.0, 300.0, 300.0, 300.0) // 경로 크기에 따라 여백 추가 (200~300 추천)
+            )
+
+            mapView.getMapboxMap().setCamera(cameraOptions) // 카메라 설정 적용
+
+            // 3️⃣ 사용자가 그린 빨간색 경로(Polyline) 삭제
+            polylineAnnotationManager.deleteAll()
+
+            // 4️⃣ 약간의 딜레이 후 스냅샷 촬영 (카메라 조정 후 안정적 촬영)
+            mapView.postDelayed({
+                mapView.snapshot { bitmap ->
+                    if (bitmap != null) {
+                        val croppedBitmap = cropBitmapToSquare(bitmap) // 정사각형 크롭
+                        showSnapshotDialog(croppedBitmap) // 모달 다이얼로그 띄우기
+                    } else {
+                        Log.e("MAP_SNAPSHOT", "스냅샷 생성 실패")
+                    }
+                }
+            }, 1200) // 카메라 이동 후 1.2초 딜레이 (줌 조정 안정화)
+        }
+    }
+
+    // ✅ 정사각형 크롭 함수 (중앙 기준)
+    private fun cropBitmapToSquare(bitmap: Bitmap): Bitmap {
+        val width = bitmap.width
+        val height = bitmap.height
+        val size = minOf(width, height) // 정사각형 크기 설정 (가장 작은 변을 기준)
+
+        val xOffset = (width - size) / 2
+        val yOffset = (height - size) / 2
+
+        return Bitmap.createBitmap(bitmap, xOffset, yOffset, size, size)
+    }
+
+
+
+
+    private fun showSnapshotDialog(bitmap: Bitmap) {
+        val dialog = Dialog(this)
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.setContentView(R.layout.dialog_snapshot)
+
+        val imageView = dialog.findViewById<ImageView>(R.id.snapshotImageView)
+        val closeButton = dialog.findViewById<Button>(R.id.closeButton)
+
+        imageView.setImageBitmap(bitmap)
+
+        closeButton.setOnClickListener {
+            dialog.dismiss() // 다이얼로그 닫기
+        }
+
+        dialog.show()
+    }
+
+
 
 
     // 위치 변경 시 호출되는 콜백
@@ -349,10 +437,10 @@ class MapActivity : AppCompatActivity() {
         override fun onNewRawLocation(rawLocation: Location) {
             val userLocation = Point.fromLngLat(rawLocation.longitude, rawLocation.latitude)
 
-            if (points.isNotEmpty() && points.last() != userLocation) {
-                val updatedPoints = listOf(userLocation) + points.drop(1)
-                requestRoute(updatedPoints)
-            }
+//            if (points.isNotEmpty() && points.last() != userLocation) {
+//                val updatedPoints = listOf(userLocation) + points.drop(1)
+//                requestRoute(updatedPoints)
+//            }
         }
     }
 
