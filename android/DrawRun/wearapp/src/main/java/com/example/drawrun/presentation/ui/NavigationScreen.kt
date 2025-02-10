@@ -12,15 +12,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.wear.compose.material.Icon
 import androidx.wear.compose.material.Text
 import com.example.drawrun.presentation.DataViewModel
+import com.example.drawrun.presentation.sensors.SensorViewModel
 import kotlinx.coroutines.launch
-
+import com.example.drawrun.R
 @Composable
-fun NavigationScreen(dataViewModel: DataViewModel) {
+fun NavigationScreen(dataViewModel: DataViewModel, sensorViewModel: SensorViewModel) {
     val distanceToNextTurn by dataViewModel.distanceToNextTurn.collectAsState()
     val voiceInstruction by dataViewModel.voiceInstruction.collectAsState()
     val totalDistance by dataViewModel.totalDistance.collectAsState()
@@ -36,8 +39,24 @@ fun NavigationScreen(dataViewModel: DataViewModel) {
         0f
     }
 
+    // 회전 방향 추출
+    val turnDirection = when {
+        voiceInstruction.contains("왼쪽회전") -> "left"
+        voiceInstruction.contains("오른쪽회전") -> "right"
+        else -> "straight"
+    }
+
+    // 아이콘 리소스 설정
+    val iconRes = when (turnDirection) {
+        "left" -> R.drawable.go_left_icon
+        "right" -> R.drawable.go_right_icon
+        else -> R.drawable.go_straight_icon
+    }
+
     val animatedProgress = remember { Animatable(0f) }
     val coroutineScope = rememberCoroutineScope()
+    val averageHeartRate = sensorViewModel.getAverageHeartRate()  // 평균 심박수 가져오기
+    val heartRate by sensorViewModel.heartRate.collectAsState()
 
     // 진행률 애니메이션 업데이트
     LaunchedEffect(progressPercentage) {
@@ -58,9 +77,10 @@ fun NavigationScreen(dataViewModel: DataViewModel) {
             // 목적지에 도착했을 때 표시할 UI
             Text(
                 text = "목적지에 도착했습니다!",
-                fontSize = 24.sp,
+                fontSize = 20.sp,
                 textAlign = TextAlign.Center
             )
+            Text(text = "평균 심박수: ${averageHeartRate ?: "N/A"} BPM", fontSize = 24.sp)
         } else {
             // 진행 중인 네비게이션 UI
             Canvas(
@@ -92,20 +112,27 @@ fun NavigationScreen(dataViewModel: DataViewModel) {
                 )
             }
 
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = voiceInstruction,
-                    fontSize = 18.sp,
-                    textAlign = TextAlign.Center
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    painter = painterResource(id = iconRes),
+                    contentDescription = null,
+                    modifier = Modifier.size(80.dp)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "${(totalDistance - distanceRemaining).toInt()}m 이동",
-                    fontSize = 16.sp
-                )
+                Spacer(modifier = Modifier.height(5.dp))
+                Text(text = "${distanceToNextTurn.toInt()}m", fontSize = 20.sp)
+//                Text(
+//                    text = voiceInstruction,
+//                    fontSize = 18.sp,
+//                    textAlign = TextAlign.Center
+//                )
+                Text(text = "현재 심박수: ${heartRate ?: "N/A"} BPM", fontSize = 10.sp)
+//                Spacer(modifier = Modifier.height(8.dp))
+//                Text(
+//                    text = "${(totalDistance - distanceRemaining).toInt()}m 이동",
+//                    fontSize = 16.sp
+//                )
             }
         }
     }
 }
+

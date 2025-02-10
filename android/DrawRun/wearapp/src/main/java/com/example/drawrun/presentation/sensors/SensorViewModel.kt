@@ -42,6 +42,16 @@ class SensorViewModel(private val sensorManagerHelper: SensorManagerHelper) : Vi
                 Log.d("SensorViewModel", "Elapsed time: $elapsedTime, Step count: ${stepCount.value}")
             }
         }
+        // 심박수 데이터를 수집하여 평균을 계산하기 위한 로직 추가
+        viewModelScope.launch {
+            sensorManagerHelper.heartRateFlow.collect { heartRate ->
+                if (heartRate != null && heartRate > 0f) {
+                    updateHeartRate(heartRate)  // 심박수 누적
+                    Log.d("SensorViewModel", "Heart rate collected: $heartRate BPM")
+                }
+            }
+        }
+
     }
 
     fun stopMeasurement() {
@@ -49,6 +59,9 @@ class SensorViewModel(private val sensorManagerHelper: SensorManagerHelper) : Vi
         sensorManagerHelper.stopSensors()
         timerJob?.cancel()
         timerJob = null
+
+        val averageHeartRate = getAverageHeartRate()
+        Log.d("SensorViewModel", "평균 심박수 : $averageHeartRate BPM")
     }
 
     fun resetMeasurement() {
@@ -76,5 +89,20 @@ class SensorViewModel(private val sensorManagerHelper: SensorManagerHelper) : Vi
     fun incrementElapsedTime() {
         _elapsedTime.update { it + 1 }
     }
+
+    private val heartRateSum = MutableStateFlow(0f)
+    private val heartRateCount = MutableStateFlow(0)
+
+    fun updateHeartRate(heartRate: Float) {
+        heartRateSum.value += heartRate
+        heartRateCount.value += 1
+    }
+
+    fun getAverageHeartRate(): Float {
+        return if (heartRateCount.value > 0) {
+            heartRateSum.value / heartRateCount.value
+        } else 0f
+    }
+
 }
 

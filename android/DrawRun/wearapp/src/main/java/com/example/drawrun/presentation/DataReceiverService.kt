@@ -18,6 +18,10 @@ class DataReceiverService : WearableListenerService() {
     override fun onDestroy() {
         super.onDestroy()
         Log.d("receiverService-WatchData", "DataReceiverService 종료됨")
+        // 서비스가 중단되었을 때 브로드캐스트 전송
+        val intent = Intent("com.example.drawrun.SERVICE_STOPPED")
+        sendBroadcast(intent)
+        Log.d("DataReceiverService", "서비스가 종료됨")
     }
 
     override fun onMessageReceived(messageEvent: MessageEvent) {
