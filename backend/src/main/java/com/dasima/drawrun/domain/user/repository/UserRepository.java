@@ -22,6 +22,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
   boolean existsByUserEmail(String email);
 
+  void deleteUserByUserId(int userId);
+
 
   @Query("SELECT u FROM User u " +
       "LEFT JOIN FETCH u.roleRegister rr " +
