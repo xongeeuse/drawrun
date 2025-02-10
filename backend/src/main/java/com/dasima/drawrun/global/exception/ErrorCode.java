@@ -18,6 +18,8 @@ public enum ErrorCode {
 
   FAIL_EMAIL_SEND(2008, "이메일 전송에 실패했습니다."),
   FAIL_EMAIL_AUTH(2009, "이메일 인증에 실패했습니다."),
+  INCORRECT_EMAIL(2010, "아이디와 이메일이 일치하지 않습니다."),
+  PASSWORD_MISMATCH(2011, "기존 비밀번호와 일치하지 않습니다."),
 
   S3_ERROR(3001, "S3 처리 과정에 오류가 생겼습니다."),
   INVALID_STORAGE_URL(3002, "파일이 존재하지 않습니다."),

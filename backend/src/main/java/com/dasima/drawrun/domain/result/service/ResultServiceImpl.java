@@ -1,16 +1,16 @@
-package com.dasima.drawrun.domain.course.service;
+package com.dasima.drawrun.domain.result.service;
 
-import com.dasima.drawrun.domain.course.dto.request.CourseResultSaveRequest;
-import com.dasima.drawrun.domain.course.entity.CourseResult;
-import com.dasima.drawrun.domain.course.repository.CourseRepository;
+import com.dasima.drawrun.domain.result.dto.request.CourseResultSaveRequest;
+import com.dasima.drawrun.domain.result.entity.CourseResult;
+import com.dasima.drawrun.domain.result.repository.ResultRepository;
 import com.dasima.drawrun.global.exception.CustomException;
 import com.dasima.drawrun.global.exception.ErrorCode;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CourseServiceImpl implements CourseService {
+public class ResultServiceImpl implements ResultService {
 
-  private CourseRepository courseRepository;
+  private ResultRepository courseRepository;
 
   @Override
   public int courseResultSave(int UserPK, CourseResultSaveRequest resultDto) {

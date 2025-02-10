@@ -1,12 +1,10 @@
 package com.dasima.drawrun.domain.user.controller;
 
-import com.dasima.drawrun.domain.user.dto.request.EmailAuthNumberRequestDto;
-import com.dasima.drawrun.domain.user.dto.request.EmailSendRequestDto;
-import com.dasima.drawrun.domain.user.dto.request.LoginRequestDto;
-import com.dasima.drawrun.domain.user.dto.request.RegisterRequestDto;
+import com.dasima.drawrun.domain.user.dto.request.*;
 import com.dasima.drawrun.domain.user.service.AuthService;
 import com.dasima.drawrun.global.common.ApiResponseJson;
 import com.dasima.drawrun.global.exception.CustomException;
+import com.dasima.drawrun.global.security.UserPrinciple;
 import com.dasima.drawrun.global.security.dto.response.TokenResponseDto;
 import com.dasima.drawrun.global.security.filter.JwtFilter;
 import jakarta.servlet.http.Cookie;
@@ -14,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -113,6 +112,36 @@ public class AuthController {
     return ResponseEntity.ok(
             new ApiResponseJson(true, 200, "이메일 인증에 성공했습니다.", Map.of("status", true))
     );
+  }
+
+  @PostMapping("/find-pw")
+  public ResponseEntity<ApiResponseJson> findPassword(@RequestBody FindPasswordRequestDto dto) {
+    try {
+      authService.findPassword(dto.getUserId(), dto.getEmail());
+
+      return ResponseEntity.ok(
+              new ApiResponseJson(true, 200, "이메일로 임시 비밀번호를 전송했습니다.", null)
+      );
+    } catch (CustomException e) {
+      return ResponseEntity.ok(
+              new ApiResponseJson(e.getErrorCode(), null)
+      );
+    }
+  }
+
+  @PostMapping("/change-pw")
+  public ResponseEntity<ApiResponseJson> changePassword(@AuthenticationPrincipal UserPrinciple userPrinciple, @RequestBody ChangePasswordRequestDto dto) {
+    try {
+      authService.changePassword(userPrinciple.getUserId(), dto.getCurrentPassword(), dto.getNewPassword());
+
+      return ResponseEntity.ok(
+              new ApiResponseJson(true, 200, "비밀번호를 변경했습니다.", null)
+      );
+    } catch (CustomException e) {
+      return ResponseEntity.ok(
+              new ApiResponseJson(e.getErrorCode(), null)
+      );
+    }
   }
 
 }

@@ -19,4 +19,8 @@ public interface AuthService {
 
   public void mailcheck(EmailAuthNumberRequestDto dto);
 
+  public void findPassword(String userId, String email);
+
+  public void changePassword(int userPK, String password, String newPassword);
+
 }
