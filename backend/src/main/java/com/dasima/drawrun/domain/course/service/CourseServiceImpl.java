@@ -4,6 +4,7 @@ import com.dasima.drawrun.domain.course.dto.request.BookmarkCancleRequest;
 import com.dasima.drawrun.domain.course.dto.request.BookmarkCreateRequest;
 import com.dasima.drawrun.domain.course.dto.request.CourseSaveRequest;
 import com.dasima.drawrun.domain.course.dto.response.CourseListResponse;
+import com.dasima.drawrun.domain.course.dto.response.CourseResponse;
 import com.dasima.drawrun.domain.course.entity.Bookmark;
 import com.dasima.drawrun.domain.course.entity.Path;
 import com.dasima.drawrun.domain.course.entity.UserPath;
@@ -149,4 +150,13 @@ public class CourseServiceImpl implements CourseService{
         }
         return courseListResponses;
     }
+
+    public CourseResponse search(int pathUserId){
+        // UserPath 단건조회
+        UserPath userPath = courseMapper.search(pathUserId);
+
+
+    }
+
+
 }

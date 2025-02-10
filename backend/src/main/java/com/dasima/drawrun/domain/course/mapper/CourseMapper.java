@@ -13,6 +13,7 @@ public interface CourseMapper {
     int save(UserPath userPath);
     int bookmark(Bookmark bookmark);
 
+    UserPath search(int userPathId);
     int bookmarkcancle(Bookmark bookmark);
     List<UserPath> list();
     Boolean isBookmark(@Param("userId") int userId, @Param("userPathId") int userPathId);
