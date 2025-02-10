@@ -181,4 +181,19 @@ public class AuthController {
     }
   }
 
+  @PostMapping("/withdrawal")
+  public ResponseEntity<ApiResponseJson> withdrawAccount(@AuthenticationPrincipal UserPrinciple userPrinciple) {
+    try {
+      authService.withdrawAccount(userPrinciple.getUserId());
+
+      return ResponseEntity.ok(
+              new ApiResponseJson(true, 200, "회원 탈퇴에 성공했습니다.", null)
+      );
+    } catch (Exception e) {
+      return ResponseEntity.ok(
+              new ApiResponseJson(ErrorCode.COMMON_ERROR, e.getMessage())
+      );
+    }
+  }
+
 }
