@@ -1,11 +1,10 @@
-package com.dasima.drawrun.domain.course.controller;
+package com.dasima.drawrun.domain.result.controller;
 
-import com.dasima.drawrun.domain.course.dto.request.CourseResultSaveRequest;
-import com.dasima.drawrun.domain.course.service.CourseService;
+import com.dasima.drawrun.domain.result.dto.request.CourseResultSaveRequest;
+import com.dasima.drawrun.domain.result.service.ResultService;
 import com.dasima.drawrun.global.common.ApiResponseJson;
 import com.dasima.drawrun.global.exception.CustomException;
 import com.dasima.drawrun.global.security.UserPrinciple;
-import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,12 +13,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/course")
-public class CourseController {
+public class ResultController {
 
   @Autowired
-  CourseService courseService;
+  ResultService courseService;
 
   @PostMapping("/courseresultsave")
   public ResponseEntity<ApiResponseJson> courseResultSave(@RequestBody CourseResultSaveRequest courseResultSaveRequest, @AuthenticationPrincipal
