@@ -20,4 +20,5 @@ public class UserPath {
     private String name;
     private String address;
     private LocalDateTime createDate;
+    private int bookmarkCount;
 }
