@@ -67,6 +67,7 @@ dependencies {
     implementation(libs.androidx.core)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.material3.android)
+    implementation(libs.androidx.runtime.livedata)
 //    implementation(project(":app"))  // Coroutines Android
 
     // Android Test 및 Debug
