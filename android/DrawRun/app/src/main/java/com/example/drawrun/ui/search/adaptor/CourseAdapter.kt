@@ -1,5 +1,6 @@
 package com.example.drawrun.ui.search.adaptor
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -16,6 +17,7 @@ class CourseAdapter(
 ) : ListAdapter<CourseData, CourseViewHolder>(CourseDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CourseViewHolder {
+        Log.d("SearchSearch", "onCreateViewHolder called")
         return CourseViewHolder(
             ItemCourseBinding.inflate(
                 LayoutInflater.from(parent.context),
@@ -27,7 +29,9 @@ class CourseAdapter(
     }
 
     override fun onBindViewHolder(holder: CourseViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        val course = getItem(position)
+        Log.d("SearchSearch", "onBindViewHolder called for position $position, course: $course")
+        holder.bind(course)
     }
 }
 
@@ -51,7 +55,7 @@ class CourseViewHolder(
 
             // 북마크 상태 처리
             btnBookmark.setImageResource(
-                if (course.isBookmarked) R.drawable.bookmark_filled_icon
+                if (course.isBookmark) R.drawable.bookmark_filled_icon
                 else R.drawable.bookmark_outlined_icon
             )
 
@@ -61,19 +65,22 @@ class CourseViewHolder(
                 .into(courseImage)
 
             // 프로필 이미지 로딩
-            Glide.with(itemView.context)
-                .load(course.profileImgUrl)  // 프로필 이미지 URL
-                .circleCrop()  // 원형으로 표시
-                .into(profileImage)
+//            Glide.with(itemView.context)
+//                .load(course.profileImgUrl)  // 프로필 이미지 URL
+//                .circleCrop()  // 원형으로 표시
+//                .into(profileImage)
         }
     }
 }
 
 
 class CourseDiffCallback : DiffUtil.ItemCallback<CourseData>() {
-    override fun areItemsTheSame(oldItem: CourseData, newItem: CourseData) =
-        oldItem.courseId == newItem.courseId
+    override fun areItemsTheSame(oldItem: CourseData, newItem: CourseData): Boolean {
+        return oldItem.courseId == newItem.courseId
+    }
 
-    override fun areContentsTheSame(oldItem: CourseData, newItem: CourseData) =
-        oldItem == newItem
+    override fun areContentsTheSame(oldItem: CourseData, newItem: CourseData): Boolean {
+        return oldItem == newItem // 데이터 클래스의 equals() 사용
+    }
 }
+

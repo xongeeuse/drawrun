@@ -82,6 +82,9 @@ dependencies {
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.activity.ktx)
+    implementation(libs.androidx.runtime.android)
+    implementation(libs.androidx.runtime.android)
+    implementation(libs.androidx.lifecycle.livedata.core)
     kapt(libs.room.compiler)
 
     // Hilt

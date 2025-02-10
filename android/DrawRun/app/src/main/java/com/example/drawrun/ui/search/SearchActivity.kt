@@ -5,10 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.example.drawrun.R
 import com.example.drawrun.databinding.ActivitySearchBinding
 import com.example.drawrun.ui.search.fragment.RankingFragment
@@ -71,18 +68,25 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun performSearch() {
+        Log.d("SearchSearch", "performSearch() called")
         val query = binding.searchLayout.searchEditText.text.toString()
+        Log.d("SearchSearch", "Search query: $query")
         if (query.isNotEmpty()) {
-            val searchResultFragment = SearchResultFragment().apply {
-                arguments = Bundle().apply {
-                    putString("query", query)
+            try {
+                val searchResultFragment = SearchResultFragment().apply {
+                    arguments = Bundle().apply {
+                        putString("query", query)
+                    }
                 }
+                Log.d("SearchSearch", "Creating SearchResultFragment")
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.course_list_container, searchResultFragment)
+                    .addToBackStack(null)
+                    .commit()
+                Log.d("SearchSearch", "Fragment transaction committed")
+            } catch (e: Exception) {
+                Log.e("SearchSearch", "Error in performSearch", e)
             }
-
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.course_list_container, searchResultFragment)
-                .addToBackStack(null)
-                .commit()
 
             // 키보드 숨기기
             val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
