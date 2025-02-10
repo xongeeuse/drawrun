@@ -110,10 +110,13 @@ public class CourseServiceImpl implements CourseService{
     }
 
     // 리스트(북마크 기준)
-    public List<CourseListResponse> list(int userId){
-        List<UserPath> userPaths = courseMapper.list();
-        List<CourseListResponse> courseListResponses = new ArrayList<>();;
-        System.out.println(userPaths);
+    // 1번 리스트(북마크 기준)
+    // 2번
+    public List<CourseListResponse> list(int userId, int type, String keywordOrArea){
+        List<UserPath> userPaths = null;
+        if(type == 1) userPaths = courseMapper.list();
+        else if(type == 2) userPaths = courseMapper.keyword(keywordOrArea);
+        List<CourseListResponse> courseListResponses = new ArrayList<>();
         for(UserPath userPath : userPaths){
             // username 추출
             User user = userRepository.findById(userPath.getUserId()).orElse(null);

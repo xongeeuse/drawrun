@@ -24,10 +24,14 @@ public class CourseController {
 
     // 코스 리스트 조회(bookmark 수 기준)
     @GetMapping("/list")
-    public ResponseEntity<?> list(@AuthenticationPrincipal UserPrinciple userPrinciple){
-        return ResponseEntity.ok(courseService.list(userPrinciple.getUserId()));
+    public ResponseEntity<?> list(@AuthenticationPrincipal UserPrinciple userPrinciple,
+                                  @RequestParam(required = false) String keyword){
+        if(keyword == null || keyword.isEmpty())
+            return ResponseEntity.ok(courseService.list(userPrinciple.getUserId(), 1, keyword));
+        else{
+            return ResponseEntity.ok(courseService.list(userPrinciple.getUserId(), 2, keyword));
+        }
     }
-
 
     // 북마크 저장
     @PostMapping("/bookmark")

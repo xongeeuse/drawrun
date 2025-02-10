@@ -12,5 +12,5 @@ public interface CourseService {
     public int bookmark(BookmarkCreateRequest dto, int userId);
     public int bookmarkcancle(BookmarkCancleRequest dto, int userId);
 
-    public List<CourseListResponse> list(int userId);
+    public List<CourseListResponse> list(int userId, int type, String keywordOrArea);
 }

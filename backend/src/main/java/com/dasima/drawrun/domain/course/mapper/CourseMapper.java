@@ -16,4 +16,5 @@ public interface CourseMapper {
     int bookmarkcancle(Bookmark bookmark);
     List<UserPath> list();
     Boolean isBookmark(@Param("userId") int userId, @Param("userPathId") int userPathId);
+    List<UserPath> keyword(String keyword);
 }

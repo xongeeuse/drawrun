@@ -32,6 +32,18 @@
         ) b on up.user_path_id = b.user_path_id
         order by coalesce(b.bookmark_count, 0) desc
     </select>
+
+    <select id="keyword" parameterType="string" resultMap="UserPathResultMap">
+        select up.*
+        from user_path up
+                 left join(
+            select user_path_id, count(*) as bookmark_count
+            from bookmark
+            group by user_path_id
+        ) b on up.user_path_id = b.user_path_id
+        where up.name like concat('%', #{keyword}, '%')
+        order by coalesce(b.bookmark_count, 0) desc
+    </select>
     
     <select id="isBookmark" resultType="boolean">
         select exists (
