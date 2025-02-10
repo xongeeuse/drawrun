@@ -23,11 +23,22 @@
         android:layout_marginHorizontal="16dp"
         android:layout_marginBottom="16dp"/>
 
+    <!-- 캡처된 지도 이미지 추가 -->
+    <ImageView
+        android:id="@+id/captured_map_image"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:scaleType="centerCrop"
+        android:layout_marginBottom="16dp"
+        android:visibility="visible"
+        android:adjustViewBounds="true"/>
+
+
     <TextView
         android:id="@+id/tv_distance"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="8.53KM"
+        android:text="0.00KM"
         android:textSize="32sp"
         android:textStyle="bold"
         android:textColor="@color/white"
@@ -60,7 +71,5 @@
             android:text="함께 달리기"
             android:textColor="@color/black"
             android:backgroundTint="@color/white"/>
-
     </LinearLayout>
-
 </LinearLayout>
