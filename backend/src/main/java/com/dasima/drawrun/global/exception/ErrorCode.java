@@ -24,7 +24,9 @@ public enum ErrorCode {
   S3_ERROR(3001, "S3 처리 과정에 오류가 생겼습니다."),
   INVALID_STORAGE_URL(3002, "파일이 존재하지 않습니다."),
 
-  RESULT_SAVE_ERROR(4001, "기록 저장에 실패했습니다.");
+  RESULT_SAVE_ERROR(4001, "기록 저장에 실패했습니다."),
+  
+  COMMON_ERROR(1001, "서버 에러가 발생했습니다.");
 
   private final int code;
   private final String defaultMessage;
