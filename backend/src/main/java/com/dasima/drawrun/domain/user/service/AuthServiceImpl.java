@@ -297,4 +297,9 @@ public class AuthServiceImpl implements AuthService {
             .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER_EMAIL));
   }
 
+  @Override
+  public boolean checkId(String userId) {
+    return userRepository.findById(userId).isPresent();
+  }
+
 }

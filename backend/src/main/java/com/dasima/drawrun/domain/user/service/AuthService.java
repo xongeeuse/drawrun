@@ -26,4 +26,6 @@ public interface AuthService {
 
   public User findId(String email, String username);
 
+  public boolean checkId(String userId);
+
 }
