@@ -28,4 +28,6 @@ public interface AuthService {
 
   public boolean checkId(String userId);
 
+  public void withdrawAccount(int userPK);
+
 }

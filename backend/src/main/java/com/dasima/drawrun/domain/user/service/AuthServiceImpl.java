@@ -302,4 +302,9 @@ public class AuthServiceImpl implements AuthService {
     return userRepository.findById(userId).isPresent();
   }
 
+  @Override
+  public void withdrawAccount(int userPK) {
+    userRepository.deleteUserByUserId(userPK);
+  }
+
 }
