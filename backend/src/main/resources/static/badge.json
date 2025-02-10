@@ -1,0 +1,68 @@
+[
+  {
+    "badgeId": 1,
+    "badgeName": "첫 걸음",
+    "badgeDes": "누적 1km 달성",
+    "badgeImg": "drawable/total_1km"
+  },
+  {
+    "badgeId": 2,
+    "badgeName": "10K 달성자",
+    "badgeDes": "누적 10km 달성",
+    "badgeImg": "drawable/total_10km"
+  },
+  {
+    "badgeId": 3,
+    "badgeName": "마라톤 입문자",
+    "badgeDes": "누적 42.195km 달성",
+    "badgeImg": "drawable/total_42km"
+  },
+  {
+    "badgeId": 4,
+    "badgeName": "하프 마스터",
+    "badgeDes": "누적 100km 달성",
+    "badgeImg": "drawable/total_100km"
+  },
+  {
+    "badgeId": 5,
+    "badgeName": "도로 정복자",
+    "badgeDes": "누적 500km 달성",
+    "badgeImg": "drawable/total_500km"
+  },
+  {
+    "badgeId": 9,
+    "badgeName": "3연속 도전",
+    "badgeDes": "3일 연속 러닝 성공",
+    "badgeImg": "drawable/run_3day"
+  },
+  {
+    "badgeId": 6,
+    "badgeName": "롱 러너",
+    "badgeDes": "10km 러닝 달성",
+    "badgeImg": "drawable/one_10km"
+  },
+  {
+    "badgeId": 7,
+    "badgeName": "한계 돌파",
+    "badgeDes": "20km 러닝 달성",
+    "badgeImg": "drawable/one_20km"
+  },
+  {
+    "badgeId": 8,
+    "badgeName": "철인 정신",
+    "badgeDes": "50km 달성",
+    "badgeImg": "drawable/one_50km"
+  },
+  {
+    "badgeId": 10,
+    "badgeName": "걸작 러너",
+    "badgeDes": "걸작 제작자",
+    "badgeImg": "drawable/run_together"
+  },
+  {
+    "badgeId": 11,
+    "badgeName": "습관 러너",
+    "badgeDes": "30일 연속 러닝 성공",
+    "badgeImg": "drawable/run_30day"
+  }
+]
