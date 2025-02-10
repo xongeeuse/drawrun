@@ -66,12 +66,12 @@
 
     </select>
 
-    <insert id="bookmark" parameterType="com.dasima.drawrun.domain.course.entity.Bookmark">
+    <insert id="bookmark" parameterType="Bookmark">
         insert into bookmark
         values (0, #{userPathId}, #{userId}, now());
     </insert>
 
-    <delete id="bookmarkcancle" parameterType="com.dasima.drawrun.domain.course.entity.Bookmark">
+    <delete id="bookmarkcancle" parameterType="Bookmark">
         delete from bookmark
         where user_id = #{userId} and user_path_id = #{userPathId}
 
