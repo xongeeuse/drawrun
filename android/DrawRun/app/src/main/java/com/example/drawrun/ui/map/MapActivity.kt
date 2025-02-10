@@ -294,6 +294,15 @@ class MapActivity : ComponentActivity() {
                         mapboxNavigation.startTripSession()
                         mapboxNavigation.setNavigationRoutes(listOf(route))
                         mapboxNavigation.registerRouteProgressObserver(routeProgressObserver)
+
+                        // ✅ 지도 줌 레벨을 도보에 맞게 조정 (17.5~18이 도보에 적절한 줌 레벨)
+                        mapView.getMapboxMap().setCamera(
+                            CameraOptions.Builder()
+                                .center(points.first()) // 출발지를 중심으로 설정
+                                .zoom(17.5) // 🚶‍♂️ 도보 모드에 적절한 줌 인 값
+                                .build()
+                        )
+
                     }
                 }
 
@@ -313,7 +322,7 @@ class MapActivity : ComponentActivity() {
             mapView.getMapboxMap().setCamera(
                 CameraOptions.Builder()
                     .center(currentLocation)
-                    .zoom(15.0)
+                    .zoom(17.5)
                     .bearing(bearing) // 사용자의 방향에 맞춰 카메라 회전
                     .build()
             )
@@ -385,17 +394,17 @@ class MapActivity : ComponentActivity() {
         )
         // 목적지 도착 시 안내 종료
         if (distanceRemaining < 5) { // 남은 거리가 5m 미만일 경우 종료
+            routeProgress.route.legs()?.let { legs ->
+                if (routeProgress.currentLegProgress?.legIndex == legs.size - 1) {
+                    val totalDistance = routeProgress.route.distance() // 총 이동 거리 (미터)
+                    val totalDuration = routeProgress.route.duration().toInt()  // 총 소요 시간 (초)
 
-            val totalDistance = routeProgress.route.distance() // 총 이동 거리 (미터)
-            val totalDuration = routeProgress.route.duration() // 총 소요 시간 (초)
-
-            val totalDistanceInKm = totalDistance / 1000 // 미터 -> 킬로미터 변환
-            val totalTimeInMinutes = (totalDuration / 60).toInt() // 분 단위 변환
-//            val toastMessage = "목적지 도착!\n총 이동 거리: ${totalDistance.toInt()}m\n총 소요 시간: ${totalTimeInMinutes}분"
-            stopNavigation()
-            showArrivalDialog(totalDistanceInKm, totalTimeInMinutes)  // 이동 거리 및 소요 시간 안내 모달 표시
-//            Toast.makeText(this, toastMessage, Toast.LENGTH_LONG).show()
-//            Toast.makeText(this, "목적지에 도착했습니다. 내비게이션을 종료합니다.", Toast.LENGTH_SHORT).show()
+                    val totalDistanceInKm = totalDistance / 1000 // 미터 -> 킬로미터 변환
+//                    val totalTimeInMinutes = (totalDuration / 60) // 분 단위 변환
+                    stopNavigation()
+                    showArrivalDialog(totalDistanceInKm, totalDuration)  // 이동 거리 및 소요 시간 안내 모달 표시
+                }
+            }
         }
 
         routeProgress.voiceInstructions?.let { voiceInstructions ->
@@ -436,11 +445,16 @@ class MapActivity : ComponentActivity() {
 
     // 도착 시 모달 다이얼로그 표시 함수 추가
     private fun showArrivalDialog(distanceInKm: Double, time: Int) {
-        val formattedDistance = String.format("%.2f", distanceInKm) // 소수점 둘째 자리까지 나타냄
+        val formattedDistance = String.format("%.3f", distanceInKm) // 소수점 둘째 자리까지 나타냄
+
+        // X분 Y초 형식 변환
+        val minutes = time / 60
+        val seconds = time % 60
+        val formattedTime = "${minutes}분 ${seconds}초"
 
         AlertDialog.Builder(this)
             .setTitle("📍 목적지 도착!")
-            .setMessage("총 이동 거리: ${formattedDistance}km\n총 소요 시간: ${time}분")
+            .setMessage("총 이동 거리: ${formattedDistance}km\n총 소요 시간: ${formattedTime}분")
             .setPositiveButton("확인") { dialog, _ ->
                 dialog.dismiss() // 확인 버튼 클릭 시 다이얼로그 닫기
             }

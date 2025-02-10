@@ -67,17 +67,17 @@ fun NavigationScreen(dataViewModel: DataViewModel) {
                 modifier = Modifier.fillMaxSize()
             ) {
                 val ringThickness = 12.dp.toPx()
-                val paddingOffset = ringThickness / 2
+                val paddingOffset = 0f
 
                 // 흰색 배경 링
                 drawArc(
-                    color = Color.LightGray,
+                    color = Color.White,
                     startAngle = -90f,
                     sweepAngle = 360f,
                     useCenter = false,
                     style = Stroke(width = ringThickness, cap = StrokeCap.Round),
                     topLeft = androidx.compose.ui.geometry.Offset(paddingOffset, paddingOffset),
-                    size = size.copy(width = size.width - ringThickness, height = size.height - ringThickness)
+                    size = size
                 )
 
                 // 초록색 진행 링
@@ -88,7 +88,7 @@ fun NavigationScreen(dataViewModel: DataViewModel) {
                     useCenter = false,
                     style = Stroke(width = ringThickness, cap = StrokeCap.Round),
                     topLeft = androidx.compose.ui.geometry.Offset(paddingOffset, paddingOffset),
-                    size = size.copy(width = size.width - ringThickness, height = size.height - ringThickness)
+                    size = size
                 )
             }
 
