@@ -5,4 +5,5 @@ data class BadgeItem (
     val badgeName: String,
     val badgeDes: String,
     val badgeImg: String,
+    val badgeTime: String
 )
