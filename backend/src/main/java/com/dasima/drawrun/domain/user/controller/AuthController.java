@@ -1,9 +1,11 @@
 package com.dasima.drawrun.domain.user.controller;
 
 import com.dasima.drawrun.domain.user.dto.request.*;
+import com.dasima.drawrun.domain.user.entity.User;
 import com.dasima.drawrun.domain.user.service.AuthService;
 import com.dasima.drawrun.global.common.ApiResponseJson;
 import com.dasima.drawrun.global.exception.CustomException;
+import com.dasima.drawrun.global.exception.ErrorCode;
 import com.dasima.drawrun.global.security.UserPrinciple;
 import com.dasima.drawrun.global.security.dto.response.TokenResponseDto;
 import com.dasima.drawrun.global.security.filter.JwtFilter;
@@ -140,6 +142,56 @@ public class AuthController {
     } catch (CustomException e) {
       return ResponseEntity.ok(
               new ApiResponseJson(e.getErrorCode(), null)
+      );
+    }
+  }
+
+  @PostMapping("/find-id")
+  public ResponseEntity<ApiResponseJson> findId(@RequestBody FindIdRequestDto dto) {
+    try {
+      User user = authService.findId(dto.getEmail(), dto.getUsername());
+
+      return ResponseEntity.ok(
+              new ApiResponseJson(true, 200, "아이디 조회에 성공했습니다.", Map.of("user_id", user.getId()))
+      );
+    } catch (CustomException e) {
+      return ResponseEntity.ok(
+              new ApiResponseJson(e.getErrorCode(), null)
+      );
+    }
+  }
+
+  /**
+   * GET /api/users/check-id?userId={userId}
+   * 사용자 아이디 중복 체크 API
+   *
+   * @param userId 검사할 사용자 아이디
+   * @return 사용자 아이디와 중복 여부를 포함하는 JSON 응답
+   */
+  @GetMapping("/check-id")
+  public ResponseEntity<ApiResponseJson> checkUserId(@RequestParam("userId") String userId) {
+    try {
+      return ResponseEntity.ok(
+              new ApiResponseJson(true, 200, "아이디 중복 조회에 성공했습니다.", Map.of("isExist", authService.checkId(userId)))
+      );
+    } catch (Exception e) {
+      return ResponseEntity.ok(
+              new ApiResponseJson(ErrorCode.COMMON_ERROR, e.getMessage())
+      );
+    }
+  }
+
+  @PostMapping("/withdrawal")
+  public ResponseEntity<ApiResponseJson> withdrawAccount(@AuthenticationPrincipal UserPrinciple userPrinciple) {
+    try {
+      authService.withdrawAccount(userPrinciple.getUserId());
+
+      return ResponseEntity.ok(
+              new ApiResponseJson(true, 200, "회원 탈퇴에 성공했습니다.", null)
+      );
+    } catch (Exception e) {
+      return ResponseEntity.ok(
+              new ApiResponseJson(ErrorCode.COMMON_ERROR, e.getMessage())
       );
     }
   }

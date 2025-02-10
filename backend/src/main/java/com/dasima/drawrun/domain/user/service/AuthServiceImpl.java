@@ -291,4 +291,20 @@ public class AuthServiceImpl implements AuthService {
     userRepository.save(user);
   }
 
+  @Override
+  public User findId(String email, String username) {
+    return userRepository.findByUserEmailAndUserName(email, username)
+            .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER_EMAIL));
+  }
+
+  @Override
+  public boolean checkId(String userId) {
+    return userRepository.findById(userId).isPresent();
+  }
+
+  @Override
+  public void withdrawAccount(int userPK) {
+    userRepository.deleteUserByUserId(userPK);
+  }
+
 }
