@@ -24,8 +24,8 @@ public class CourseController {
 
     // 코스 리스트 조회(bookmark 수 기준)
     @GetMapping("/list")
-    public ResponseEntity<?> list(){
-        
+    public ResponseEntity<?> list(@AuthenticationPrincipal UserPrinciple userPrinciple){
+        return ResponseEntity.ok(courseService.list(userPrinciple.getUserId()));
     }
 
 

@@ -22,6 +22,26 @@
         <result column="create_date" property="createDate"/>
     </resultMap>
 
+    <select id="list" resultMap="UserPathResultMap">
+        select up.*
+        from user_path up
+        left join(
+            select user_path_id, count(*) as bookmark_count
+            from bookmark
+            group by user_path_id
+        ) b on up.user_path_id = b.user_path_id
+        order by coalesce(b.bookmark_count, 0) desc
+    </select>
+    
+    <select id="isBookmark" resultType="boolean">
+        select exists (
+            select 1
+            from bookmark
+            where user_id = #{userId} and user_path_id = #{userPathId}
+        )
+
+    </select>
+
     <insert id="bookmark" parameterType="Bookmark">
         insert into bookmark
         values (0, #{userPathId}, #{userId}, now());
@@ -38,5 +58,4 @@
         values (0, #{userId}, #{pathId}, #{pathImgUrl}, #{name}, now(), #{distance}, #{address})
     </insert>
 
-    <select id="list" parameterType=""
 </mapper>

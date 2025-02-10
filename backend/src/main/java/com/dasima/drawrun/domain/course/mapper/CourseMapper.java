@@ -4,6 +4,9 @@ import com.dasima.drawrun.domain.course.entity.Bookmark;
 import com.dasima.drawrun.domain.course.entity.Path;
 import com.dasima.drawrun.domain.course.entity.UserPath;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 @Mapper
 public interface CourseMapper {
@@ -11,5 +14,6 @@ public interface CourseMapper {
     int bookmark(Bookmark bookmark);
 
     int bookmarkcancle(Bookmark bookmark);
-    UserPath list();
+    List<UserPath> list();
+    Boolean isBookmark(@Param("userId") int userId, @Param("userPathId") int userPathId);
 }

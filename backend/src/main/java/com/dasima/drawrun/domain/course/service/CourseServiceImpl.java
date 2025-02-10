@@ -3,6 +3,7 @@ package com.dasima.drawrun.domain.course.service;
 import com.dasima.drawrun.domain.course.dto.request.BookmarkCancleRequest;
 import com.dasima.drawrun.domain.course.dto.request.BookmarkCreateRequest;
 import com.dasima.drawrun.domain.course.dto.request.CourseSaveRequest;
+import com.dasima.drawrun.domain.course.dto.response.CourseListResponse;
 import com.dasima.drawrun.domain.course.entity.Bookmark;
 import com.dasima.drawrun.domain.course.entity.Path;
 import com.dasima.drawrun.domain.course.entity.UserPath;
@@ -11,6 +12,8 @@ import com.dasima.drawrun.domain.course.repository.CourseRepository;
 import com.dasima.drawrun.domain.course.vo.KakaoRegionResponse;
 import com.dasima.drawrun.domain.course.vo.GeoPoint;
 
+import com.dasima.drawrun.domain.user.entity.User;
+import com.dasima.drawrun.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.geo.Point;
@@ -19,8 +22,11 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.http.*;
 
+import javax.swing.text.html.Option;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,6 +37,8 @@ public class CourseServiceImpl implements CourseService{
 
     @Value("${kakao.api.url}")
     private String kakaoApiUrl;
+
+    private final UserRepository userRepository;
 
     private final RestTemplate restTemplate;
 
@@ -80,7 +88,7 @@ public class CourseServiceImpl implements CourseService{
 
         return courseMapper.save(userPath);
     }
-
+    // 북마크 저장
     public int bookmark(BookmarkCreateRequest dto, int userId){
         // Dto를 Entity로 바꿈
         Bookmark bookmark = Bookmark.builder()
@@ -91,6 +99,7 @@ public class CourseServiceImpl implements CourseService{
         return courseMapper.bookmark(bookmark);
     }
 
+    // 북마크 취소
     public int bookmarkcancle(BookmarkCancleRequest dto, int userId){
         Bookmark bookmark = Bookmark.builder()
                 .userPathId(dto.getUserPathId())
@@ -98,5 +107,37 @@ public class CourseServiceImpl implements CourseService{
                 .build();
 
         return courseMapper.bookmarkcancle(bookmark);
+    }
+
+    // 리스트(북마크 기준)
+    public List<CourseListResponse> list(int userId){
+        List<UserPath> userPaths = courseMapper.list();
+        List<CourseListResponse> courseListResponses = new ArrayList<>();;
+        System.out.println(userPaths);
+        for(UserPath userPath : userPaths){
+            // username 추출
+            User user = userRepository.findById(userPath.getUserId()).orElse(null);
+
+             // 구 정보 추출
+             String address = userPath.getAddress();
+             int guIndex = address.indexOf("구");
+            String gu = null;
+
+            if (guIndex != -1) {
+                int start = address.lastIndexOf(" ", guIndex) + 1;
+                gu = address.substring(start, guIndex + 1);
+            }
+
+            CourseListResponse courseListResponse = CourseListResponse.builder()
+                    .username(user.getUserName())
+                    .courseName(userPath.getName())
+                    .area(gu)
+                    .isBookmark(courseMapper.isBookmark(userId, userPath.getUserPathId()))
+                    .distance(userPath.getDistance())
+                    .build();
+
+            courseListResponses.add(courseListResponse);
+        }
+        return courseListResponses;
     }
 }
