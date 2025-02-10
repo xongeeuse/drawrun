@@ -1,7 +1,5 @@
-package com.dasima.drawrun.domain.map.entity;
+package com.dasima.drawrun.domain.course.entity;
 
-import com.dasima.drawrun.domain.map.vo.GeoPoint;
-import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,7 +10,6 @@ import org.springframework.data.mongodb.core.geo.GeoJsonLineString;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.awt.*;
 import java.util.List;
 
 @NoArgsConstructor

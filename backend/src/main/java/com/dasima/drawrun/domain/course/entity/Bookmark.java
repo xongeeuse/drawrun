@@ -1,17 +1,16 @@
-package com.dasima.drawrun.domain.map.entity;
+package com.dasima.drawrun.domain.course.entity;
 
-import jakarta.persistence.Entity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserPath {
-    private int userPathId;
+@Data
+public class Bookmark {
+    private int bookmarkId;
     private int userId;
-    private String pathId;
+    private int userPathId;
 }
