@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.drawrun.R
 import com.google.android.gms.wearable.PutDataMapRequest
@@ -55,7 +56,7 @@ import com.mapbox.navigation.voice.model.SpeechAnnouncement
 import com.mapbox.navigation.voice.model.SpeechError
 import com.mapbox.navigation.voice.model.SpeechValue
 
-class MapActivity : ComponentActivity() {
+class MapActivity : AppCompatActivity() {
 
     // MapBox 관련 변수 초기화
     private lateinit var mapView: MapView
