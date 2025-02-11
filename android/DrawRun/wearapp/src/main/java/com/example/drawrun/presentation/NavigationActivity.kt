@@ -42,7 +42,11 @@ class NavigationActivity : ComponentActivity() {
         )
         Log.d("NavigationActivity", "registerReceiver 호출 완료")
         setContent {
-            NavigationScreen(dataViewModel, sensorViewModel)
+            NavigationScreen(dataViewModel, sensorViewModel){
+                val intent = Intent(this, DrawRunMainActivity::class.java)
+                startActivity(intent)
+                finish()  // 현재 액티비티 종료
+            }
         }
     }
 
@@ -79,9 +83,9 @@ class NavigationActivity : ComponentActivity() {
 //        sendAverageHeartRateToMobile()
         sensorManagerHelper.startSensors()
         Log.d("NavigationActivity", "Navigation 종료 - 메인 화면이동")
-        val intent = Intent(this, DrawRunMainActivity::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-        startActivity(intent)
+//        val intent = Intent(this, DrawRunMainActivity::class.java)
+//        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+//        startActivity(intent)
     }
 
     private fun startHeartRateMeasurement() {
@@ -105,19 +109,13 @@ class NavigationActivity : ComponentActivity() {
 
     private val serviceStoppedReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action == "com.example.drawrun.SERVICE_STOPPED") {
-                Log.d("NavigationActivity", "서비스 중단 감지 - 메인 화면으로 이동")
-                navigateToMainScreen()
-            }
+//            if (intent.action == "com.example.drawrun.SERVICE_STOPPED") {
+//                Log.d("NavigationActivity", "서비스 중단 감지 - 메인 화면으로 이동")
+//                navigateToMainScreen()
+//            }
         }
     }
 
-    private fun navigateToMainScreen() {
-        val mainIntent = Intent(this, DrawRunMainActivity::class.java)
-        mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-        startActivity(mainIntent)
-        finish()  // 현재 Activity 종료
-    }
 
 
 }

@@ -22,8 +22,10 @@ import com.example.drawrun.presentation.DataViewModel
 import com.example.drawrun.presentation.sensors.SensorViewModel
 import kotlinx.coroutines.launch
 import com.example.drawrun.R
+import kotlinx.coroutines.delay
+
 @Composable
-fun NavigationScreen(dataViewModel: DataViewModel, sensorViewModel: SensorViewModel) {
+fun NavigationScreen(dataViewModel: DataViewModel, sensorViewModel: SensorViewModel, onNavigateToMain: () -> Unit) {
     val distanceToNextTurn by dataViewModel.distanceToNextTurn.collectAsState()
     val voiceInstruction by dataViewModel.voiceInstruction.collectAsState()
     val totalDistance by dataViewModel.totalDistance.collectAsState()
@@ -82,6 +84,12 @@ fun NavigationScreen(dataViewModel: DataViewModel, sensorViewModel: SensorViewMo
                 textAlign = TextAlign.Center
             )
             Text(text = "평균 심박수: ${averageHeartRate ?: "N/A"} BPM", fontSize = 24.sp)
+            // 4초 뒤 화면 전환
+            LaunchedEffect(Unit) {
+                delay(4000)
+                onNavigateToMain()
+            }
+
         } else {
             // 진행 중인 네비게이션 UI
             Canvas(
