@@ -76,6 +76,7 @@ class SearchActivity : AppCompatActivity() {
                 val searchResultFragment = SearchResultFragment().apply {
                     arguments = Bundle().apply {
                         putString("query", query)
+                        putBoolean("isKeywordMode", isKeywordMode)
                     }
                 }
                 Log.d("SearchSearch", "Creating SearchResultFragment")

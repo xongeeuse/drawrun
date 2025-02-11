@@ -31,7 +31,7 @@ class SearchResultFragment : Fragment() {
     private lateinit var courseAdapter: CourseAdapter
     private val searchRepository: SearchRepository by lazy {
         // 여기서 SearchRepository를 초기화합니다.
-        // 이 부분은 의존성 주입이나 서비스 로케이터 패턴을 사용하여 개선할 수 있습니다.
+        // 여기서 왜 RetrofitInstance에 직접 접근해야 하는지..의문...뭐야?
         SearchRepository(RetrofitInstance.SearchApi(requireContext()))
     }
 
@@ -69,7 +69,8 @@ class SearchResultFragment : Fragment() {
         arguments?.getString("query")?.let { query ->
             binding.toolbar.title = "'$query'에 대한 검색 결과"
             Log.d("SearchSearch", "search 실행 전")
-            viewModel.search(query, isKeywordMode = true) // 키워드 모드로 검색
+            val isKeywordMode = arguments?.getBoolean("isKeywordMode") ?: true
+            viewModel.search(query, isKeywordMode) // 키워드 모드로 검색
             Log.d("SearchSearch", "search 실행 후")
         }
     }

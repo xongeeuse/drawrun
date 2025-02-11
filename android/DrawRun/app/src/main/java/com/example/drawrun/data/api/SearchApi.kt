@@ -10,5 +10,5 @@ interface SearchApi {
     suspend fun searchCoursesByKeyword(@Query("keyword") keyword: String): Response<SearchResponse>
 
     @GET("course/list")
-    suspend fun searchCoursesByLocation(@Query("location") location: String): Response<SearchResponse>
+    suspend fun searchCoursesByLocation(@Query("area") area: String): Response<SearchResponse>
 }
