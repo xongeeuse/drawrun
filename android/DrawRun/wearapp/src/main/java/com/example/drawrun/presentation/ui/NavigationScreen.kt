@@ -28,7 +28,8 @@ fun NavigationScreen(dataViewModel: DataViewModel, sensorViewModel: SensorViewMo
     val voiceInstruction by dataViewModel.voiceInstruction.collectAsState()
     val totalDistance by dataViewModel.totalDistance.collectAsState()
     val distanceRemaining by dataViewModel.distanceRemaining.collectAsState()
-    val isDestinationReached by dataViewModel.isDestinationReached.observeAsState(false)
+    val isDestinationReached by dataViewModel.isDestinationReached.collectAsState(initial = false)
+
 
     Log.d("NavigationScreen", "UI 업데이트: distanceToNextTurn=$distanceToNextTurn, voiceInstruction=$voiceInstruction")
 
@@ -116,10 +117,10 @@ fun NavigationScreen(dataViewModel: DataViewModel, sensorViewModel: SensorViewMo
                 Icon(
                     painter = painterResource(id = iconRes),
                     contentDescription = null,
-                    modifier = Modifier.size(80.dp)
+                    modifier = Modifier.size(100.dp)
                 )
                 Spacer(modifier = Modifier.height(5.dp))
-                Text(text = "${distanceToNextTurn.toInt()}m", fontSize = 20.sp)
+                Text(text = "${distanceToNextTurn.toInt()}m", fontSize = 25.sp)
 //                Text(
 //                    text = voiceInstruction,
 //                    fontSize = 18.sp,

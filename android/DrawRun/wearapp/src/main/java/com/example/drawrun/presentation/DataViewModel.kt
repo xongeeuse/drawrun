@@ -22,16 +22,11 @@ class DataViewModel : ViewModel() {
     private val _distanceRemaining = MutableStateFlow(0.0)
     val distanceRemaining: StateFlow<Double> get() = _distanceRemaining
 
-    private val _isDestinationReached = MutableLiveData<Boolean>(false)
-    val isDestinationReached: LiveData<Boolean> = _isDestinationReached
-
+    private val _isDestinationReached = MutableStateFlow(false)
+    val isDestinationReached: StateFlow<Boolean> get() = _isDestinationReached
     // 남은 거리 체크 로직
     fun checkDestinationReached(distanceRemaining: Double) {
-        if (distanceRemaining <= 0.0) {
-            _isDestinationReached.value = true
-        } else {
-            _isDestinationReached.value = false
-        }
+        _isDestinationReached.value = distanceRemaining <= 0.0
     }
     // 강제 UI 업데이트 함수
     fun forceRefresh() {
@@ -54,6 +49,7 @@ class DataViewModel : ViewModel() {
             _voiceInstruction.value = voiceInstruction
             _totalDistance.value = totalDistance
             _distanceRemaining.value = distanceRemaining
+            checkDestinationReached(distanceRemaining)
         }
     }
 }
