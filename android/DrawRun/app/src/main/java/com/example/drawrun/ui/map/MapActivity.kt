@@ -17,7 +17,9 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.drawrun.R
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.wearable.PutDataMapRequest
+import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.wearable.Wearable
 import com.mapbox.api.directions.v5.DirectionsCriteria
 import com.mapbox.api.directions.v5.models.RouteOptions
@@ -60,6 +62,7 @@ import com.mapbox.navigation.voice.api.MapboxVoiceInstructionsPlayer
 import com.mapbox.navigation.voice.model.SpeechAnnouncement
 import com.mapbox.navigation.voice.model.SpeechError
 import com.mapbox.navigation.voice.model.SpeechValue
+import com.mapbox.turf.TurfMeasurement
 
 class MapActivity : AppCompatActivity() {
 
@@ -71,6 +74,8 @@ class MapActivity : AppCompatActivity() {
     private lateinit var routeLineView: MapboxRouteLineView
     private lateinit var speechApi: MapboxSpeechApi
     private lateinit var voiceInstructionsPlayer: MapboxVoiceInstructionsPlayer
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+
 
     private val points = mutableListOf<Point>() // 사용자가 선택한 지점들을 저장하는 리스트
     private val trackingPoints = mutableListOf<Point>() // 사용자의 이동 경로를 저장하는 리스트
@@ -94,6 +99,9 @@ class MapActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
 
 
         // 음성 안내 API 초기화
@@ -207,62 +215,81 @@ class MapActivity : AppCompatActivity() {
             routeLineView = MapboxRouteLineView(routeLineOptions)
 
             startButton.setOnClickListener {
-                if (points.size >= 1) {
-                    mapboxNavigation.requestRoutes(
-                        RouteOptions.builder()
-                            .applyDefaultNavigationOptions()
-                            .profile(DirectionsCriteria.PROFILE_WALKING)
-                            .language("ko")
-                            .steps(true)
-                            .voiceUnits(DirectionsCriteria.METRIC)  // 거리 단위(미터)
-                            .coordinatesList(points) // 좌표 리스트 설정
-                            .waypointIndicesList((0 until points.size).toList())
-                            .waypointNamesList(List(points.size) { index ->
-                                when (index) {
-                                    0 -> "출발지"
-                                    points.size - 1 -> "도착지"
-                                    else -> "경유지 $index"
-                                }
-                            })
-                            .build(),
-
-                        object : NavigationRouterCallback {
-                            override fun onRoutesReady(routes: List<NavigationRoute>, routerOrigin: String) {
-                                val route = routes.firstOrNull() // 경로를 받아옴 (이 부분 추가!)
-
-                                if (route != null) {
-                                    mapboxNavigation.startTripSession()
-                                    mapboxNavigation.setNavigationRoutes(listOf(route)) // 여기서 route 사용
-                                    mapboxNavigation.registerRouteProgressObserver(routeProgressObserver)
-                                    sendStartNavigationCommandToWatch()
-
-
-                                    // 🚶‍♂️ 도보 모드에 적절한 줌 설정 (내비게이션 시작 시만)
-                                    mapView.getMapboxMap().setCamera(
-                                        CameraOptions.Builder()
-                                            .center(points.first()) // 출발지를 중심으로 설정
-                                            .zoom(17.0) // 도보 모드에 적절한 줌 레벨
-                                            .build()
-                                    )
-
-
-                                    Toast.makeText(this@MapActivity, "내비게이션 시작!", Toast.LENGTH_SHORT).show()
-                                } else {
-                                    Toast.makeText(this@MapActivity, "경로 생성 실패!", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-
-                            override fun onFailure(reasons: List<RouterFailure>, routeOptions: RouteOptions) {
-                                Toast.makeText(this@MapActivity, "경로 요청 실패!", Toast.LENGTH_SHORT).show()
-                            }
-
-                            override fun onCanceled(routeOptions: RouteOptions, routerOrigin: String) {}
-                        }
-                    )
-                } else {
+                if (points.isEmpty()) {
                     Toast.makeText(this, "최소 출발지와 도착지를 선택해주세요.", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                // ✅ 현재 사용자 위치 가져오기
+                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                    if (location != null) {
+                        val userPoint = Point.fromLngLat(location.longitude, location.latitude)
+                        val startPoint = points.first()
+
+                        val distance = TurfMeasurement.distance(userPoint, startPoint, "meters")
+
+                        if (distance > 20) {
+                            Toast.makeText(this@MapActivity, "출발지로 이동 후 시작해주세요.", Toast.LENGTH_SHORT).show()
+                        } else {
+                            // ✅ 출발지와 가까운 경우 기존 내비게이션 시작 로직 실행
+                            mapboxNavigation.requestRoutes(
+                                RouteOptions.builder()
+                                    .applyDefaultNavigationOptions()
+                                    .profile(DirectionsCriteria.PROFILE_WALKING)
+                                    .language("ko")
+                                    .steps(true)
+                                    .voiceUnits(DirectionsCriteria.METRIC)  // 거리 단위(미터)
+                                    .coordinatesList(points) // 좌표 리스트 설정
+                                    .waypointIndicesList((0 until points.size).toList())
+                                    .waypointNamesList(List(points.size) { index ->
+                                        when (index) {
+                                            0 -> "출발지"
+                                            points.size - 1 -> "도착지"
+                                            else -> "경유지 $index"
+                                        }
+                                    })
+                                    .build(),
+
+                                object : NavigationRouterCallback {
+                                    override fun onRoutesReady(routes: List<NavigationRoute>, routerOrigin: String) {
+                                        val route = routes.firstOrNull()
+
+                                        if (route != null) {
+                                            mapboxNavigation.startTripSession()
+                                            mapboxNavigation.setNavigationRoutes(listOf(route))
+                                            mapboxNavigation.registerRouteProgressObserver(routeProgressObserver)
+                                            sendStartNavigationCommandToWatch()
+
+                                            // 🚶‍♂️ 도보 모드에 적절한 줌 설정 (내비게이션 시작 시만)
+                                            mapView.getMapboxMap().setCamera(
+                                                CameraOptions.Builder()
+                                                    .center(points.first()) // 출발지를 중심으로 설정
+                                                    .zoom(17.0) // 도보 모드에 적절한 줌 레벨
+                                                    .build()
+                                            )
+
+                                            Toast.makeText(this@MapActivity, "내비게이션 시작!", Toast.LENGTH_SHORT).show()
+                                        } else {
+                                            Toast.makeText(this@MapActivity, "경로 생성 실패!", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+
+                                    override fun onFailure(reasons: List<RouterFailure>, routeOptions: RouteOptions) {
+                                        Toast.makeText(this@MapActivity, "경로 요청 실패!", Toast.LENGTH_SHORT).show()
+                                    }
+
+                                    override fun onCanceled(routeOptions: RouteOptions, routerOrigin: String) {}
+                                }
+                            )
+                        }
+                    } else {
+                        Toast.makeText(this@MapActivity, "현재 위치를 가져올 수 없습니다.", Toast.LENGTH_SHORT).show()
+                    }
+                }.addOnFailureListener {
+                    Toast.makeText(this@MapActivity, "위치 정보 오류 발생!", Toast.LENGTH_SHORT).show()
                 }
             }
+
 
 
             stopButton.setOnClickListener {
@@ -503,7 +530,7 @@ class MapActivity : AppCompatActivity() {
 
             if (points.isNotEmpty() && points.last() != userLocation) {
                 val updatedPoints = listOf(userLocation) + points.drop(1)
-                requestRoute(updatedPoints, manualRequest = false)
+//                requestRoute(updatedPoints, manualRequest = false)
             }
         }
     }
