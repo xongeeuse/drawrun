@@ -136,6 +136,7 @@ public class CourseServiceImpl implements CourseService{
 
             CourseListResponse courseListResponse = CourseListResponse.builder()
                     .userNickname(user.getUserNickname())
+                    .courseId(userPath.getUserPathId())
                     .userPK(user.getUserId())
                     .profileImgUrl(user.getProfileImgUrl())
                     .courseName(userPath.getName())
