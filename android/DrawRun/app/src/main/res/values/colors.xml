@@ -6,4 +6,6 @@
     <color name="login_hint">#B6B6B6</color>
     <color name="logo_color">#00C853</color>
     <color name="sub_title">#74CE7B</color>
+    <color name="main_background">#171515</color>
+
 </resources>

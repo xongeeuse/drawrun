@@ -79,6 +79,12 @@ dependencies {
     // Room database
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
+    implementation(libs.androidx.activity.ktx)
+    implementation(libs.androidx.activity.ktx)
+    implementation(libs.androidx.activity.ktx)
+    implementation(libs.androidx.runtime.android)
+    implementation(libs.androidx.runtime.android)
+    implementation(libs.androidx.lifecycle.livedata.core)
     implementation(libs.androidx.ui.graphics.android)
     kapt(libs.room.compiler)
 
