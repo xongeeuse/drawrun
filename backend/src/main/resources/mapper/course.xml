@@ -23,7 +23,7 @@
         <result column="create_date" property="createDate"/>
     </resultMap>
 
-    <select id="search" parameterType="integer">
+    <select id="search" parameterType="integer" resultMap="UserPathResultMap">
         select *
         from user_path
         where user_path_id = #{userPathId};

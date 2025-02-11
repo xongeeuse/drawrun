@@ -40,6 +40,7 @@ public class CourseController {
     // 단건 조회
     @GetMapping("search/{userPathId}")
     public ResponseEntity<?> search(@PathVariable int userPathId){
+        return ResponseEntity.ok(courseService.search(userPathId));
     }
 
     // 북마크 저장
