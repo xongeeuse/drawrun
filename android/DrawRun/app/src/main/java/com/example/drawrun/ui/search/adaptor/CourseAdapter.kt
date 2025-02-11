@@ -64,11 +64,13 @@ class CourseViewHolder(
                 .load(course.courseImgUrl)
                 .into(courseImage)
 
-            // 프로필 이미지 로딩
-//            Glide.with(itemView.context)
-//                .load(course.profileImgUrl)  // 프로필 이미지 URL
-//                .circleCrop()  // 원형으로 표시
-//                .into(profileImage)
+            // 프로필 이미지 로딩 (null이 아닐 때만)
+            course.profileImgUrl?.let { url ->
+                Glide.with(itemView.context)
+                    .load(url)
+                    .circleCrop()
+                    .into(profileImage)
+            }
         }
     }
 }

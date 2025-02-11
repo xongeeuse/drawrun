@@ -13,6 +13,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.drawrun.R
+import com.example.drawrun.data.repository.CourseRepository
 import com.example.drawrun.data.repository.SearchRepository
 import com.example.drawrun.databinding.FragmentSearchResultBinding
 import com.example.drawrun.ui.search.adaptor.CourseAdapter
@@ -35,8 +36,12 @@ class SearchResultFragment : Fragment() {
         SearchRepository(RetrofitInstance.SearchApi(requireContext()))
     }
 
+    private val courseRepository: CourseRepository by lazy {
+        CourseRepository(RetrofitInstance.CourseApi(requireContext()))
+    }
+
     private val viewModel: SearchViewModel by viewModels {
-        SearchViewModelFactory(searchRepository)
+        SearchViewModelFactory(searchRepository, courseRepository)
     }
 
     override fun onCreateView(
@@ -78,9 +83,7 @@ class SearchResultFragment : Fragment() {
     private fun setupRecyclerView() {
         courseAdapter = CourseAdapter { course ->
             Log.d("SearchSearch", "Bookmark clicked for course: ${course.courseName}")
-
-            // TODO: 북마크 클릭 처리
-            // viewModel.toggleBookmark(course)
+            viewModel.toggleBookmark(course)
         }
 
         binding.searchResultRecyclerView.apply {

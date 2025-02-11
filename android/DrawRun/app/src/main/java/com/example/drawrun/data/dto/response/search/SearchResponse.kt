@@ -11,7 +11,7 @@ typealias SearchResponse = List<CourseData>
 
 // 변수명 다시 체크
 data class CourseData(
-    val courseId: String,       // 코스 pk
+    val courseId: Int,       // 코스 pk
     val courseName: String,     // 코스 이름
     val distance: Double,       // 코스 총 거리
     val location: String?,       // 코스 지역 정보
