@@ -4,6 +4,7 @@ import com.dasima.drawrun.domain.course.dto.request.BookmarkCancleRequest;
 import com.dasima.drawrun.domain.course.dto.request.BookmarkCreateRequest;
 import com.dasima.drawrun.domain.course.dto.request.CourseSaveRequest;
 import com.dasima.drawrun.domain.course.dto.response.CourseListResponse;
+import com.dasima.drawrun.domain.course.dto.response.CourseResponse;
 import com.dasima.drawrun.domain.course.entity.Bookmark;
 import com.dasima.drawrun.domain.course.entity.Path;
 import com.dasima.drawrun.domain.course.entity.UserPath;
@@ -17,6 +18,7 @@ import com.dasima.drawrun.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.geo.Point;
+import org.springframework.data.mongodb.core.geo.GeoJsonLineString;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -134,6 +136,7 @@ public class CourseServiceImpl implements CourseService{
 
             CourseListResponse courseListResponse = CourseListResponse.builder()
                     .userNickname(user.getUserNickname())
+                    .courseId(userPath.getUserPathId())
                     .userPK(user.getUserId())
                     .profileImgUrl(user.getProfileImgUrl())
                     .courseName(userPath.getName())
@@ -149,4 +152,31 @@ public class CourseServiceImpl implements CourseService{
         }
         return courseListResponses;
     }
+
+    public CourseResponse search(int pathUserId){
+        // UserPath 단건조회
+        UserPath userPath = courseMapper.search(pathUserId);
+
+        // mongodb에서 geo json을 들고와줘야댐
+        Path path = courseRepository.findById(userPath.getPathId()).orElse(null);
+        GeoJsonLineString geoJsonLineString = path.getPath();
+        List<Point> list = geoJsonLineString.getCoordinates();
+
+        // Point 형식을 좀 간단하게 변환
+        List<GeoPoint> geoPoints = new ArrayList<GeoPoint>();
+        for(Point point : list){
+            GeoPoint tmp = new GeoPoint(point.getX(), point.getY());
+            geoPoints.add(tmp);
+        }
+
+        return CourseResponse.builder()
+                .userPathId(userPath.getUserPathId())
+                .distance(userPath.getDistance())
+                .location(userPath.getAddress())
+                .path(geoPoints)
+                .build();
+
+    }
+
+
 }

@@ -2,10 +2,14 @@ package com.example.drawrun.ui.map
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
+import android.view.Window
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
@@ -13,7 +17,9 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.drawrun.R
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.wearable.PutDataMapRequest
+import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.wearable.Wearable
 import com.mapbox.api.directions.v5.DirectionsCriteria
 import com.mapbox.api.directions.v5.models.RouteOptions
@@ -21,6 +27,7 @@ import com.mapbox.bindgen.Expected
 import com.mapbox.common.location.Location
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
+import com.mapbox.maps.EdgeInsets
 import com.mapbox.maps.ImageHolder
 import com.mapbox.maps.MapView
 import com.mapbox.maps.Style
@@ -55,6 +62,7 @@ import com.mapbox.navigation.voice.api.MapboxVoiceInstructionsPlayer
 import com.mapbox.navigation.voice.model.SpeechAnnouncement
 import com.mapbox.navigation.voice.model.SpeechError
 import com.mapbox.navigation.voice.model.SpeechValue
+import com.mapbox.turf.TurfMeasurement
 
 class MapActivity : AppCompatActivity() {
 
@@ -66,6 +74,8 @@ class MapActivity : AppCompatActivity() {
     private lateinit var routeLineView: MapboxRouteLineView
     private lateinit var speechApi: MapboxSpeechApi
     private lateinit var voiceInstructionsPlayer: MapboxVoiceInstructionsPlayer
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+
 
     private val points = mutableListOf<Point>() // 사용자가 선택한 지점들을 저장하는 리스트
     private val trackingPoints = mutableListOf<Point>() // 사용자의 이동 경로를 저장하는 리스트
@@ -89,6 +99,10 @@ class MapActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+
 
         // 음성 안내 API 초기화
         speechApi = MapboxSpeechApi(
@@ -168,12 +182,29 @@ class MapActivity : AppCompatActivity() {
         val startButton = findViewById<Button>(R.id.startNavigationButton)
         val stopButton = findViewById<Button>(R.id.stopNavigationButton)
 
-        mapView.getMapboxMap().loadStyleUri(Style.MAPBOX_STREETS) { style ->
+        // 경로 생성 버튼 추가
+        val generateRouteButton = findViewById<Button>(R.id.generateRouteButton)
+
+        mapView.getMapboxMap().loadStyleUri(Style.DARK) { style ->
             style.localizeLabels(Locale("ko")) // 지도 라벨 한글화
 
             mapView.location.updateSettings {
                 enabled = true // 현재 위치 표시 활성화
                 pulsingEnabled = true // 현재 위치에 펄싱 효과 추가
+            }
+
+            // 경로 생성 버튼 클릭 시 동작 추가
+            generateRouteButton.setOnClickListener {
+                if (points.size >= 2) {
+                    requestRoute(points, manualRequest = true)  // 사용자가 찍은 빨간색 좌표를 기반으로 도보 경로 요청
+                    Log.d("NAVINAVI", "사용자 지정 경로 요청: ${points}")
+                    Toast.makeText(this, "경로를 생성하고 스냅샷을 찍습니다.", Toast.LENGTH_SHORT).show()
+
+                    // ✅ 생성된 경로를 스냅샷으로 저장
+                    captureMapSnapshotAndShow()
+                } else {
+                    Toast.makeText(this, "최소 출발지와 도착지를 선택해주세요", Toast.LENGTH_SHORT).show()
+                }
             }
 
             // 경로 라인 표시 옵션 설정
@@ -183,37 +214,92 @@ class MapActivity : AppCompatActivity() {
             routeLineApi = MapboxRouteLineApi(MapboxRouteLineApiOptions.Builder().build())
             routeLineView = MapboxRouteLineView(routeLineOptions)
 
-            // 내비게이션 시작 버튼 클릭 시 경로 요청
             startButton.setOnClickListener {
-                if (points.size >= 2) {
-                    requestRoute(points)
-                    sendStartNavigationCommandToWatch()
-                    Log.d("NAVINAVI", "${points}")
-                    Toast.makeText(this, "경유지 포함 내비게이션 시작", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(this, "최소 출발지와 도착지를 선택해주세요", Toast.LENGTH_SHORT).show()
+                if (points.isEmpty()) {
+                    Toast.makeText(this, "최소 출발지와 도착지를 선택해주세요.", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                // ✅ 현재 사용자 위치 가져오기
+                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                    if (location != null) {
+                        val userPoint = Point.fromLngLat(location.longitude, location.latitude)
+                        val startPoint = points.first()
+
+                        val distance = TurfMeasurement.distance(userPoint, startPoint, "meters")
+
+                        if (distance > 20) {
+                            Toast.makeText(this@MapActivity, "출발지로 이동 후 시작해주세요.", Toast.LENGTH_SHORT).show()
+                        } else {
+                            // ✅ 출발지와 가까운 경우 기존 내비게이션 시작 로직 실행
+                            mapboxNavigation.requestRoutes(
+                                RouteOptions.builder()
+                                    .applyDefaultNavigationOptions()
+                                    .profile(DirectionsCriteria.PROFILE_WALKING)
+                                    .language("ko")
+                                    .steps(true)
+                                    .voiceUnits(DirectionsCriteria.METRIC)  // 거리 단위(미터)
+                                    .coordinatesList(points) // 좌표 리스트 설정
+                                    .waypointIndicesList((0 until points.size).toList())
+                                    .waypointNamesList(List(points.size) { index ->
+                                        when (index) {
+                                            0 -> "출발지"
+                                            points.size - 1 -> "도착지"
+                                            else -> "경유지 $index"
+                                        }
+                                    })
+                                    .build(),
+
+                                object : NavigationRouterCallback {
+                                    override fun onRoutesReady(routes: List<NavigationRoute>, routerOrigin: String) {
+                                        val route = routes.firstOrNull()
+
+                                        if (route != null) {
+                                            mapboxNavigation.startTripSession()
+                                            mapboxNavigation.setNavigationRoutes(listOf(route))
+                                            mapboxNavigation.registerRouteProgressObserver(routeProgressObserver)
+                                            sendStartNavigationCommandToWatch()
+
+                                            // 🚶‍♂️ 도보 모드에 적절한 줌 설정 (내비게이션 시작 시만)
+                                            mapView.getMapboxMap().setCamera(
+                                                CameraOptions.Builder()
+                                                    .center(points.first()) // 출발지를 중심으로 설정
+                                                    .zoom(17.0) // 도보 모드에 적절한 줌 레벨
+                                                    .build()
+                                            )
+
+                                            Toast.makeText(this@MapActivity, "내비게이션 시작!", Toast.LENGTH_SHORT).show()
+                                        } else {
+                                            Toast.makeText(this@MapActivity, "경로 생성 실패!", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+
+                                    override fun onFailure(reasons: List<RouterFailure>, routeOptions: RouteOptions) {
+                                        Toast.makeText(this@MapActivity, "경로 요청 실패!", Toast.LENGTH_SHORT).show()
+                                    }
+
+                                    override fun onCanceled(routeOptions: RouteOptions, routerOrigin: String) {}
+                                }
+                            )
+                        }
+                    } else {
+                        Toast.makeText(this@MapActivity, "현재 위치를 가져올 수 없습니다.", Toast.LENGTH_SHORT).show()
+                    }
+                }.addOnFailureListener {
+                    Toast.makeText(this@MapActivity, "위치 정보 오류 발생!", Toast.LENGTH_SHORT).show()
                 }
             }
 
 
-            // 내비게이션 종료 버튼 클릭 시 경로 초기화
+
             stopButton.setOnClickListener {
-                mapboxNavigation.apply {
-                    stopTripSession()
-                    unregisterRouteProgressObserver(routeProgressObserver)
-                    unregisterLocationObserver(realTimeLocationObserver)
-                    setNavigationRoutes(emptyList()) // 경로 초기화 추가
-                }
-                routeLineApi.clearRouteLine { expected ->
-                    expected.fold(
-                        { error -> Log.e("NAVINAVI", "경로 삭제 실패: ${error.errorMessage}") },
-                        { _ -> Log.d("NAVINAVI", "경로가 성공적으로 삭제되었습니다.") }
-                    )
-                }
-                points.clear()
-                polylineAnnotationManager.deleteAll()
-                voiceInstructionsPlayer.clear()
-                Toast.makeText(this, "내비게이션 종료", Toast.LENGTH_SHORT).show()
+                stopNavigation()
+            }
+
+            polylineAnnotationManager = mapView.annotations.createPolylineAnnotationManager()
+            mapView.gestures.addOnMapClickListener { point ->
+                handleMapClick(point)
+                true
             }
 
             val listener = object : OnIndicatorPositionChangedListener {
@@ -265,7 +351,7 @@ class MapActivity : AppCompatActivity() {
     }
 
     // 경로 요청
-    private fun requestRoute(points: List<Point>) {
+    private fun requestRoute(points: List<Point>, manualRequest: Boolean = false) {
         mapboxNavigation.requestRoutes(
             RouteOptions.builder()
                 .applyDefaultNavigationOptions()
@@ -292,17 +378,18 @@ class MapActivity : AppCompatActivity() {
                                 routeLineView.renderRouteDrawData(this, value)
                             }
                         }
-                        mapboxNavigation.startTripSession()
-                        mapboxNavigation.setNavigationRoutes(listOf(route))
-                        mapboxNavigation.registerRouteProgressObserver(routeProgressObserver)
 
-                        // ✅ 지도 줌 레벨을 도보에 맞게 조정 (17.5~18이 도보에 적절한 줌 레벨)
-                        mapView.getMapboxMap().setCamera(
-                            CameraOptions.Builder()
-                                .center(points.first()) // 출발지를 중심으로 설정
-                                .zoom(17.5) // 🚶‍♂️ 도보 모드에 적절한 줌 인 값
-                                .build()
-                        )
+                        // ✅ 내비게이션 자동 시작 X
+                        // ✅ 줌 조정 X (내비 시작 시 적용)
+
+                        if (manualRequest) {
+                            captureMapSnapshotAndShow()
+                            Toast.makeText(
+                                this@MapActivity,
+                                "경로가 생성되었습니다. 내비게이션을 시작하려면 버튼을 눌러주세요.",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
 
                     }
                 }
@@ -312,6 +399,98 @@ class MapActivity : AppCompatActivity() {
             }
         )
     }
+
+    private fun captureMapSnapshotAndShow() {
+        if (points.size < 2) return
+
+        // 현재 위치 마커 숨기기
+        mapView.location.updateSettings {
+            enabled = false  // 위치 마커 비활성화
+        }
+
+        // 1️⃣ 바운딩 박스(경로 영역) 계산
+        val routeBounds = points.fold(null as Pair<Point, Point>?) { bounds, point ->
+            when (bounds) {
+                null -> Pair(point, point)
+                else -> Pair(
+                    Point.fromLngLat(
+                        minOf(bounds.first.longitude(), point.longitude()),
+                        minOf(bounds.first.latitude(), point.latitude())
+                    ),
+                    Point.fromLngLat(
+                        maxOf(bounds.second.longitude(), point.longitude()),
+                        maxOf(bounds.second.latitude(), point.latitude())
+                    )
+                )
+            }
+        }
+
+        routeBounds?.let { (southWest, northEast) ->
+            // 2️⃣ 지도 카메라를 바운딩 박스에 맞게 자동 조정 (Mapbox 제공 기능)
+            val cameraOptions = mapView.getMapboxMap().cameraForCoordinates(
+                points, // 경로에 포함된 모든 좌표 사용
+                EdgeInsets(300.0, 300.0, 300.0, 300.0) // 경로 크기에 따라 여백 추가 (200~300 추천)
+            )
+
+            mapView.getMapboxMap().setCamera(cameraOptions) // 카메라 설정 적용
+
+            // 3️⃣ 사용자가 그린 빨간색 경로(Polyline) 삭제
+            polylineAnnotationManager.deleteAll()
+
+            // 4️⃣ 약간의 딜레이 후 스냅샷 촬영 (카메라 조정 후 안정적 촬영)
+            mapView.postDelayed({
+                mapView.snapshot { bitmap ->
+
+                    if (bitmap != null) {
+                        val croppedBitmap = cropBitmapToSquare(bitmap) // 정사각형 크롭
+                        showSnapshotDialog(croppedBitmap) // 모달 다이얼로그 띄우기
+                    } else {
+                        Log.e("MAP_SNAPSHOT", "스냅샷 생성 실패")
+                    }
+                }
+            }, 1400) // 카메라 이동 후 1.4초 딜레이 (줌 조정 안정화)
+        }
+
+    }
+
+    // ✅ 정사각형 크롭 함수 (중앙 기준)
+    private fun cropBitmapToSquare(bitmap: Bitmap): Bitmap {
+        val width = bitmap.width
+        val height = bitmap.height
+        val size = minOf(width, height) // 정사각형 크기 설정 (가장 작은 변을 기준)
+
+        val xOffset = (width - size) / 2
+        val yOffset = (height - size) / 2
+
+        return Bitmap.createBitmap(bitmap, xOffset, yOffset, size, size)
+    }
+
+
+
+
+    private fun showSnapshotDialog(bitmap: Bitmap) {
+        val dialog = Dialog(this)
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.setContentView(R.layout.dialog_snapshot)
+
+        val imageView = dialog.findViewById<ImageView>(R.id.snapshotImageView)
+        val closeButton = dialog.findViewById<Button>(R.id.closeButton)
+
+        imageView.setImageBitmap(bitmap)
+
+        closeButton.setOnClickListener {
+            dialog.dismiss() // 다이얼로그 닫기
+
+        // ✅ 닫기 버튼 누르면 위치 마커 다시 활성화
+        mapView.location.updateSettings {
+            enabled = true // 위치 마커 다시 활성화
+            }
+        }
+
+        dialog.show()
+    }
+
+
 
 
     // 위치 변경 시 호출되는 콜백
@@ -323,7 +502,7 @@ class MapActivity : AppCompatActivity() {
             mapView.getMapboxMap().setCamera(
                 CameraOptions.Builder()
                     .center(currentLocation)
-                    .zoom(17.5)
+                    .zoom(17.0)
                     .bearing(bearing) // 사용자의 방향에 맞춰 카메라 회전
                     .build()
             )
@@ -351,7 +530,7 @@ class MapActivity : AppCompatActivity() {
 
             if (points.isNotEmpty() && points.last() != userLocation) {
                 val updatedPoints = listOf(userLocation) + points.drop(1)
-                requestRoute(updatedPoints)
+//                requestRoute(updatedPoints, manualRequest = false)
             }
         }
     }
@@ -455,7 +634,7 @@ class MapActivity : AppCompatActivity() {
 
         AlertDialog.Builder(this)
             .setTitle("📍 목적지 도착!")
-            .setMessage("총 이동 거리: ${formattedDistance}km\n총 소요 시간: ${formattedTime}분")
+            .setMessage("총 이동 거리: ${formattedDistance}km\n총 소요 시간: ${formattedTime}")
             .setPositiveButton("확인") { dialog, _ ->
                 dialog.dismiss() // 확인 버튼 클릭 시 다이얼로그 닫기
             }
@@ -472,12 +651,18 @@ class MapActivity : AppCompatActivity() {
             unregisterLocationObserver(realTimeLocationObserver)
             setNavigationRoutes(emptyList()) // 경로 초기화
         }
+
+        // ✅ 경로 삭제 후 빈 경로 강제 설정 (강제 리로드)
+        mapboxNavigation.setNavigationRoutes(emptyList()) // 두 번 실행하여 강제 적용
+
         routeLineApi.clearRouteLine { expected ->
             expected.fold(
                 { error -> Log.e("NAVINAVI", "경로 삭제 실패: ${error.errorMessage}") },
                 { _ -> Log.d("NAVINAVI", "경로가 성공적으로 삭제되었습니다.") }
             )
         }
+
+
         points.clear()  // 지점 초기화
 //        polylineAnnotationManager.deleteAll() // 지도에 표시된 모든 폴라라인 주석 삭제 역할
         voiceInstructionsPlayer.clear()
@@ -539,4 +724,5 @@ class MapActivity : AppCompatActivity() {
 
 
 }
+
 
