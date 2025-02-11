@@ -1,5 +1,7 @@
 package com.dasima.drawrun.domain.user.service;
 
+import com.dasima.drawrun.domain.user.dto.request.EmailAuthNumberRequestDto;
+import com.dasima.drawrun.domain.user.dto.request.EmailSendRequestDto;
 import com.dasima.drawrun.domain.user.dto.request.RegisterRequestDto;
 import com.dasima.drawrun.domain.user.entity.Role;
 import com.dasima.drawrun.domain.user.entity.RoleRegister;
@@ -12,26 +14,34 @@ import com.dasima.drawrun.global.exception.ErrorCode;
 import com.dasima.drawrun.global.security.dto.response.AccessTokenInfoResponseDto;
 import com.dasima.drawrun.global.security.dto.response.TokenResponseDto;
 import com.dasima.drawrun.global.security.provider.TokenProvider;
+import com.dasima.drawrun.global.util.RandomStringGenerator;
 import com.dasima.drawrun.global.util.RedisUtils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
-import java.security.Key;
-import java.util.Date;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.security.Key;
+import java.security.SecureRandom;
+import java.util.Date;
+import java.util.Map;
 
 @Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
+  private final long LIMIT_TIME = 180000; // mail 인증 만료시간
+  private final UserRepository userRepository;
 
   @Value("${jwt.secret}")
   private String secret;
@@ -41,6 +51,18 @@ public class AuthServiceImpl implements AuthService {
   private final RoleRepository roleRepo;
   private final BCryptPasswordEncoder passwordEncoder;
   private final RedisUtils redisUtils;
+  private final JavaMailSender javaMailSender;
+
+  // 사용할 문자 집합
+  private static final String CHAR_LOWER = "abcdefghijklmnopqrstuvwxyz";
+  private static final String CHAR_UPPER = CHAR_LOWER.toUpperCase();
+  private static final String DIGIT = "0123456789";
+  private static final String SPECIAL_CHARS = "!@#$%^&*()-_=+[]{}|;:,.<>?";
+
+  // 전체 문자 집합
+  private static final String PASSWORD_ALLOW_BASE = CHAR_LOWER + CHAR_UPPER + DIGIT + SPECIAL_CHARS;
+
+  private static final SecureRandom random = new SecureRandom();
 
   @Override
   public Object register(RegisterRequestDto dto) {
@@ -177,6 +199,112 @@ public class AuthServiceImpl implements AuthService {
     User user = findByEmail(email);
 
     redisUtils.deleteData(user.getId());
+  }
+
+  @Override
+  public void sendmail(EmailSendRequestDto dto) {
+    if (redisUtils.getData(dto.getEmail()) != null)
+      redisUtils.deleteData(dto.getEmail());
+
+    String authNumber = RandomStringGenerator.generateRandomNumber(); // 6자리수 생성
+    redisUtils.setData(dto.getEmail(), authNumber, LIMIT_TIME);
+
+    try {
+      MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+      MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+      messageHelper.setSubject("이메일 주소 확인");
+      messageHelper.setTo(dto.getEmail());
+      messageHelper.setText(authNumber);
+      javaMailSender.send(mimeMessage);
+    } catch (Exception e) {
+      throw new CustomException(ErrorCode.FAIL_EMAIL_SEND);
+    }
+  }
+
+  @Override
+  public void mailcheck(EmailAuthNumberRequestDto dto) {
+    String authNumber = redisUtils.getData(dto.getEmail());
+
+    log.info(authNumber);
+
+    if (authNumber.equals(dto.getAuthNumber()))
+      return;
+    throw new CustomException(ErrorCode.FAIL_EMAIL_AUTH);
+  }
+
+  public String generateRandomPassword() {
+    StringBuilder sb = new StringBuilder(15);
+    for (int i = 0; i < 15; i++) {
+      int rndCharAt = random.nextInt(PASSWORD_ALLOW_BASE.length());
+      char rndChar = PASSWORD_ALLOW_BASE.charAt(rndCharAt);
+      sb.append(rndChar);
+    }
+    return sb.toString();
+  }
+
+  @Override
+  public void findPassword(String userId, String email) {
+    // 1. 사용자 조회 (예: Optional을 반환하는 메서드를 사용)
+    User user = userRepository.findById(userId)
+            .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER_ID));
+
+    // 2. 입력받은 이메일과 DB의 이메일이 일치하는지 확인
+    if (!user.getUserEmail().equalsIgnoreCase(email)) {
+      throw new CustomException(ErrorCode.INCORRECT_EMAIL);
+    }
+
+    // 3. 임시 비밀번호 생성
+    String tempPassword = generateRandomPassword();
+
+    // 4. 임시 비밀번호를 이메일로 전송
+    try {
+      MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+      MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+      messageHelper.setSubject("임시 비밀번호 안내");
+      messageHelper.setTo(email);
+      messageHelper.setText("임시 비밀번호는 " + tempPassword + " 입니다. 로그인 후 반드시 변경해 주세요.", true);
+      javaMailSender.send(mimeMessage);
+    } catch (Exception e) {
+      throw new CustomException(ErrorCode.FAIL_EMAIL_SEND);
+    }
+
+    // 5. 임시 비밀번호를 암호화하여 DB에 저장
+    String encodedPassword = passwordEncoder.encode(tempPassword);
+    user.setUserPassword(encodedPassword);
+    userRepository.save(user);
+  }
+
+  @Override
+  public void changePassword(int userPK, String oldPassword, String newPassword) {
+    // 1. userPK로 사용자 조회
+    User user = userRepository.findById(userPK)
+            .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER_ID));
+
+    // 2. 기존 비밀번호(oldPassword)와 DB 저장 암호화 비밀번호 비교
+    if (!passwordEncoder.matches(oldPassword, user.getUserPassword())) {
+      throw new CustomException(ErrorCode.PASSWORD_MISMATCH);
+    }
+
+    // 3. newPassword를 암호화하여 DB 업데이트
+    String encodedNewPassword = passwordEncoder.encode(newPassword);
+    user.setUserPassword(encodedNewPassword);
+    userRepository.save(user);
+  }
+
+  @Override
+  public User findId(String email, String username) {
+    return userRepository.findByUserEmailAndUserName(email, username)
+            .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER_EMAIL));
+  }
+
+  @Override
+  public boolean checkId(String userId) {
+    return userRepository.findById(userId).isPresent();
+  }
+
+  @Override
+  public void withdrawAccount(int userPK) {
+    userRepository.deleteUserByUserId(userPK);
   }
 
 }

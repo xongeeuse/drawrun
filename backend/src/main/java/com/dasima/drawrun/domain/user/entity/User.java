@@ -50,4 +50,13 @@ public class User {
   @OneToMany(mappedBy = "user")
   private List<RoleRegister> roleRegister;
 
+//  public ShowInfoResponse toShowInfoResponseDto(){
+//    return ShowInfoResponse
+//            .builder()
+//            .nickname(userName)
+//            .profileImgUrl(profileImgUrl)
+//            .userId(userId)
+//            .build();
+//  }
+
 }

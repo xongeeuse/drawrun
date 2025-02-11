@@ -34,6 +34,7 @@ mapbox-navigation = "3.7.0-beta.1"
 mapbox-maps = "11.3.1"
 mapbox-search = "2.10.0"
 uiGraphicsAndroid = "1.7.0"
+runtimeLivedata = "1.7.7"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -83,6 +84,7 @@ mapbox-navigationcore-ui-maps = { group = "com.mapbox.navigationcore", name = "u
 mapbox-maps = { group = "com.mapbox.maps", name = "android", version.ref = "mapbox-maps" }
 mapbox-search-android = { group = "com.mapbox.search", name = "android", version.ref = "mapbox-search" }
 androidx-ui-graphics-android = { group = "androidx.compose.ui", name = "ui-graphics-android", version.ref = "uiGraphicsAndroid" }
+androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedata" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

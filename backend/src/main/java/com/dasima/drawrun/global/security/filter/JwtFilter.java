@@ -31,6 +31,7 @@ public class JwtFilter extends OncePerRequestFilter {
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
     String token = resolveToken(request); // header의 authorization에 있는 token을 유효한지(token 형식에 맞는지) 검사하고 token을 반환함
+    System.out.println(token);
     if(!StringUtils.hasText(token)) { // token이 빈경우 그냥 검증없이 다음필터로 넘어감
       request.setAttribute("result", new TokenValidationResult(TokenStatus.WRONG_AUTH_HEADER, null, null, null)); // WRONG_AUTH_HEADER를 반환해서 토큰의 형식이 틀렸다는걸 알림
       filterChain.doFilter(request, response); // 다음 필터로 넘어감
