@@ -16,7 +16,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.lifecycleScope
 import com.example.drawrun.R
+import com.example.drawrun.data.model.ParcelablePoint
+import com.example.drawrun.ui.map.fragment.CourseCompleteBottomSheet
+import com.example.drawrun.utils.RetrofitInstance
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.wearable.PutDataMapRequest
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -63,6 +67,14 @@ import com.mapbox.navigation.voice.model.SpeechAnnouncement
 import com.mapbox.navigation.voice.model.SpeechError
 import com.mapbox.navigation.voice.model.SpeechValue
 import com.mapbox.turf.TurfMeasurement
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.File
+import java.io.FileOutputStream
 
 class MapActivity : AppCompatActivity() {
 
@@ -201,7 +213,6 @@ class MapActivity : AppCompatActivity() {
                     Toast.makeText(this, "경로를 생성하고 스냅샷을 찍습니다.", Toast.LENGTH_SHORT).show()
 
                     // ✅ 생성된 경로를 스냅샷으로 저장
-                    captureMapSnapshotAndShow()
                 } else {
                     Toast.makeText(this, "최소 출발지와 도착지를 선택해주세요", Toast.LENGTH_SHORT).show()
                 }
@@ -383,7 +394,8 @@ class MapActivity : AppCompatActivity() {
                         // ✅ 줌 조정 X (내비 시작 시 적용)
 
                         if (manualRequest) {
-                            captureMapSnapshotAndShow()
+                            val distanceInKm = route.directionsRoute.distance() / 1000
+                            captureMapSnapshotAndShow(distanceInKm)
                             Toast.makeText(
                                 this@MapActivity,
                                 "경로가 생성되었습니다. 내비게이션을 시작하려면 버튼을 눌러주세요.",
@@ -400,7 +412,7 @@ class MapActivity : AppCompatActivity() {
         )
     }
 
-    private fun captureMapSnapshotAndShow() {
+    private fun captureMapSnapshotAndShow(distanceInKm: Double) {
         if (points.size < 2) return
 
         // 현재 위치 마커 숨기기
@@ -442,15 +454,56 @@ class MapActivity : AppCompatActivity() {
                 mapView.snapshot { bitmap ->
 
                     if (bitmap != null) {
-                        val croppedBitmap = cropBitmapToSquare(bitmap) // 정사각형 크롭
-                        showSnapshotDialog(croppedBitmap) // 모달 다이얼로그 띄우기
+                        uploadSnapshotAndShowBottomSheet(bitmap, distanceInKm)
                     } else {
                         Log.e("MAP_SNAPSHOT", "스냅샷 생성 실패")
                     }
                 }
             }, 1400) // 카메라 이동 후 1.4초 딜레이 (줌 조정 안정화)
         }
+    }
 
+    private fun uploadSnapshotAndShowBottomSheet(bitmap: Bitmap, distanceInKm: Double) {
+        lifecycleScope.launch {
+            val imageUrl = uploadImage(bitmap)
+            if (imageUrl != null) {
+                val parcelablePoints = points.map { ParcelablePoint(it) }
+                showCourseCompleteBottomSheet(distanceInKm, imageUrl, parcelablePoints)
+            } else {
+                Toast.makeText(this@MapActivity, "이미지 업로드 실패", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private suspend fun uploadImage(bitmap: Bitmap): String? {
+        return withContext(Dispatchers.IO) {
+            val file = File(cacheDir, "temp_image.jpg")
+            FileOutputStream(file).use { out ->
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+            }
+
+            val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+            val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
+
+            try {
+                val imageUploadApi = RetrofitInstance.ImageUploadApi(this@MapActivity)
+                val response = imageUploadApi.uploadImage(body)
+                if (response.isSuccess) {
+                    response.data?.url
+                } else {
+                    null
+                }
+            } catch (e: Exception) {
+                null
+            } finally {
+                file.delete()
+            }
+        }
+    }
+
+    private fun showCourseCompleteBottomSheet(distance: Double, imageUrl: String, parcelablePoints: List<ParcelablePoint>) {
+        CourseCompleteBottomSheet.newInstance(distance, imageUrl, parcelablePoints)
+            .show(supportFragmentManager, "CourseCompleteBottomSheet")
     }
 
     // ✅ 정사각형 크롭 함수 (중앙 기준)

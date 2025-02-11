@@ -20,6 +20,7 @@ import com.example.drawrun.viewmodel.CourseViewModel
 import com.example.drawrun.data.repository.CourseRepository
 import com.example.drawrun.viewmodel.CourseViewModelFactory
 import androidx.lifecycle.ViewModelProvider
+import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -83,7 +84,8 @@ class SoloRunBottomSheet(private val courseRepository: CourseRepository) : Botto
     private fun setupViews() {
         // 거리 정보 설정
         arguments?.getDouble("distance")?.let { distance ->
-            binding.tvDistance.text = String.format("%.2fkm", distance)
+            val formattedDistance = String.format("%.2f", distance)
+            binding.tvDistance.text = "${formattedDistance}km"
         }
 
         // 키보드 엔터 처리
@@ -119,6 +121,7 @@ class SoloRunBottomSheet(private val courseRepository: CourseRepository) : Botto
 
             arguments?.let { args ->
                 val distance = args.getDouble("distance")
+                val formattedDistance = String.format("%.2f", distance).toDouble()
                 val imagePath = args.getString("image_path") ?: return@let
                 // arguments에서 좌표 배열을 가져와서 Point 리스트로 변환
                 val latitudes = args.getDoubleArray("latitudes") ?: return@let
@@ -135,7 +138,7 @@ class SoloRunBottomSheet(private val courseRepository: CourseRepository) : Botto
                     path = points,           // MapActivity에서 전달받아야 할 경로 데이터
                     name = courseName,
                     pathImgUrl = imagePath,
-                    distance = distance,
+                    distance = formattedDistance,
 //                    isPublic = isPublic
                 )
             }
@@ -167,34 +170,22 @@ class SoloRunBottomSheet(private val courseRepository: CourseRepository) : Botto
 
 
     private fun loadImage() {
-        arguments?.getString("image_path")?.let { path ->
-            val file = File(path)
-            if (file.exists()) {
-                try {
-                    // 비트맵 로딩 전 옵션 설정
-                    val options = BitmapFactory.Options().apply {
-                        inPreferredConfig = Bitmap.Config.ARGB_8888
-                    }
+        arguments?.getString("image_path")?.let { imageUrl ->
+            Glide.with(this)
+                .load(imageUrl)
+                .into(binding.capturedMapImage)
 
-                    val bitmap = BitmapFactory.decodeFile(file.absolutePath, options)
-                    binding.capturedMapImage.apply {
-                        setImageBitmap(bitmap)
-                        visibility = View.VISIBLE
-                    }
+            binding.capturedMapImage.visibility = View.VISIBLE
 
-                    // 이미지 비율은 비트맵 설정 후에 조정
-                    binding.capturedMapImage.post {
-                        val width = binding.capturedMapImage.width
-                        val params = binding.capturedMapImage.layoutParams
-                        params.height = (width * 1.4).toInt()
-                        binding.capturedMapImage.layoutParams = params
-                    }
-                } catch (e: Exception) {
-                    Log.e("ImageLoading", "Error loading image: ${e.message}")
-                }
+            binding.capturedMapImage.post {
+                val width = binding.capturedMapImage.width
+                val params = binding.capturedMapImage.layoutParams
+                params.height = (width * 1.4).toInt()
+                binding.capturedMapImage.layoutParams = params
             }
         }
     }
+
 
 
     override fun onDestroyView() {

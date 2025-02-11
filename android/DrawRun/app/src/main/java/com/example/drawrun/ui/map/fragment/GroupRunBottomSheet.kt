@@ -13,6 +13,7 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import com.bumptech.glide.Glide
 import com.example.drawrun.databinding.BottomSheetGroupRunBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -127,21 +128,18 @@ class GroupRunBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun loadImage() {
-        arguments?.getString("image_path")?.let { path ->
-            val file = File(path)
-            if (file.exists()) {
-                try {
-                    val options = BitmapFactory.Options().apply {
-                        inPreferredConfig = Bitmap.Config.ARGB_8888
+        arguments?.getString("image_path")?.let { imagePath ->
+            if (imagePath.startsWith("http")) {
+                // URL인 경우 Glide를 사용하여 이미지 로드
+                Glide.with(this)
+                    .load(imagePath)
+                    .into(binding.capturedMapImage)
+            } else {
+                    Log.e("ImageLoading", "Error loading image")
                     }
-                    val bitmap = BitmapFactory.decodeFile(file.absolutePath, options)
-                    binding.capturedMapImage.setImageBitmap(bitmap)
-                } catch (e: Exception) {
-                    Log.e("ImageLoading", "Error loading image: ${e.message}")
                 }
             }
-        }
-    }
+
 
     override fun onDestroyView() {
         super.onDestroyView()
