@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dasima.drawrun.domain.masterpiece.mapper.MasterpieceMapper">
+    <resultMap id="MasterpieceBoardResultMap" type="com.dasima.drawrun.domain.masterpiece.entity.MasterpieceBoard">
+        <id column="masterpiece_board_id" property="masterpiceBoardId"/>
+        <result column="user_id" property="userId"/>
+        <result column="restrict_count" property="restrictCount"/>
+        <result column="state" property="state"/>
+        <result column="create_date" property="createDate"/>
+        <result column="update_date" property="updateDate"/>
+    </resultMap>
+    
+    <resultMap id="MasterpieceSegResultMap" type="com.dasima.drawrun.domain.masterpiece.entity.MasterpieceSeg">
+        <id column="masterpiece_seg_id" property="masterpieceSegId"/>
+        <result column="masterpiece_board_id" property="masterpieceBoardId"/>
+        <result column="mongo_id" property="mongoId"/>
+        <result column="path_num" property="pathNum"/>
+    </resultMap>
+
+    <insert id="save" parameterType="MasterpieceBoard" useGeneratedKeys="true" keyProperty="masterpieceBoardId">
+        insert into masterpiece_board
+        values (0, #{userId}, #{restrictCount}, #{state}, #{userPathId}, now(), now())
+    </insert>
+
+    <insert id="seqsave" parameterType="MasterpieceSeg">
+        insert into masterpiece_seg
+        values (0, #{masterpieceBoardId}, #{mongoId}, #{pathNum})
+    </insert>
+
+
+</mapper>

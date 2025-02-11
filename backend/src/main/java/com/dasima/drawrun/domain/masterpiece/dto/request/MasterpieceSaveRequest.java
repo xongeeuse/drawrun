@@ -6,7 +6,8 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class MaterpieceSaveRequest {
+public class MasterpieceSaveRequest {
+    private int userPathId;
     private List<List<GeoPoint>> paths;
-    private List<GeoPoint> path;
+    private int restrictCount;
 }
