@@ -481,9 +481,9 @@ class MapActivity : AppCompatActivity() {
         closeButton.setOnClickListener {
             dialog.dismiss() // 다이얼로그 닫기
 
-            // ✅ 닫기 버튼 누르면 위치 마커 다시 활성화
-            mapView.location.updateSettings {
-                enabled = true // 위치 마커 다시 활성화
+        // ✅ 닫기 버튼 누르면 위치 마커 다시 활성화
+        mapView.location.updateSettings {
+            enabled = true // 위치 마커 다시 활성화
             }
         }
 

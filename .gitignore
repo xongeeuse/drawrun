@@ -28,6 +28,8 @@ out/
 /backend/dist/
 /backend/nbdist/
 /backend/.nb-gradle/
+/backend/src/main/resources/application.yml
+/backend/src/main/resources/application-secret.yml
 
 ### VS Code ###
 .vscode/

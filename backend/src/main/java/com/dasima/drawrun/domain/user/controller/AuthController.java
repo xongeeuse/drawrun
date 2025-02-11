@@ -1,10 +1,12 @@
 package com.dasima.drawrun.domain.user.controller;
 
-import com.dasima.drawrun.domain.user.dto.request.LoginRequestDto;
-import com.dasima.drawrun.domain.user.dto.request.RegisterRequestDto;
+import com.dasima.drawrun.domain.user.dto.request.*;
+import com.dasima.drawrun.domain.user.entity.User;
 import com.dasima.drawrun.domain.user.service.AuthService;
 import com.dasima.drawrun.global.common.ApiResponseJson;
 import com.dasima.drawrun.global.exception.CustomException;
+import com.dasima.drawrun.global.exception.ErrorCode;
+import com.dasima.drawrun.global.security.UserPrinciple;
 import com.dasima.drawrun.global.security.dto.response.TokenResponseDto;
 import com.dasima.drawrun.global.security.filter.JwtFilter;
 import jakarta.servlet.http.Cookie;
@@ -12,11 +14,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -95,6 +96,104 @@ public class AuthController {
     return ResponseEntity.ok(
         new ApiResponseJson(true, 200, "로그아웃에 성공했습니다.", null)
     );
+  }
+
+  @PostMapping("/sendmail")
+  public ResponseEntity<ApiResponseJson> sendmail(@RequestBody EmailSendRequestDto dto) {
+    authService.sendmail(dto);
+
+    return ResponseEntity.ok(
+            new ApiResponseJson(true, 200, "이메일 전송에 성공했습니다.", Map.of("status", true))
+    );
+  }
+
+  @PostMapping("/mailcheck")
+  public ResponseEntity<ApiResponseJson> mailcheck(@RequestBody EmailAuthNumberRequestDto dto) {
+    authService.mailcheck(dto);
+    
+    return ResponseEntity.ok(
+            new ApiResponseJson(true, 200, "이메일 인증에 성공했습니다.", Map.of("status", true))
+    );
+  }
+
+  @PostMapping("/find-pw")
+  public ResponseEntity<ApiResponseJson> findPassword(@RequestBody FindPasswordRequestDto dto) {
+    try {
+      authService.findPassword(dto.getUserId(), dto.getEmail());
+
+      return ResponseEntity.ok(
+              new ApiResponseJson(true, 200, "이메일로 임시 비밀번호를 전송했습니다.", null)
+      );
+    } catch (CustomException e) {
+      return ResponseEntity.ok(
+              new ApiResponseJson(e.getErrorCode(), null)
+      );
+    }
+  }
+
+  @PostMapping("/change-pw")
+  public ResponseEntity<ApiResponseJson> changePassword(@AuthenticationPrincipal UserPrinciple userPrinciple, @RequestBody ChangePasswordRequestDto dto) {
+    try {
+      authService.changePassword(userPrinciple.getUserId(), dto.getCurrentPassword(), dto.getNewPassword());
+
+      return ResponseEntity.ok(
+              new ApiResponseJson(true, 200, "비밀번호를 변경했습니다.", null)
+      );
+    } catch (CustomException e) {
+      return ResponseEntity.ok(
+              new ApiResponseJson(e.getErrorCode(), null)
+      );
+    }
+  }
+
+  @PostMapping("/find-id")
+  public ResponseEntity<ApiResponseJson> findId(@RequestBody FindIdRequestDto dto) {
+    try {
+      User user = authService.findId(dto.getEmail(), dto.getUsername());
+
+      return ResponseEntity.ok(
+              new ApiResponseJson(true, 200, "아이디 조회에 성공했습니다.", Map.of("user_id", user.getId()))
+      );
+    } catch (CustomException e) {
+      return ResponseEntity.ok(
+              new ApiResponseJson(e.getErrorCode(), null)
+      );
+    }
+  }
+
+  /**
+   * GET /api/users/check-id?userId={userId}
+   * 사용자 아이디 중복 체크 API
+   *
+   * @param userId 검사할 사용자 아이디
+   * @return 사용자 아이디와 중복 여부를 포함하는 JSON 응답
+   */
+  @GetMapping("/check-id")
+  public ResponseEntity<ApiResponseJson> checkUserId(@RequestParam("userId") String userId) {
+    try {
+      return ResponseEntity.ok(
+              new ApiResponseJson(true, 200, "아이디 중복 조회에 성공했습니다.", Map.of("isExist", authService.checkId(userId)))
+      );
+    } catch (Exception e) {
+      return ResponseEntity.ok(
+              new ApiResponseJson(ErrorCode.COMMON_ERROR, e.getMessage())
+      );
+    }
+  }
+
+  @PostMapping("/withdrawal")
+  public ResponseEntity<ApiResponseJson> withdrawAccount(@AuthenticationPrincipal UserPrinciple userPrinciple) {
+    try {
+      authService.withdrawAccount(userPrinciple.getUserId());
+
+      return ResponseEntity.ok(
+              new ApiResponseJson(true, 200, "회원 탈퇴에 성공했습니다.", null)
+      );
+    } catch (Exception e) {
+      return ResponseEntity.ok(
+              new ApiResponseJson(ErrorCode.COMMON_ERROR, e.getMessage())
+      );
+    }
   }
 
 }
