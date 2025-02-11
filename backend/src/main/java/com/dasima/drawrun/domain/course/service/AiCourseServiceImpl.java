@@ -36,12 +36,12 @@ public class AiCourseServiceImpl implements AiCourseService {
         return String.format(
                 "[out:xml][timeout:25];" +
                         "(" +
-                        "  way[\"highway\"~\"footway|pedestrian\"](around:%d,%.6f,%.6f);" +
+                        "  way[\"highway\"~\"footway|pedestrian|path|cycleway|residential|tertiary|secondary|primary|trunk|motorway\"](around:%d,%.6f,%.6f);" +
                         ");" +
                         "out body;" +
                         ">;" +
                         "out skel qt;",
-                5000, latitude, longitude
+                100, latitude, longitude
         );
     }
 
