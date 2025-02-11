@@ -151,13 +151,9 @@ class SoloRunBottomSheet(private val courseRepository: CourseRepository) : Botto
     // ViewModel 관찰 메서드 추가
     private fun observeViewModel() {
         courseViewModel.saveCourseResult.observe(viewLifecycleOwner) { result ->
-            result.onSuccess { response ->
-                if (response.isSuccess) {
-                    Toast.makeText(requireContext(), "코스가 저장되었습니다", Toast.LENGTH_SHORT).show()
-                    dismiss()
-                } else {
-                    Toast.makeText(requireContext(), response.message, Toast.LENGTH_SHORT).show()
-                }
+            result.onSuccess { courseId ->
+                Toast.makeText(requireContext(), "코스가 저장되었습니다. CourseId: $courseId", Toast.LENGTH_SHORT).show()
+                dismiss()
             }.onFailure { exception ->
                 Toast.makeText(
                     requireContext(),
@@ -167,6 +163,8 @@ class SoloRunBottomSheet(private val courseRepository: CourseRepository) : Botto
             }
         }
     }
+
+
 
     private fun loadImage() {
         arguments?.getString("image_path")?.let { path ->

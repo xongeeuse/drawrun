@@ -15,8 +15,8 @@ class CourseViewModel(
     private val courseRepository: CourseRepository
 ) : ViewModel() {
 
-    private val _saveCourseResult = MutableLiveData<Result<CourseSaveResponse>>()
-    val saveCourseResult: LiveData<Result<CourseSaveResponse>> = _saveCourseResult
+    private val _saveCourseResult = MutableLiveData<Result<Int>>()
+    val saveCourseResult: LiveData<Result<Int>> = _saveCourseResult
 
     fun saveCourse(
         path: List<Point>,
@@ -38,9 +38,17 @@ class CourseViewModel(
                 Log.d("CourseViewModel", "Save Course Request: $request")
 
                 val response = courseRepository.saveCourse(request)
-                _saveCourseResult.value = Result.success(response)
+                if (response != 0) {
+                    val courseId = response
+                    _saveCourseResult.value = Result.success(courseId)
+                    Log.d("CourseViewModel", "Course saved successfully. CourseId: $courseId")
+                } else {
+                    _saveCourseResult.value = Result.failure(Exception("코스 저장 실패"))
+                    Log.e("CourseViewModel", "Failed to save course")
+                }
             } catch (e: Exception) {
                 _saveCourseResult.value = Result.failure(e)
+                Log.e("CourseViewModel", "Error saving course", e)
             }
         }
     }

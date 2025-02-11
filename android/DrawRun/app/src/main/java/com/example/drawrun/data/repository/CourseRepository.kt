@@ -7,7 +7,7 @@ import com.example.drawrun.data.dto.response.course.CourseSaveResponse
 
 // 러닝 코스 저장용 레포지토리
 class CourseRepository (private val api: CourseApi) {
-    suspend fun saveCourse(request: CourseSaveRequest): CourseSaveResponse {
+    suspend fun saveCourse(request: CourseSaveRequest): Int {
         return api.saveCourse(request)
     }
 
