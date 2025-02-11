@@ -23,6 +23,12 @@
         <result column="create_date" property="createDate"/>
     </resultMap>
 
+    <select id="search" parameterType="integer" resultMap="UserPathResultMap">
+        select *
+        from user_path
+        where user_path_id = #{userPathId};
+    </select>
+
     <select id="list" resultMap="UserPathResultMap">
         select up.*, coalesce(b.bookmark_count, 0) as bookmark_count
         from user_path up

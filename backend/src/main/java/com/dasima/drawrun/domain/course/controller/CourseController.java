@@ -37,6 +37,11 @@ public class CourseController {
             return ResponseEntity.ok(courseService.list(userPrinciple.getUserId(), 3, area));
         else return null;
     }
+    // 단건 조회
+    @GetMapping("search/{userPathId}")
+    public ResponseEntity<?> search(@PathVariable int userPathId){
+        return ResponseEntity.ok(courseService.search(userPathId));
+    }
 
     // 북마크 저장
     @PostMapping("/bookmark")
