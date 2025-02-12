@@ -3,14 +3,21 @@ package com.dasima.drawrun.domain.masterpiece.service;
 import com.dasima.drawrun.domain.course.repository.CourseRepository;
 import com.dasima.drawrun.domain.course.vo.GeoPoint;
 import com.dasima.drawrun.domain.masterpiece.dto.request.MasterpieceSaveRequest;
+import com.dasima.drawrun.domain.masterpiece.dto.response.MasterpieceListResponse;
 import com.dasima.drawrun.domain.masterpiece.entity.MasterpieceBoard;
 import com.dasima.drawrun.domain.masterpiece.entity.MasterpieceSeg;
 import com.dasima.drawrun.domain.masterpiece.mapper.MasterpieceMapper;
 import com.dasima.drawrun.domain.course.entity.Path;
+import com.dasima.drawrun.domain.user.entity.User;
+import com.dasima.drawrun.domain.user.repository.UserRepository;
+import com.dasima.drawrun.global.security.UserPrinciple;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,11 +27,15 @@ public class MasterpieceServiceImpl implements MasterpieceService{
     private final MasterpieceMapper masterpieceMapper;
 
     private final CourseRepository courseRepository;
-    public int save(MasterpieceSaveRequest dto){
+
+    private final UserRepository userRepository;
+    public int save(MasterpieceSaveRequest dto, int userId){
         // entity build
         MasterpieceBoard masterpieceBoard = MasterpieceBoard.builder()
+                .userId(userId)
                 .userPathId(dto.getUserPathId())
                 .restrictCount(dto.getRestrictCount())
+                .expireDate(dto.getExpireDateAsLocalDateTime())
                 .state(0)
                 .build();
 
@@ -59,5 +70,45 @@ public class MasterpieceServiceImpl implements MasterpieceService{
             );
         }
         return res;
+    }
+
+    public List<MasterpieceListResponse> list(){
+        List<MasterpieceListResponse> masterpieceListResponses = new ArrayList<MasterpieceListResponse>();
+        List<MasterpieceBoard> masterpieceBoards = masterpieceMapper.list();
+
+        for(MasterpieceBoard masterpieceBoard : masterpieceBoards){
+            LocalDateTime createDate = masterpieceBoard.getExpireDate();
+            LocalDateTime expireDate = masterpieceBoard.getCreateDate();
+
+            // 구정보 추출
+            String address = masterpieceBoard.getUserPath().getAddress();
+            int guIndex = address.indexOf("구");
+            String gu = null;
+
+            if (guIndex != -1) {
+                int start = address.lastIndexOf(" ", guIndex) + 1;
+                gu = address.substring(start, guIndex + 1);
+            }
+
+            User user = userRepository.findById(masterpieceBoard.getUserId()).orElse(null);
+
+
+            // list 저장
+            masterpieceListResponses.add(
+                    MasterpieceListResponse.builder()
+                            .dDay((int) ChronoUnit.DAYS.between(createDate.toLocalDate(), expireDate.toLocalDate()))
+                            .gu(gu)
+                            .distance(masterpieceBoard.getUserPath().getDistance())
+                            .pathImgUrl(masterpieceBoard.getUserPath().getPathImgUrl())
+                            .profileImgUrl(user.getProfileImgUrl())
+                            .nickname(user.getUserNickname())
+                            .userPathId(masterpieceBoard.getUserPathId())
+                            .restrictCount(masterpieceBoard.getRestrictCount())
+                            .userId(masterpieceBoard.getUserId())
+                            .masterpieceBoardId(masterpieceBoard.getMasterpieceBoardId())
+                            .build()
+            );
+        }
+        return masterpieceListResponses;
     }
 }

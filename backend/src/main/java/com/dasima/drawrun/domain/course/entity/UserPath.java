@@ -1,5 +1,6 @@
 package com.dasima.drawrun.domain.course.entity;
 
+import com.dasima.drawrun.domain.masterpiece.entity.MasterpieceSeg;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,4 +22,6 @@ public class UserPath {
     private String address;
     private LocalDateTime createDate;
     private int bookmarkCount;
+
+
 }
