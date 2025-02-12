@@ -10,6 +10,7 @@
         <result column="state" property="state"/>
         <result column="create_date" property="createDate"/>
         <result column="update_date" property="updateDate"/>
+        <result column="expire_date" property="expireDate"/>
     </resultMap>
     
     <resultMap id="MasterpieceSegResultMap" type="com.dasima.drawrun.domain.masterpiece.entity.MasterpieceSeg">
@@ -21,7 +22,7 @@
 
     <insert id="save" parameterType="MasterpieceBoard" useGeneratedKeys="true" keyProperty="masterpieceBoardId">
         insert into masterpiece_board
-        values (0, #{userId}, #{restrictCount}, #{state}, #{userPathId}, now(), now())
+        values (0, #{userId}, #{restrictCount}, #{state}, #{userPathId}, now(), now(), #{expireDate})
     </insert>
 
     <insert id="seqsave" parameterType="MasterpieceSeg">
