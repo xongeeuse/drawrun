@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Builder
 public class HistoryDto {
     Integer userPathId;
-    Integer pathId;
+    String pathId;
     String pathImgUrl;
     String name;
     LocalDateTime createDate;
