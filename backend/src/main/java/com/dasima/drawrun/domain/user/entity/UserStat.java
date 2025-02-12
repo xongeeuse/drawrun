@@ -21,7 +21,6 @@ public class UserStat {
     private Float distanceKm;
     private Long timeS;
     private Long paceS;
-    private Float calorie;
     private Integer state;
     @CreationTimestamp
     @Column(name = "date")
