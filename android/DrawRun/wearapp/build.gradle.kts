@@ -68,6 +68,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.material3.android)
     implementation(libs.androidx.runtime.livedata)
+    implementation(libs.androidx.localbroadcastmanager)
 //    implementation(project(":app"))  // Coroutines Android
 
     // Android Test 및 Debug

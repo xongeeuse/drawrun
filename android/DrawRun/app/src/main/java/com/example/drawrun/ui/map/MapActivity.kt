@@ -703,7 +703,7 @@ class MapActivity : AppCompatActivity() {
     ) {
         val dataClient = Wearable.getDataClient(this)
         val path = "/navigation/instructions"
-
+        Log.d("PhoneData", "데이터 전송 준비 - path: $path")
         // 전송할 데이터 추가
         val dataMap = PutDataMapRequest.create(path).apply {
             dataMap.putDouble("distanceToNextTurn", distanceToNextTurn)

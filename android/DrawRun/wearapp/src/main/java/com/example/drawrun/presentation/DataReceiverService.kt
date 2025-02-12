@@ -2,6 +2,7 @@ package com.example.drawrun.presentation
 
 import android.content.Intent
 import android.util.Log
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.wearable.DataEvent
 import com.google.android.gms.wearable.DataEventBuffer
 import com.google.android.gms.wearable.DataMapItem
@@ -30,7 +31,7 @@ class DataReceiverService : WearableListenerService() {
             Log.d("receiverService-WatchData", "내비게이션 시작 명령 수신")
 
             val intent = Intent(this, RunningActivity::class.java).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
             }
             startActivity(intent)
         } else {
@@ -79,8 +80,9 @@ class DataReceiverService : WearableListenerService() {
             putExtra("totalDistance", totalDistance)
             putExtra("distanceRemaining", distanceRemaining.toDouble())
         }
-        Log.d("DataReceiverService", "브로드캐스트 송신: $intent")
-        sendBroadcast(intent)
+        Log.d("DataReceiverService", "브로드캐스트 송신 전 - distanceToNextTurn=$distanceToNextTurn")
+//        sendBroadcast(intent)
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
         Log.d("DataReceiverService", "브로드캐스트 전송 완료")
     }
 }

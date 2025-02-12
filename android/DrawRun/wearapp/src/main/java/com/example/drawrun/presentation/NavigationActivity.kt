@@ -10,6 +10,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.drawrun.presentation.sensors.SensorManagerHelper
 import com.example.drawrun.presentation.sensors.SensorViewModel
 import com.example.drawrun.presentation.ui.NavigationScreen
@@ -24,7 +25,6 @@ class NavigationActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         // 서비스 종료 이벤트 리시버 등록
         val filter = IntentFilter("com.example.drawrun.SERVICE_STOPPED")
         registerReceiver(serviceStoppedReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
@@ -35,10 +35,14 @@ class NavigationActivity : ComponentActivity() {
         startHeartRateMeasurement()
 
         Log.d("NavigationActivity", "registerReceiver 호출 직전")
-        registerReceiver(
+//        registerReceiver(
+//            navigationUpdateReceiver,
+//            IntentFilter("com.example.drawrun.presentation.NAVIGATION_UPDATE"),
+//            Context.RECEIVER_EXPORTED
+//        )
+        LocalBroadcastManager.getInstance(this).registerReceiver(
             navigationUpdateReceiver,
-            IntentFilter("com.example.drawrun.presentation.NAVIGATION_UPDATE"),
-            Context.RECEIVER_EXPORTED
+            IntentFilter("com.example.drawrun.presentation.NAVIGATION_UPDATE")
         )
         Log.d("NavigationActivity", "registerReceiver 호출 완료")
         setContent {
