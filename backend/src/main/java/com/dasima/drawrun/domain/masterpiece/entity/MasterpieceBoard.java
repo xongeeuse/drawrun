@@ -19,5 +19,6 @@ public class MasterpieceBoard {
     private int state;
     private LocalDateTime createDate;
     private LocalDateTime updateDate;
+    private LocalDateTime expireDate;
 
 }

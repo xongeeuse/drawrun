@@ -25,6 +25,7 @@ public class MasterpieceServiceImpl implements MasterpieceService{
         MasterpieceBoard masterpieceBoard = MasterpieceBoard.builder()
                 .userPathId(dto.getUserPathId())
                 .restrictCount(dto.getRestrictCount())
+                .expireDate(dto.getExpireDateAsLocalDateTime())
                 .state(0)
                 .build();
 
