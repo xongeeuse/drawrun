@@ -8,7 +8,7 @@ import java.util.List;
 
 @Data
 @Builder
-public class UserHistoryReponse {
+public class UserHistoryResponse {
     int userPK;
     String nickname;
     String profileImgUrl;
