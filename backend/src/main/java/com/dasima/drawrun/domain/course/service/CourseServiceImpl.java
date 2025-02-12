@@ -88,8 +88,8 @@ public class CourseServiceImpl implements CourseService{
                 .pathImgUrl(dto.getPathImgUrl())
                 .name(dto.getName())
                 .build();
-
-        return courseMapper.save(userPath);
+        courseMapper.save(userPath);
+        return userPath.getUserPathId();
     }
     // 북마크 저장
     public int bookmark(BookmarkCreateRequest dto, int userId){
