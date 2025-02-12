@@ -82,6 +82,7 @@ public class CourseServiceImpl implements CourseService{
         // Dto를 Entity로 바꿔줘야함
         UserPath userPath = UserPath.builder()
                         .address(tmp.getDocuments().get(0).getAddress_name())
+                .distance(dto.getDistance())
                 .userId(userId)
                 .pathId(path.getId())
                 .pathImgUrl(dto.getPathImgUrl())
