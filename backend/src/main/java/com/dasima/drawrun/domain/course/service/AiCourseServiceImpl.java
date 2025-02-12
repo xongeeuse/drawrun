@@ -41,7 +41,7 @@ public class AiCourseServiceImpl implements AiCourseService {
                         "out body;" +
                         ">;" +
                         "out skel qt;",
-                100, latitude, longitude
+                1600, latitude + 0.01, longitude + 0.005
         );
     }
 
