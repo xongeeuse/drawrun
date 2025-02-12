@@ -20,7 +20,7 @@ public class UserController {
 
     @GetMapping("/mypage")
     public ResponseEntity<ApiResponseJson> getMyHistory(@AuthenticationPrincipal UserPrinciple userPrinciple) {
-        UserHistoryResponse response = userService.getMyHistory(userPrinciple.getUserId());
+        UserHistoryResponse response = userService.getHistoryById(userPrinciple.getUserId());
 
         return ResponseEntity.ok(
                 new ApiResponseJson(true, 200, "정보 조회에 성공했습니다.", response)
