@@ -42,6 +42,7 @@ class CourseCompleteBottomSheet : BottomSheetDialogFragment() {
         return binding.root
     }
 
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupViews()
@@ -57,7 +58,6 @@ class CourseCompleteBottomSheet : BottomSheetDialogFragment() {
             loadImageFromUrl(imageUrl)
         }
     }
-
 
 
     private fun loadImageFromUrl(imageUrl: String) {
@@ -102,11 +102,15 @@ class CourseCompleteBottomSheet : BottomSheetDialogFragment() {
             // 함께 달려요 BottomSheet 표시
             val imagePath = arguments?.getString("image_path") ?: ""
             val distance = arguments?.getDouble("distance") ?: 0.0
+            // ParcelablePoint 리스트를 Point 리스트로 변환
+            val points = arguments?.getParcelableArrayList<ParcelablePoint>("points")
+                ?.map { it.point } ?: emptyList()
 
-            GroupRunBottomSheet.newInstance(distance, imagePath)
+            GroupRunBottomSheet.newInstance(distance, imagePath, points)
                 .show(parentFragmentManager, "GroupRunBottomSheet")
             }
         }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

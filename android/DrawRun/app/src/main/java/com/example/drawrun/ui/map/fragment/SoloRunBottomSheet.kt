@@ -48,16 +48,13 @@ class SoloRunBottomSheet(private val courseRepository: CourseRepository) : Botto
         }
     }
 
-
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val bottomSheetDialog = BottomSheetDialog(requireContext(), theme)
         bottomSheetDialog.behavior.apply {
             state = BottomSheetBehavior.STATE_EXPANDED  // 확장된 상태로 시작
-//            isDraggable = false  // 드래그 비활성화 (선택사항)
         }
         return bottomSheetDialog
     }
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -167,8 +164,6 @@ class SoloRunBottomSheet(private val courseRepository: CourseRepository) : Botto
         }
     }
 
-
-
     private fun loadImage() {
         arguments?.getString("image_path")?.let { imageUrl ->
             Glide.with(this)
@@ -185,8 +180,6 @@ class SoloRunBottomSheet(private val courseRepository: CourseRepository) : Botto
             }
         }
     }
-
-
 
     override fun onDestroyView() {
         super.onDestroyView()
