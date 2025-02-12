@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.drawrun.data.dto.request.course.CourseSaveRequest
 import com.example.drawrun.data.dto.request.course.Point
-import com.example.drawrun.data.dto.response.course.CourseSaveResponse
 import com.example.drawrun.data.repository.CourseRepository
 import kotlinx.coroutines.launch
 

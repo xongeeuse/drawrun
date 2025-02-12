@@ -6,7 +6,7 @@ data class MasterpieceSaveRequest(
     val userPathId: Int,
     val paths: List<List<Point>>,
     val restrictCount: Int,
-    val expireDate: LocalDate
+    val expireDate: String
 )
 
 data class Point(

@@ -48,7 +48,6 @@ class SoloRunBottomSheet(private val courseRepository: CourseRepository) : Botto
         }
     }
 
-
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val bottomSheetDialog = BottomSheetDialog(requireContext(), theme)
         bottomSheetDialog.behavior.apply {
@@ -57,7 +56,6 @@ class SoloRunBottomSheet(private val courseRepository: CourseRepository) : Botto
         }
         return bottomSheetDialog
     }
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -167,8 +165,6 @@ class SoloRunBottomSheet(private val courseRepository: CourseRepository) : Botto
         }
     }
 
-
-
     private fun loadImage() {
         arguments?.getString("image_path")?.let { imageUrl ->
             Glide.with(this)
@@ -185,8 +181,6 @@ class SoloRunBottomSheet(private val courseRepository: CourseRepository) : Botto
             }
         }
     }
-
-
 
     override fun onDestroyView() {
         super.onDestroyView()

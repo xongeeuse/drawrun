@@ -3,8 +3,6 @@ package com.example.drawrun.ui.map.fragment
 import android.app.DatePickerDialog
 import android.app.Dialog
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -13,12 +11,24 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
+import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
+import com.example.drawrun.data.dto.request.masterpiece.MasterpieceSaveRequest
+import com.example.drawrun.data.repository.CourseRepository
+import com.example.drawrun.data.repository.MasterpieceRepository
 import com.example.drawrun.databinding.BottomSheetGroupRunBinding
+import com.example.drawrun.utils.RetrofitInstance
+import com.example.drawrun.viewmodel.CourseViewModel
+import com.example.drawrun.viewmodel.CourseViewModelFactory
+import com.example.drawrun.viewmodel.MasterpieceViewModel
+import com.example.drawrun.viewmodel.MasterpieceViewModelFactory
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import java.io.File
+import com.mapbox.geojson.Point
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 
 class GroupRunBottomSheet : BottomSheetDialogFragment() {
@@ -26,13 +36,22 @@ class GroupRunBottomSheet : BottomSheetDialogFragment() {
     private val binding get() = _binding!!
     // ... BottomSheet 구현
 
+    // ViewModel 추가
+    private lateinit var masterpieceViewModel: MasterpieceViewModel
+    private lateinit var courseViewModel: CourseViewModel
+
+
+    // 포인트 리스트를 저장할 변수 추가
+    private var points: List<Point> = listOf()
+
     companion object {
-        fun newInstance(distance: Double, imagePath: String): GroupRunBottomSheet {
+        fun newInstance(distance: Double, imagePath: String, points:List<Point>): GroupRunBottomSheet {
             return GroupRunBottomSheet().apply {
                 arguments = Bundle().apply {
                     putDouble("distance", distance)
                     putString("image_path", imagePath)
-                }
+                    putDoubleArray("latitudes", points.map { it.latitude() }.toDoubleArray())
+                    putDoubleArray("longitudes", points.map { it.longitude() }.toDoubleArray())                }
             }
         }
     }
@@ -59,8 +78,24 @@ class GroupRunBottomSheet : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // ViewModel 초기화
+        val masterpieceRepository = MasterpieceRepository(RetrofitInstance.MasterpieceApi(requireContext()))
+        masterpieceViewModel = ViewModelProvider(this, MasterpieceViewModelFactory(masterpieceRepository))[MasterpieceViewModel::class.java]
+
+        val courseRepository = CourseRepository(RetrofitInstance.CourseApi(requireContext()))
+        courseViewModel = ViewModelProvider(this, CourseViewModelFactory(courseRepository))[CourseViewModel::class.java]
+
+        // 포인트 리스트 복원
+        val latitudes = arguments?.getDoubleArray("latitudes") ?: doubleArrayOf()
+        val longitudes = arguments?.getDoubleArray("longitudes") ?: doubleArrayOf()
+        points = latitudes.zip(longitudes) { lat, lng ->
+            Point.fromLngLat(lng, lat)
+        }
+
         setupViews()
         loadImage()
+        setupObservers()
 
         // 거리 정보 설정
         arguments?.getDouble("distance")?.let { distance ->
@@ -111,7 +146,13 @@ class GroupRunBottomSheet : BottomSheetDialogFragment() {
             }
         }
 
+        // 등록 버튼 클릭 리스너 추가
+        binding.btnSave.setOnClickListener {
+            saveMasterpiece()
+        }
+
         // 인원 조절 버튼 리스너 추가
+        val maxMemberCount = points.size - 1
         var memberCount = 2  // 초기값
 
         binding.btnMinus.setOnClickListener {
@@ -122,8 +163,12 @@ class GroupRunBottomSheet : BottomSheetDialogFragment() {
         }
 
         binding.btnPlus.setOnClickListener {
-            memberCount++
-            binding.tvMemberCount.text = memberCount.toString()
+            if (memberCount < maxMemberCount) {
+                memberCount++
+                binding.tvMemberCount.text = memberCount.toString()
+            } else {
+                Toast.makeText(requireContext(), "최대 인원수에 도달했습니다.", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -136,10 +181,125 @@ class GroupRunBottomSheet : BottomSheetDialogFragment() {
                     .into(binding.capturedMapImage)
             } else {
                     Log.e("ImageLoading", "Error loading image")
-                    }
                 }
-            }
+        }
+    }
 
+    private fun saveMasterpiece() {
+        val courseName = binding.etCourseName.text.toString()
+        val memberCount = binding.tvMemberCount.text.toString().toInt()
+        val deadline = binding.tvDeadline.text.toString()
+
+        if (courseName.isBlank() || deadline == "날짜를 선택해주세요") {
+            Toast.makeText(requireContext(), "모든 필드를 입력해주세요.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // 코스 저장 먼저 실행
+        arguments?.let { args ->
+            val distance = args.getDouble("distance")
+            val formattedDistance = String.format("%.2f", distance).toDouble()
+            val imagePath = args.getString("image_path") ?: return@let
+            // arguments에서 좌표 배열을 가져와서 Point 리스트로 변환
+            val latitudes = args.getDoubleArray("latitudes") ?: return@let
+            val longitudes = args.getDoubleArray("longitudes") ?: return@let
+            val points = latitudes.zip(longitudes) { lat, lng ->
+                com.example.drawrun.data.dto.request.course.Point(
+                    latitude = lat,
+                    longitude = lng
+                )
+            }
+            Log.d("GroupRunBottomSheet", "Saving course: name=$courseName, distance=$formattedDistance, imagePath=$imagePath")
+
+            // CourseViewModel을 통해 코스 저장 요청
+            courseViewModel.saveCourse(
+                path = points,
+                name = courseName,
+                pathImgUrl = imagePath,
+                distance = formattedDistance
+            )
+        }
+        // 마스터피스 저장은 코스 저장 성공 후 setupObservers에서 처리
+    }
+
+
+    private fun setupObservers() {
+        // 코스 저장 결과 관찰
+        courseViewModel.saveCourseResult.observe(viewLifecycleOwner) { result ->
+            result.onSuccess { courseId ->
+                Log.d("GroupRunBottomSheet", "Course saved successfully: courseId=$courseId")
+                if (courseId > 0) {
+                    // 코스 저장 성공, 마스터피스 저장 진행
+                    saveMasterpieceWithCourseId(courseId)
+                } else {
+                    Log.e("GroupRunBottomSheet", "Course save failed: Invalid courseId")
+                    Toast.makeText(requireContext(), "코스 저장에 실패했습니다.", Toast.LENGTH_SHORT).show()
+                }
+            }.onFailure { exception ->
+                Log.e("GroupRunBottomSheet", "Course save failed", exception)
+                Toast.makeText(requireContext(), "코스 저장 실패: ${exception.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        // 마스터피스 저장 결과 관찰 (기존 코드)
+        masterpieceViewModel.saveMasterpieceResult.observe(viewLifecycleOwner) { result ->
+            result.onSuccess { masterpieceId ->
+                Toast.makeText(requireContext(), "걸작이 성공적으로 저장되었습니다. ID: $masterpieceId", Toast.LENGTH_SHORT).show()
+                dismiss()
+            }.onFailure { exception ->
+                Toast.makeText(requireContext(), "걸작 저장 실패: ${exception.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun saveMasterpieceWithCourseId(courseId: Int) {
+        val memberCount = binding.tvMemberCount.text.toString().toInt()
+        val deadline = binding.tvDeadline.text.toString()
+        val dateFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd")
+        val expireDateString = deadline.split("까지")[0].trim()
+        val expireDate = LocalDate.parse(expireDateString, dateFormatter).format(dateFormatter)
+
+        val dividedPaths = dividePath(points, memberCount)
+        val request = MasterpieceSaveRequest(
+            userPathId = courseId, // 저장된 코스 ID 사용
+            paths = dividedPaths.map { path ->
+                path.map { point ->
+                    com.example.drawrun.data.dto.request.masterpiece.Point(
+                        latitude = point.latitude(),
+                        longitude = point.longitude()
+                    )
+                }
+            },
+            restrictCount = memberCount,
+            expireDate = expireDate
+        )
+
+        // MasterpieceViewModel을 통해 마스터피스 저장 요청
+        masterpieceViewModel.saveMasterpiece(request)
+    }
+
+
+
+
+    // 포인트 리스트를 인원수에 맞게 나누는 함수
+    private fun dividePath(points: List<Point>, memberCount: Int): List<List<Point>> {
+        val result = mutableListOf<List<Point>>()
+        // 멤버 한 명당 할당될 기본 포인트 수 계산
+        val pointsPerMember = points.size / memberCount
+        // 나누고 남은 포인트 수
+        var remainingPoints = points.size % memberCount
+
+        var startIndex = 0
+        for (i in 0 until memberCount) {
+            val endIndex = startIndex + pointsPerMember + (if (remainingPoints > 0) 1 else 0)
+            result.add(points.subList(startIndex, endIndex.coerceAtMost(points.size)))
+            // 다음 구간의 시작점을 현재 구간의 마지막 포인트로 설정 (중복 포인트)
+            startIndex = endIndex - 1
+            remainingPoints--
+        }
+
+        return result
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()
