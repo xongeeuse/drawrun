@@ -16,6 +16,7 @@ import org.json.JSONObject
 import android.util.Base64
 import com.example.drawrun.ui.map.MapActivity
 import com.example.drawrun.ui.mypage.UserActivity
+import com.example.drawrun.ui.search.SearchActivity
 
 class MainActivity : AppCompatActivity() {
     private lateinit var btnLoginLogout: Button
@@ -82,7 +83,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // 유저 페이지 버튼 클릭 이벤트
         findViewById<Button>(R.id.btnGoToMap).setOnClickListener {
             val accessToken = SecureStorage.getAccessToken(this)
             if (accessToken != null) {
@@ -91,6 +91,17 @@ class MainActivity : AppCompatActivity() {
                 startActivity(intent)
             } else {
                 // 비로그인 상태일 경우 LoginActivity로 이동
+                val intent = Intent(this, LoginActivity::class.java)
+                startActivity(intent)
+            }
+        }
+
+        findViewById<Button>(R.id.btnGoToSearch).setOnClickListener {
+            val accessToken = SecureStorage.getAccessToken(this)
+            if (accessToken != null) {
+                val intent = Intent(this, SearchActivity::class.java)
+                startActivity(intent)
+            } else {
                 val intent = Intent(this, LoginActivity::class.java)
                 startActivity(intent)
             }
