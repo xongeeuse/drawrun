@@ -115,7 +115,17 @@ class GroupRunBottomSheet : BottomSheetDialogFragment() {
         binding.layoutDeadline.setOnClickListener {
             val calendar = Calendar.getInstance()
 
-            DatePickerDialog(
+            // 오늘 날짜 설정
+            val today = calendar.timeInMillis
+
+            // 한 달 후 날짜 설정
+            calendar.add(Calendar.MONTH, 1)
+            val oneMonthLater = calendar.timeInMillis
+
+            // 현재 날짜로 다시 설정
+            calendar.timeInMillis = today
+
+            val datePickerDialog = DatePickerDialog(
                 requireContext(),
                 { _, year, month, day ->
                     // 선택된 날짜 처리
@@ -124,7 +134,14 @@ class GroupRunBottomSheet : BottomSheetDialogFragment() {
                 calendar.get(Calendar.YEAR),
                 calendar.get(Calendar.MONTH),
                 calendar.get(Calendar.DAY_OF_MONTH)
-            ).show()
+            )
+
+            // 최소 날짜를 오늘로 설정
+            datePickerDialog.datePicker.minDate = today
+            // 최대 날짜를 한 달 후로 설정
+            datePickerDialog.datePicker.maxDate = oneMonthLater
+
+            datePickerDialog.show()
         }
 
         // 키보드 엔터 처리 추가
@@ -175,7 +192,6 @@ class GroupRunBottomSheet : BottomSheetDialogFragment() {
     private fun loadImage() {
         arguments?.getString("image_path")?.let { imagePath ->
             if (imagePath.startsWith("http")) {
-                // URL인 경우 Glide를 사용하여 이미지 로드
                 Glide.with(this)
                     .load(imagePath)
                     .into(binding.capturedMapImage)
