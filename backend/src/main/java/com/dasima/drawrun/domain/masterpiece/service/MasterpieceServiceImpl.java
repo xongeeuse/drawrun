@@ -8,6 +8,9 @@ import com.dasima.drawrun.domain.masterpiece.entity.MasterpieceBoard;
 import com.dasima.drawrun.domain.masterpiece.entity.MasterpieceSeg;
 import com.dasima.drawrun.domain.masterpiece.mapper.MasterpieceMapper;
 import com.dasima.drawrun.domain.course.entity.Path;
+import com.dasima.drawrun.domain.user.entity.User;
+import com.dasima.drawrun.domain.user.repository.UserRepository;
+import com.dasima.drawrun.global.security.UserPrinciple;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Service;
@@ -24,6 +27,8 @@ public class MasterpieceServiceImpl implements MasterpieceService{
     private final MasterpieceMapper masterpieceMapper;
 
     private final CourseRepository courseRepository;
+
+    private final UserRepository userRepository;
     public int save(MasterpieceSaveRequest dto, int userId){
         // entity build
         MasterpieceBoard masterpieceBoard = MasterpieceBoard.builder()
@@ -85,15 +90,25 @@ public class MasterpieceServiceImpl implements MasterpieceService{
                 gu = address.substring(start, guIndex + 1);
             }
 
+            User user = userRepository.findById(masterpieceBoard.getUserId()).orElse(null);
+
+
+            // list 저장
             masterpieceListResponses.add(
                     MasterpieceListResponse.builder()
                             .dDay((int) ChronoUnit.DAYS.between(createDate.toLocalDate(), expireDate.toLocalDate()))
                             .gu(gu)
                             .distance(masterpieceBoard.getUserPath().getDistance())
                             .pathImgUrl(masterpieceBoard.getUserPath().getPathImgUrl())
-                            .profileImgUrl()
+                            .profileImgUrl(user.getProfileImgUrl())
+                            .nickname(user.getUserNickname())
+                            .userPathId(masterpieceBoard.getUserPathId())
+                            .restrictCount(masterpieceBoard.getRestrictCount())
+                            .userId(masterpieceBoard.getUserId())
+                            .masterpieceBoardId(masterpieceBoard.getMasterpieceBoardId())
                             .build()
-            )
+            );
         }
+        return masterpieceListResponses;
     }
 }

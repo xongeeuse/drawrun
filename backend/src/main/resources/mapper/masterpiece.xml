@@ -4,7 +4,7 @@
 
 <mapper namespace="com.dasima.drawrun.domain.masterpiece.mapper.MasterpieceMapper">
     <resultMap id="MasterpieceBoardResultMap" type="com.dasima.drawrun.domain.masterpiece.entity.MasterpieceBoard">
-        <id column="masterpiece_board_id" property="masterpiceBoardId"/>
+        <id column="masterpiece_board_id" property="masterpieceBoardId"/>
         <result column="user_id" property="userId"/>
         <result column="restrict_count" property="restrictCount"/>
         <result column="state" property="state"/>
@@ -67,6 +67,7 @@
             mb.expire_date,
             up.path_img_url,
             up.distance,
+            up.address,
             COUNT(mp.masterpiece_participant_id) AS participant_count  -- 참가자 수 계산
         FROM
             masterpiece_board mb

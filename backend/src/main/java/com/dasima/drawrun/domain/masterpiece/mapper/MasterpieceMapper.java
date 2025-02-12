@@ -9,7 +9,7 @@ import java.util.List;
 @Mapper
 public interface MasterpieceMapper {
     // 걸작 게시판에 저장
-    int save(MasterpieceBoard masterpiceBoard);
+    int save(MasterpieceBoard masterpieceBoard);
     // 걸작 조각에 저장
     int seqsave(MasterpieceSeg masterpieceSeg);
 

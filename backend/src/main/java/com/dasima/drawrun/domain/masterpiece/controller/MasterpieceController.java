@@ -21,6 +21,6 @@ public class MasterpieceController {
 
     @GetMapping("/list")
     public ResponseEntity<?> list(){
-
+        return ResponseEntity.ok(masterpieceService.list());
     }
 }
