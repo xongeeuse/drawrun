@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserStatRepository extends JpaRepository<UserStat, Integer> {
 
-  List<UserStat> findByUserId(int userId);
+  List<UserStat> findByUserIdOrderByDateDesc(int userId);
 
 }

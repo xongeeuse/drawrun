@@ -31,7 +31,7 @@ public class UserServiceImpl implements UserService {
     public UserHistoryResponse getHistoryById(int userId) {
         User user = userRepository.findByUserId(userId)
             .orElseThrow(()-> new CustomException(ErrorCode.NOT_EXIST_MEMBER_ID));
-        List<UserStat> list = userStatRepository.findByUserId(userId);
+        List<UserStat> list = userStatRepository.findByUserIdOrderByDateDesc(userId);
 
         List<HistoryDto> historyDtoList = list.stream().map(userStat -> {
             UserPath path = courseMapper.search(userStat.getUserPathId());
