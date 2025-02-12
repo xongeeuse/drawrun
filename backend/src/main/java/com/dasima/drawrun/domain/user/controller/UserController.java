@@ -1,6 +1,5 @@
 package com.dasima.drawrun.domain.user.controller;
 
-import com.dasima.drawrun.domain.user.dto.response.UserHistoryReponse;
 import com.dasima.drawrun.domain.user.dto.response.UserHistoryResponse;
 import com.dasima.drawrun.domain.user.service.UserService;
 import com.dasima.drawrun.global.common.ApiResponseJson;

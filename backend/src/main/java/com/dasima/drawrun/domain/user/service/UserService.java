@@ -1,9 +1,9 @@
 package com.dasima.drawrun.domain.user.service;
 
-import com.dasima.drawrun.domain.user.dto.response.UserHistoryReponse;
+import com.dasima.drawrun.domain.user.dto.response.UserHistoryResponse;
 
 public interface UserService {
 
-    UserHistoryReponse getHistoryById(int userId);
+    UserHistoryResponse getHistoryById(int userId);
 
 }
