@@ -1,6 +1,7 @@
 package com.dasima.drawrun.domain.user.controller;
 
 import com.dasima.drawrun.domain.user.dto.response.UserHistoryReponse;
+import com.dasima.drawrun.domain.user.dto.response.UserHistoryResponse;
 import com.dasima.drawrun.domain.user.service.UserService;
 import com.dasima.drawrun.global.common.ApiResponseJson;
 import com.dasima.drawrun.global.security.UserPrinciple;
@@ -20,7 +21,7 @@ public class UserController {
 
     @GetMapping("/mypage")
     public ResponseEntity<ApiResponseJson> getMyHistory(@AuthenticationPrincipal UserPrinciple userPrinciple) {
-        UserHistoryReponse response = userService.getMyHistory(userPrinciple.getUserId());
+        UserHistoryResponse response = userService.getMyHistory(userPrinciple.getUserId());
 
         return ResponseEntity.ok(
                 new ApiResponseJson(true, 200, "정보 조회에 성공했습니다.", response)
