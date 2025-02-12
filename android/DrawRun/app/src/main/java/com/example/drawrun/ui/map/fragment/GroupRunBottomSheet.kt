@@ -60,7 +60,6 @@ class GroupRunBottomSheet : BottomSheetDialogFragment() {
         val bottomSheetDialog = BottomSheetDialog(requireContext(), theme)
         bottomSheetDialog.behavior.apply {
             state = BottomSheetBehavior.STATE_EXPANDED  // 확장된 상태로 시작
-//            isDraggable = false  // 드래그 비활성화 (선택사항)
         }
         return bottomSheetDialog
     }
@@ -75,6 +74,7 @@ class GroupRunBottomSheet : BottomSheetDialogFragment() {
         _binding = BottomSheetGroupRunBinding.inflate(inflater, container, false)
         return binding.root
     }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -110,6 +110,7 @@ class GroupRunBottomSheet : BottomSheetDialogFragment() {
             binding.capturedMapImage.layoutParams = params
         }
     }
+
 
     private fun setupViews() {
         binding.layoutDeadline.setOnClickListener {
@@ -189,6 +190,7 @@ class GroupRunBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
+
     private fun loadImage() {
         arguments?.getString("image_path")?.let { imagePath ->
             if (imagePath.startsWith("http")) {
@@ -200,6 +202,7 @@ class GroupRunBottomSheet : BottomSheetDialogFragment() {
                 }
         }
     }
+
 
     private fun saveMasterpiece() {
         val courseName = binding.etCourseName.text.toString()
@@ -268,6 +271,7 @@ class GroupRunBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
+
     private fun saveMasterpieceWithCourseId(courseId: Int) {
         val memberCount = binding.tvMemberCount.text.toString().toInt()
         val deadline = binding.tvDeadline.text.toString()
@@ -295,8 +299,6 @@ class GroupRunBottomSheet : BottomSheetDialogFragment() {
     }
 
 
-
-
     // 포인트 리스트를 인원수에 맞게 나누는 함수
     private fun dividePath(points: List<Point>, memberCount: Int): List<List<Point>> {
         val result = mutableListOf<List<Point>>()
@@ -316,6 +318,7 @@ class GroupRunBottomSheet : BottomSheetDialogFragment() {
 
         return result
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

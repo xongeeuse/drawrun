@@ -1,7 +1,5 @@
 package com.example.drawrun.data.dto.request.masterpiece
 
-import java.time.LocalDate
-
 data class MasterpieceSaveRequest(
     val userPathId: Int,
     val paths: List<List<Point>>,
