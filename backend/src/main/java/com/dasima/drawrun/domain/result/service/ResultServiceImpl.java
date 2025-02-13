@@ -5,12 +5,16 @@ import com.dasima.drawrun.domain.result.entity.CourseResult;
 import com.dasima.drawrun.domain.result.repository.ResultRepository;
 import com.dasima.drawrun.global.exception.CustomException;
 import com.dasima.drawrun.global.exception.ErrorCode;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class ResultServiceImpl implements ResultService {
 
-  private ResultRepository courseRepository;
+  private final ResultRepository courseRepository;
 
   @Override
   public int courseResultSave(int UserPK, CourseResultSaveRequest resultDto) {
@@ -18,20 +22,20 @@ public class ResultServiceImpl implements ResultService {
 
     try {
       courseRepository.save(CourseResult
-          .builder()
-          .distanceKm(resultDto.getDistance_km())
-          .timeS(resultDto.getTime_s())
-          .paceS(resultDto.getPace_s())
-          .calorie(resultDto.getCalorie())
-          .state(1)
-          .heartbeat(resultDto.getHeartbeat())
-          .runImgUrl(resultDto.getEndImgUrl())
-          .cadence(resultDto.getCadence())
-          .userId(UserPK)
-          .userPathId(resultDto.getPathId())
-          .build()
+              .builder()
+              .distanceKm(resultDto.getDistance_km())
+              .timeS(resultDto.getTime_s())
+              .paceS(resultDto.getPace_s())
+              .state(resultDto.getState())
+              .heartbeat(resultDto.getHeartbeat())
+              .runImgUrl(resultDto.getRunImgUrl())
+              .cadence(resultDto.getCadence())
+              .userId(UserPK)
+              .userPathId(resultDto.getPathId())
+              .build()
       );
     } catch (Exception e) {
+      log.info(e.getMessage());
       throw new CustomException(ErrorCode.RESULT_SAVE_ERROR);
     }
 
