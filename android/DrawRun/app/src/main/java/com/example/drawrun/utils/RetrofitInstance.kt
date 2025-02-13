@@ -4,11 +4,8 @@ import android.content.Context
 import com.example.drawrun.data.api.AuthApi
 import com.example.drawrun.data.api.CourseApi
 import com.example.drawrun.data.api.ImageUploadApi
-<<<<<<< android/DrawRun/app/src/main/java/com/example/drawrun/utils/RetrofitInstance.kt
 import com.example.drawrun.data.api.RunRecordApi
-=======
 import com.example.drawrun.data.api.MasterpieceApi
->>>>>>> android/DrawRun/app/src/main/java/com/example/drawrun/utils/RetrofitInstance.kt
 import com.example.drawrun.data.api.SearchApi
 import com.example.drawrun.data.api.UserApi
 import okhttp3.OkHttpClient
