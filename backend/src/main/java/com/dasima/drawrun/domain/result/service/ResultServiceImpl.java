@@ -23,9 +23,9 @@ public class ResultServiceImpl implements ResultService {
     try {
       courseRepository.save(CourseResult
               .builder()
-              .distanceKm(resultDto.getDistance_km())
-              .timeS(resultDto.getTime_s())
-              .paceS(resultDto.getPace_s())
+              .distanceKm(resultDto.getDistanceKm())
+              .timeS(resultDto.getTimeS())
+              .paceS(resultDto.getPaceS())
               .state(resultDto.getState())
               .heartbeat(resultDto.getHeartbeat())
               .runImgUrl(resultDto.getRunImgUrl())
