@@ -62,7 +62,7 @@ public class MasterpieceServiceImpl implements MasterpieceService{
         for(List<Point> tmp : pointList){
             // 주소를 구해줘야 함
             Point point = tmp.get(0);
-            KakaoRegionResponse kakaoRegionResponse = kakaoAddressGenerator.getRegionByCoordinates(point.getX(), point.getY());
+            KakaoRegionResponse kakaoRegionResponse = kakaoAddressGenerator.getRegionByCoordinates(point.getY(), point.getX());
 
             // MongoDB에 저장
             Path path = courseRepository.save(new Path(tmp));
