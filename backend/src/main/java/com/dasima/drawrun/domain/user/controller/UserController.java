@@ -3,6 +3,7 @@ package com.dasima.drawrun.domain.user.controller;
 import com.dasima.drawrun.domain.user.dto.response.AnotherUserArtsResponse;
 import com.dasima.drawrun.domain.user.dto.response.UserArtsResponse;
 import com.dasima.drawrun.domain.user.dto.response.UserHistoryResponse;
+import com.dasima.drawrun.domain.user.dto.response.UserStatusResponse;
 import com.dasima.drawrun.domain.user.entity.User;
 import com.dasima.drawrun.domain.user.repository.UserRepository;
 import com.dasima.drawrun.domain.user.service.UserService;
@@ -60,6 +61,15 @@ public class UserController {
 
         return ResponseEntity.ok(
                 new ApiResponseJson(true, 200, "정보 조회에 성공했습니다.", response)
+        );
+    }
+
+    @GetMapping("/stat")
+    public ResponseEntity<ApiResponseJson> getStat(@AuthenticationPrincipal UserPrinciple userPrinciple) {
+        UserStatusResponse response = userService.getUserStatById(userPrinciple.getUserId());
+
+        return ResponseEntity.ok(
+                new ApiResponseJson(true, 200, "통계 조회에 성공했습니다.", response)
         );
     }
 
