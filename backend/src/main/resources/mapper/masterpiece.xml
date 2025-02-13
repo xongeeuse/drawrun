@@ -35,6 +35,7 @@
         <result column="masterpiece_board_id" property="masterpieceBoardId"/>
         <result column="mongo_id" property="mongoId"/>
         <result column="path_num" property="pathNum"/>
+        <result column="address" property="address"/>
     </resultMap>
 
     <resultMap id="MasterpieceParticipantResultMap" type="com.dasima.drawrun.domain.masterpiece.entity.MasterpieceParticipant">
@@ -126,5 +127,10 @@
             mb.expire_date asc;
     </select>
 
+    <select id="pathlist" parameterType="integer" resultMap="MasterpieceSegResultMap">
+        select *
+        from masterpiece_seg
+        where masterpiece_board_id = #{masterpieceBoardId}
+    </select>
 
 </mapper>

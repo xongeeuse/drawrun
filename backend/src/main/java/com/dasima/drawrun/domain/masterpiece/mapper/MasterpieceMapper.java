@@ -15,5 +15,5 @@ public interface MasterpieceMapper {
 
     List<MasterpieceBoard> list();
     MasterpieceBoard search(int masterpieceBoardId);
-    List<MasterpieceSeg>
+    List<MasterpieceSeg> pathlist(int masterpieceBoardId);
 }

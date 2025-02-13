@@ -5,6 +5,7 @@ import com.dasima.drawrun.domain.course.vo.GeoPoint;
 import com.dasima.drawrun.domain.course.vo.KakaoRegionResponse;
 import com.dasima.drawrun.domain.masterpiece.dto.request.MasterpieceSaveRequest;
 import com.dasima.drawrun.domain.masterpiece.dto.response.MasterpieceListResponse;
+import com.dasima.drawrun.domain.masterpiece.dto.response.PathListResponse;
 import com.dasima.drawrun.domain.masterpiece.entity.MasterpieceBoard;
 import com.dasima.drawrun.domain.masterpiece.entity.MasterpieceSeg;
 import com.dasima.drawrun.domain.masterpiece.mapper.MasterpieceMapper;
@@ -14,10 +15,12 @@ import com.dasima.drawrun.domain.user.repository.UserRepository;
 import com.dasima.drawrun.global.util.KakaoAddressGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.geo.Point;
+import org.springframework.data.mongodb.core.geo.GeoJsonLineString;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -149,5 +152,30 @@ public class MasterpieceServiceImpl implements MasterpieceService{
                 .userId(masterpieceBoard.getUserId())
                 .masterpieceBoardId(masterpieceBoard.getMasterpieceBoardId())
                 .build();
+    }
+
+    public List<PathListResponse> pathlist(int masterpieceBoardId){
+        List<MasterpieceSeg> masterpieceSegs = masterpieceMapper.pathlist(masterpieceBoardId);
+        List<PathListResponse> listResponses = new ArrayList<PathListResponse>();
+        for(MasterpieceSeg masterpieceSeg : masterpieceSegs){
+            // mongo에서 geo json을 가져옴
+            Path path = courseRepository.findById(masterpieceSeg.getMongoId()).orElse(null);
+            GeoJsonLineString geoJsonLineString = path.getPath();
+            List<Point> list = geoJsonLineString.getCoordinates();
+
+            // geoPoints로 변환
+            // 경로
+            List<GeoPoint> geoPoints = new ArrayList<GeoPoint>();
+
+            for(Point point : list){
+                GeoPoint tmp = new GeoPoint(point.getX(), point.getY());
+                geoPoints.add(tmp);
+            }
+
+            
+
+
+        }
+
     }
 }
