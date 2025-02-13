@@ -15,5 +15,4 @@ public class HistoryDto {
     Long pace;
     Integer heartbeat;
     Integer cadence;
-    LocalDateTime date;
 }
