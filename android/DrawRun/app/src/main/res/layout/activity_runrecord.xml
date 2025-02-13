@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#171515">  <!-- ✅ 다크 모드 배경 적용 -->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="20dp"
+        tools:layout_editor_absoluteX="95dp"
+        tools:layout_editor_absoluteY="150dp">
+
+        <ImageView
+            android:id="@+id/trackingImageView"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:scaleType="fitCenter"
+            android:layout_marginTop="10dp"/>
+
+        <!-- ✅ 타이틀 텍스트 (흰색) -->
+        <TextView
+            android:id="@+id/textTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingBottom="20dp"
+            android:text="러닝 기록"
+            android:textColor="@android:color/white"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <!-- ✅ 거리 텍스트 -->
+        <TextView
+            android:id="@+id/textDistance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="거리: 0.00 km"
+            android:textColor="@android:color/white"
+            android:textSize="20sp" /> <!-- ✅ 흰색 텍스트 -->
+
+        <!-- ✅ 시간 텍스트 -->
+        <TextView
+            android:id="@+id/textTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="시간: 0분 00초"
+            android:textColor="@android:color/white"
+            android:textSize="20sp" /> <!-- ✅ 흰색 텍스트 -->
+
+        <!-- ✅ 평균 심박수 텍스트 -->
+        <TextView
+            android:id="@+id/textHeartRate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="평균 심박수: 0 BPM"
+            android:textColor="@android:color/white"
+            android:textSize="20sp" /> <!-- ✅ 흰색 텍스트 -->
+
+        <!-- ✅ 러닝 기록 저장 버튼 -->
+        <Button
+            android:id="@+id/buttonFinish"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="러닝 기록 저장" />
+    </LinearLayout>
+
+    <include
+        layout="@layout/layout_bottom_navigation"
+        android:id="@+id/bottomNavigationLayout"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
