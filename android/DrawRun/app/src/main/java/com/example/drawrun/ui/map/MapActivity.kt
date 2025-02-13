@@ -3,6 +3,7 @@ package com.example.drawrun.ui.map
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Bundle
@@ -11,15 +12,16 @@ import android.view.Window
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
 import com.example.drawrun.R
 import com.example.drawrun.data.model.ParcelablePoint
 import com.example.drawrun.ui.map.fragment.CourseCompleteBottomSheet
+import com.example.drawrun.ui.runrecord.RunRecordActivity
 import com.example.drawrun.utils.RetrofitInstance
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.wearable.PutDataMapRequest
@@ -73,6 +75,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 
@@ -593,7 +596,7 @@ class MapActivity : AppCompatActivity() {
         val polylineOptions = PolylineAnnotationOptions()
             .withPoints(points)
             .withLineColor("#00FF00") // 초록색
-            .withLineWidth(4.0)
+            .withLineWidth(8.0)
 
         polylineAnnotationManager.deleteAll()  // 기존 트래킹 경로 삭제
         polylineAnnotationManager.create(polylineOptions)  // 새로운 경로 추가
@@ -626,7 +629,7 @@ class MapActivity : AppCompatActivity() {
             durationRemaining
         )
         // 목적지 도착 시 안내 종료
-        if (distanceRemaining < 5) { // 남은 거리가 5m 미만일 경우 종료
+        if (distanceRemaining < 1) { // 남은 거리가 1m 미만일 경우 종료
             routeProgress.route.legs()?.let { legs ->
                 if (routeProgress.currentLegProgress?.legIndex == legs.size - 1) {
                     val totalDistance = routeProgress.route.distance() // 총 이동 거리 (미터)
@@ -635,10 +638,14 @@ class MapActivity : AppCompatActivity() {
                     val totalDistanceInKm = totalDistance / 1000 // 미터 -> 킬로미터 변환
 //                    val totalTimeInMinutes = (totalDuration / 60) // 분 단위 변환
                     stopNavigation()
-                    showArrivalDialog(totalDistanceInKm, totalDuration)  // 이동 거리 및 소요 시간 안내 모달 표시
+                    // 트래킹 스냅샷 캡처 후 모달 띄우기
+                    captureTrackingSnapshot()
+                    // 이동 거리 및 소요 시간 안내 모달 표시
+                    showArrivalDialog(totalDistanceInKm, totalDuration, totalDistance, totalDuration)
                 }
             }
         }
+
 
         routeProgress.voiceInstructions?.let { voiceInstructions ->
             val currentAnnouncement = voiceInstructions.announcement()
@@ -677,23 +684,48 @@ class MapActivity : AppCompatActivity() {
     }
 
     // 도착 시 모달 다이얼로그 표시 함수 추가
-    private fun showArrivalDialog(distanceInKm: Double, time: Int) {
-        val formattedDistance = String.format("%.3f", distanceInKm) // 소수점 둘째 자리까지 나타냄
+//    private fun showArrivalDialog(distanceInKm: Double, time: Int, totalDistance: Double, totalDuration: Int) {
+//        val formattedDistance = String.format("%.3f", distanceInKm) // 소수점 둘째 자리까지 나타냄
+//
+//        // X분 Y초 형식 변환
+//        val minutes = time / 60
+//        val seconds = time % 60
+//        val formattedTime = "${minutes}분 ${seconds}초"
+//
+//        AlertDialog.Builder(this)
+//            .setTitle("📍 목적지 도착!")
+//            .setMessage("러닝이 완료되었습니다.\n'러닝 완료하기'를 눌러 기록을 확인하세요.")
+//            .setPositiveButton("러닝 완료하기") { dialog, _ ->
+//            dialog.dismiss()
+//            navigateToRunRecordActivity(totalDistance, totalDuration, distanceInKm, time)  // ✅ RunRecordActivity로 이동
+//        }
+//            .setCancelable(false) // 사용자가 다이얼로그 외부를 눌러도 닫히지 않게 설정
+//            .show()
+//    }
 
-        // X분 Y초 형식 변환
-        val minutes = time / 60
-        val seconds = time % 60
-        val formattedTime = "${minutes}분 ${seconds}초"
+    private fun showArrivalDialog(distanceInKm: Double, time: Int, totalDistance: Double, totalDuration: Int) {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_arrival, null)
+        val dialog = AlertDialog.Builder(this).setView(dialogView).create()
 
-        AlertDialog.Builder(this)
-            .setTitle("📍 목적지 도착!")
-            .setMessage("총 이동 거리: ${formattedDistance}km\n총 소요 시간: ${formattedTime}")
-            .setPositiveButton("확인") { dialog, _ ->
-                dialog.dismiss() // 확인 버튼 클릭 시 다이얼로그 닫기
-            }
-            .setCancelable(false) // 사용자가 다이얼로그 외부를 눌러도 닫히지 않게 설정
-            .show()
+        val imageView = dialogView.findViewById<ImageView>(R.id.trackingSnapshotImageView)
+        val finishButton = dialogView.findViewById<Button>(R.id.finishRunButton)
+
+        // ✅ 스냅샷이 있으면 Glide로 로드
+        trackingSnapshotUrl?.let { imageUrl ->
+            Glide.with(this)
+                .load(imageUrl)
+                .placeholder(R.drawable.search_background) // 로드 전 기본 이미지
+                .into(imageView)
+        } ?: imageView.setImageResource(R.drawable.search_background) // 기본 이미지 설정
+
+        finishButton.setOnClickListener {
+            dialog.dismiss()
+            navigateToRunRecordActivity(totalDistance, totalDuration, distanceInKm, time, trackingSnapshotUrl)
+        }
+
+        dialog.show()
     }
+
 
 
     // stopButton 클릭 시 경로 초기화 기능 유지
@@ -774,7 +806,99 @@ class MapActivity : AppCompatActivity() {
         }
     }
 
+    // ✅ RunRecordActivity로 이동하는 함수
+    private fun navigateToRunRecordActivity(
+        totalDistance: Double,
+        totalDuration: Int,
+        distanceInKm: Double,
+        time: Int,
+        trackingSnapshotUrl: String?
+    ) {
+        val intent = Intent(this, RunRecordActivity::class.java).apply {
+            putExtra("totalDistance", totalDistance)
+            putExtra("distanceInKm", distanceInKm)
+            putExtra("totalDuration", totalDuration)
+            putExtra("time", time)
+            putExtra("trackingSnapshotUrl", trackingSnapshotUrl)
+            putExtra("pathId", 1)
+        }
+        startActivity(intent)
+        finish() // 현재 액티비티 종료
+    }
 
+    // ✅ 전역 변수 선언 (트래킹 스냅샷 URL 저장)
+    private var trackingSnapshotUrl: String? = null
+
+
+    private fun captureTrackingSnapshot() {
+        Log.d("MapActivity", "🟢 captureTrackingSnapshot() 호출됨")
+
+        if (trackingPoints.size < 2) {
+            Log.e("TrackingSnapshot", "❌ 트래킹 포인트가 부족하여 스냅샷을 캡처할 수 없음")
+            Log.e("TrackingSnapshot", "❌ $trackingPoints")
+            return
+        }
+
+        val cameraOptions = mapView.mapboxMap.cameraForCoordinates(
+            trackingPoints,
+            EdgeInsets(300.0, 300.0, 300.0, 300.0)
+        )
+
+        mapView.mapboxMap.setCamera(cameraOptions)
+        Log.d("TrackingSnapshot", "📷 카메라 설정 완료")
+
+        mapView.postDelayed({
+            mapView.snapshot { bitmap ->
+                if (bitmap != null) {
+                    Log.d("TrackingSnapshot", "✅ 스냅샷 캡처 성공: 비트맵 크기 ${bitmap.width}x${bitmap.height}")
+
+                    // ✅ Firebase 업로드 대신, ImageView에 표시하여 확인
+                    runOnUiThread {
+                        findViewById<ImageView>(R.id.trackingImageView).setImageBitmap(bitmap)
+                        Log.d("TrackingSnapshot", "📌 캡처된 이미지가 ImageView에 표시됨")
+                    }
+
+                    // Firebase 업로드는 비활성화
+//                lifecycleScope.launch {
+//                    val imageUrl = uploadTrackingImage(bitmap)
+//                    if (imageUrl != null) {
+//                        trackingSnapshotUrl = imageUrl  // ✅ 스냅샷 URL 저장
+//                        Log.d("TrackingSnapshot", "트래킹 스냅샷 저장 완료: $imageUrl")
+//                    } else {
+//                        Log.e("TrackingSnapshot", "트래킹 스냅샷 업로드 실패")
+//                    }
+//                }
+                } else {
+                    Log.e("TrackingSnapshot", "❌ 스냅샷 캡처 실패")
+                }
+            }
+        }, 1400)
+    }
+
+
+//    private suspend fun uploadTrackingImage(bitmap: Bitmap): String? {
+//        Log.d("UploadTrackingImage", "🟢 트래킹 스냅샷 업로드 시작")
+//
+//        // ✅ 스냅샷을 Firebase Storage `snapshots/tracking/` 경로에 저장
+//        val imageRef = storageReference.child("snapshots/tracking/${System.currentTimeMillis()}.jpg")
+//
+//        val baos = ByteArrayOutputStream()
+//        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+//        val data = baos.toByteArray()
+//
+//        return try {
+//            val uploadTask = imageRef.putBytes(data).await()
+//            Log.d("UploadTrackingImage", "✅ 이미지 업로드 성공")
+//
+//            val downloadUrl = imageRef.downloadUrl.await().toString()
+//            Log.d("UploadTrackingImage", "✅ 다운로드 URL 생성: $downloadUrl")
+//
+//            return downloadUrl
+//        } catch (e: Exception) {
+//            Log.e("UploadTrackingImage", "❌ 트래킹 스냅샷 업로드 실패: ${e.message}")
+//            return null
+//        }
+//    }
 
 }
 

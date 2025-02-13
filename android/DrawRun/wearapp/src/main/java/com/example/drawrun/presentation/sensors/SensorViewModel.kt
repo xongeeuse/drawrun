@@ -28,10 +28,17 @@ class SensorViewModel(private val sensorManagerHelper: SensorManagerHelper) : Vi
     val stepCount = sensorManagerHelper.stepCountFlow
     val totalDistance = sensorManagerHelper.totalDistanceFlow
     private var timerJob: Job? = null  // 타이머 Job 추가
+
+
+    // ✅ 네비게이션 중의 심박수 저장용 리스트
+    private val _heartRateListDuringNavigation = mutableListOf<Float>()
+
     fun startMeasurement() {
         if (_isRunning.value) return // 이미 실행 중이면 중복 실행 방지
         _isRunning.value = true
         sensorManagerHelper.startSensors()
+
+        _heartRateListDuringNavigation.clear()
 
         // 타이머 동작
         viewModelScope.launch {
@@ -40,6 +47,8 @@ class SensorViewModel(private val sensorManagerHelper: SensorManagerHelper) : Vi
                 _elapsedTime.update { it + 1 }
                 updatePaceAndCadence()
                 Log.d("SensorViewModel", "Elapsed time: $elapsedTime, Step count: ${stepCount.value}")
+                // ✅ 네비게이션 중의 심박수 저장
+                heartRate.value?.let { _heartRateListDuringNavigation.add(it) }
             }
         }
     }
@@ -76,5 +85,23 @@ class SensorViewModel(private val sensorManagerHelper: SensorManagerHelper) : Vi
     fun incrementElapsedTime() {
         _elapsedTime.update { it + 1 }
     }
+
+    private val heartRateSum = MutableStateFlow(0f)
+    private val heartRateCount = MutableStateFlow(0)
+
+    // ✅ 네비게이션 동안의 평균 심박수 계산 함수 추가
+    fun getAverageHeartRateDuringNavigation(): Float {
+        return if (_heartRateListDuringNavigation.isNotEmpty()) {
+            _heartRateListDuringNavigation.average().toFloat()
+        } else 0f
+    }
+
+    fun getAverageHeartRate(): Float {
+        return if (heartRateCount.value > 0) {
+            heartRateSum.value / heartRateCount.value
+        } else 0f
+    }
+
+
 }
 
