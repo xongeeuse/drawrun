@@ -1,7 +1,9 @@
 package com.dasima.drawrun.domain.user.service;
 
+import com.dasima.drawrun.domain.course.entity.UserPath;
 import com.dasima.drawrun.domain.course.mapper.CourseMapper;
 import com.dasima.drawrun.domain.user.dto.HistoryDto;
+import com.dasima.drawrun.domain.user.dto.response.UserArtsResponse;
 import com.dasima.drawrun.domain.user.dto.response.UserHistoryResponse;
 import com.dasima.drawrun.domain.user.entity.User;
 import com.dasima.drawrun.domain.user.entity.UserStat;
@@ -53,5 +55,14 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
+    @Override
+    public UserArtsResponse getArtById(int userId) {
+        List<UserPath> list = courseMapper.findByUserPK(userId);
+
+        return UserArtsResponse
+                .builder()
+                .artList(list)
+                .build();
+    }
 
 }
