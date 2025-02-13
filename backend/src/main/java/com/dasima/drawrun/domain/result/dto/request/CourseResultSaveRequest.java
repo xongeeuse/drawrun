@@ -6,12 +6,10 @@ import lombok.Data;
 public class CourseResultSaveRequest {
 
   private Integer pathId;
-  private String startImgUrl;
-  private String endImgUrl;
-  private Float distance_km;
+  private String runImgUrl;
+  private Double distance_km;
   private Long time_s;
   private Long pace_s;
-  private Float calorie;
   private Integer state;
   private Integer heartbeat;
   private Integer cadence;
