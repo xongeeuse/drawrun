@@ -18,8 +18,10 @@ public class UserStat {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "stat_id")
     private int statId;
-    private Float distanceKm;
+    private Double distanceKm;
+    @Column(name = "time_s")
     private Long timeS;
+    @Column(name = "pace_s")
     private Long paceS;
     private Integer state;
     @CreationTimestamp
