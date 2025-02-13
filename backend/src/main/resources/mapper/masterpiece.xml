@@ -52,7 +52,7 @@
 
     <insert id="seqsave" parameterType="MasterpieceSeg">
         insert into masterpiece_seg
-        values (0, #{masterpieceBoardId}, #{mongoId}, #{pathNum})
+        values (0, #{masterpieceBoardId}, #{mongoId}, #{pathNum}, #{address})
     </insert>
 
     <select id="list" resultMap="MasterpieceBoardResultMap">
