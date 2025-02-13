@@ -11,4 +11,9 @@ public class HistoryDto {
     String pathImgUrl;
     LocalDateTime createDate;
     Double distance;
+    Long time;
+    Long pace;
+    Integer heartbeat;
+    Integer cadence;
+    LocalDateTime date;
 }

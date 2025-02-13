@@ -37,6 +37,10 @@ public class UserServiceImpl implements UserService {
                     .pathImgUrl(userStat.getRunImgUrl())
                     .createDate(userStat.getDate())
                     .distance(userStat.getDistanceKm())
+                    .time(userStat.getTimeS())
+                    .pace(userStat.getPaceS())
+                    .heartbeat(userStat.getHeartbeat())
+                    .cadence(userStat.getCadence())
                     .build();
         }).collect(Collectors.toList());
 
