@@ -31,7 +31,6 @@ public class ResultServiceImpl implements ResultService {
               .runImgUrl(resultDto.getRunImgUrl())
               .cadence(resultDto.getCadence())
               .userId(UserPK)
-              .userPathId(resultDto.getPathId())
               .build()
       );
     } catch (Exception e) {

@@ -1,6 +1,5 @@
 package com.dasima.drawrun.domain.user.service;
 
-import com.dasima.drawrun.domain.course.entity.UserPath;
 import com.dasima.drawrun.domain.course.mapper.CourseMapper;
 import com.dasima.drawrun.domain.user.dto.HistoryDto;
 import com.dasima.drawrun.domain.user.dto.response.UserHistoryResponse;
@@ -34,16 +33,10 @@ public class UserServiceImpl implements UserService {
         List<UserStat> list = userStatRepository.findByUserIdOrderByDateDesc(userId);
 
         List<HistoryDto> historyDtoList = list.stream().map(userStat -> {
-            UserPath path = courseMapper.search(userStat.getUserPathId());
-
             return HistoryDto.builder()
-                    .userPathId(userStat.getUserPathId())
-                    .pathId(path.getPathId())
                     .pathImgUrl(userStat.getRunImgUrl())
-                    .name(path.getName())
                     .createDate(userStat.getDate())
                     .distance(userStat.getDistanceKm())
-                    .address(path.getAddress())
                     .build();
         }).collect(Collectors.toList());
 

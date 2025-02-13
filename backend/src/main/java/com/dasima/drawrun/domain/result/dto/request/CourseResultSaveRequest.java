@@ -5,7 +5,6 @@ import lombok.Data;
 @Data
 public class CourseResultSaveRequest {
 
-  private Integer pathId;
   private String runImgUrl;
   private Double distanceKm;
   private Long timeS;
