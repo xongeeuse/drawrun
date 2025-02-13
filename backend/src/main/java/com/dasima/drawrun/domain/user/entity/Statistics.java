@@ -1,6 +1,7 @@
 package com.dasima.drawrun.domain.user.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -55,5 +56,5 @@ public class Statistics {
     private Integer currentStreak;
 
     @Column(name = "latest_run")
-    private LocalDateTime latestRun;
+    private LocalDate latestRun;
 }
