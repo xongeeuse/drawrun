@@ -82,4 +82,14 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginBottom="16dp" />
 
+    <Button
+        android:id="@+id/btnGoToMasterpiece"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="걸작"
+        app:layout_constraintBottom_toTopOf="@id/btnGoToSearch"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="16dp" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

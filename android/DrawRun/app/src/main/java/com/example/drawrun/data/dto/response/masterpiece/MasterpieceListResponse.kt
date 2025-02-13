@@ -1,5 +1,7 @@
 package com.example.drawrun.data.dto.response.masterpiece
 
+import java.io.Serializable
+
 typealias MasterpieceListResponse = List<Masterpiece>
 
 data class Masterpiece(
@@ -14,4 +16,4 @@ data class Masterpiece(
     val distance: Double,         // 거리 (km)
     val joinCount: Int,           // 현재 참여 인원 수
     val dday: Int                 // D-Day 값
-)
+) : Serializable

@@ -6,4 +6,27 @@
     android:layout_height="match_parent"
     android:background="@color/main_background">
 
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- MapBox 맵 뷰 -->
+        <com.mapbox.maps.MapView
+            android:id="@+id/mapView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:mapbox_cameraTargetLat="37.5665"
+            app:mapbox_cameraTargetLng="126.9780"
+            app:mapbox_cameraZoom="11.0" />
+
+        <!-- 구간정보 레이아웃 -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/section_info_list"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+    </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
