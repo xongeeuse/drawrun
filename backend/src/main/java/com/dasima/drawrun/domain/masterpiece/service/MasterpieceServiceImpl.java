@@ -2,6 +2,7 @@ package com.dasima.drawrun.domain.masterpiece.service;
 
 import com.dasima.drawrun.domain.course.repository.CourseRepository;
 import com.dasima.drawrun.domain.course.vo.GeoPoint;
+import com.dasima.drawrun.domain.course.vo.KakaoRegionResponse;
 import com.dasima.drawrun.domain.masterpiece.dto.request.MasterpieceSaveRequest;
 import com.dasima.drawrun.domain.masterpiece.dto.response.MasterpieceListResponse;
 import com.dasima.drawrun.domain.masterpiece.entity.MasterpieceBoard;
@@ -10,7 +11,7 @@ import com.dasima.drawrun.domain.masterpiece.mapper.MasterpieceMapper;
 import com.dasima.drawrun.domain.course.entity.Path;
 import com.dasima.drawrun.domain.user.entity.User;
 import com.dasima.drawrun.domain.user.repository.UserRepository;
-import com.dasima.drawrun.global.security.UserPrinciple;
+import com.dasima.drawrun.global.util.KakaoAddressGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,8 @@ public class MasterpieceServiceImpl implements MasterpieceService{
     private final CourseRepository courseRepository;
 
     private final UserRepository userRepository;
+
+    private final KakaoAddressGenerator kakaoAddressGenerator;
     public int save(MasterpieceSaveRequest dto, int userId){
         // entity build
         MasterpieceBoard masterpieceBoard = MasterpieceBoard.builder()
@@ -57,6 +60,10 @@ public class MasterpieceServiceImpl implements MasterpieceService{
         int res = 1;
         int pathNum = 0;
         for(List<Point> tmp : pointList){
+            // 주소를 구해줘야 함
+            Point point = tmp.get(0);
+            KakaoRegionResponse kakaoRegionResponse = kakaoAddressGenerator.getRegionByCoordinates(point.getX(), point.getY());
+
             // MongoDB에 저장
             Path path = courseRepository.save(new Path(tmp));
 
@@ -66,6 +73,7 @@ public class MasterpieceServiceImpl implements MasterpieceService{
                             .masterpieceBoardId(masterpieceBoardId)
                             .mongoId(path.getId())
                             .pathNum(++pathNum)
+                            .address(kakaoRegionResponse.getDocuments().get(0).getAddress_name())
                             .build()
             );
         }
