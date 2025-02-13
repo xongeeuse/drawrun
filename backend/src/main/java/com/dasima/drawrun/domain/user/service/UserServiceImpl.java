@@ -91,4 +91,19 @@ public class UserServiceImpl implements UserService {
 
     }
 
+    @Override
+    public String getRegionById(int userId) {
+        User user = userRepository.getUserByUserId(userId);
+
+        return user.getRegion();
+    }
+
+    @Override
+    public void setRegionById(int userId, String region) {
+        User user = userRepository.getUserByUserId(userId);
+        user.setRegion(region);
+
+        userRepository.save(user);
+    }
+
 }

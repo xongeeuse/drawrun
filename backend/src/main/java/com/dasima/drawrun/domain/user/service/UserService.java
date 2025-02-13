@@ -12,4 +12,8 @@ public interface UserService {
 
     UserStatusResponse getUserStatById(int userId);
 
+    String getRegionById(int userId);
+
+    void setRegionById(int userId, String region);
+
 }
