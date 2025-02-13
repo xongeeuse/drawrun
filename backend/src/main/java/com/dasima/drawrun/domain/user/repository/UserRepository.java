@@ -32,4 +32,5 @@ public interface UserRepository extends JpaRepository<User, Integer> {
       "WHERE u.userId = :userId")
   User findUserWithRoleNameById(@Param("userId") int userId);
 
+  User getUserByUserId(Integer userId);
 }
