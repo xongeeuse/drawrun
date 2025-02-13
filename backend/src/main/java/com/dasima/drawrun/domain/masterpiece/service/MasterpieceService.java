@@ -9,4 +9,5 @@ import java.util.List;
 public interface MasterpieceService {
     int save(MasterpieceSaveRequest dto, int userId);
     List<MasterpieceListResponse> list();
+    public MasterpieceListResponse search(int masterpieceBoardId);
 }

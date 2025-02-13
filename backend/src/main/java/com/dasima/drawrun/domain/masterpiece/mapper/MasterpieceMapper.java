@@ -14,4 +14,6 @@ public interface MasterpieceMapper {
     int seqsave(MasterpieceSeg masterpieceSeg);
 
     List<MasterpieceBoard> list();
+    MasterpieceBoard search(int masterpieceBoardId);
+    List<MasterpieceSeg>
 }
