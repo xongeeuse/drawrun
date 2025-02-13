@@ -8,11 +8,7 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 public class HistoryDto {
-    Integer userPathId;
-    String pathId;
     String pathImgUrl;
-    String name;
     LocalDateTime createDate;
     Double distance;
-    String address;
 }

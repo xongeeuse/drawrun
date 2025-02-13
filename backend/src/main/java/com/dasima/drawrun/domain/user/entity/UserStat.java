@@ -31,5 +31,4 @@ public class UserStat {
     private String runImgUrl;
     private Integer cadence;
     private Integer userId;
-    private Integer userPathId;
 }
