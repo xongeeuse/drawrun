@@ -92,17 +92,16 @@ public class MasterpieceServiceImpl implements MasterpieceService{
 
             User user = userRepository.findById(masterpieceBoard.getUserId()).orElse(null);
 
-
             // list 저장
             masterpieceListResponses.add(
                     MasterpieceListResponse.builder()
-                            .dDay((int) ChronoUnit.DAYS.between(createDate.toLocalDate(), expireDate.toLocalDate()))
+                            .dDay((int) ChronoUnit.DAYS.between(expireDate.toLocalDate(), createDate.toLocalDate()))
                             .gu(gu)
                             .distance(masterpieceBoard.getUserPath().getDistance())
                             .pathImgUrl(masterpieceBoard.getUserPath().getPathImgUrl())
                             .profileImgUrl(user.getProfileImgUrl())
                             .nickname(user.getUserNickname())
-                            .userPathId(masterpieceBoard.getUserPathId())
+                            .userPathId(masterpieceBoard.getUserPath().getUserPathId())
                             .restrictCount(masterpieceBoard.getRestrictCount())
                             .userId(masterpieceBoard.getUserId())
                             .masterpieceBoardId(masterpieceBoard.getMasterpieceBoardId())
