@@ -1,5 +1,6 @@
 package com.example.drawrun.ui.search.fragment
 
+import android.app.AlertDialog
 import android.app.appsearch.SearchResult
 import android.os.Bundle
 import android.util.Log
@@ -13,11 +14,14 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.drawrun.R
+import com.example.drawrun.data.dto.response.course.CourseDetailsResponse
 import com.example.drawrun.data.repository.CourseRepository
 import com.example.drawrun.data.repository.SearchRepository
 import com.example.drawrun.databinding.FragmentSearchResultBinding
 import com.example.drawrun.ui.search.adaptor.CourseAdapter
 import com.example.drawrun.utils.RetrofitInstance
+import com.example.drawrun.viewmodel.CourseDetailsViewModel
+import com.example.drawrun.viewmodel.CourseDetailsViewModelFactory
 import com.example.drawrun.viewmodel.SearchState
 import com.example.drawrun.viewmodel.SearchViewModel
 import com.example.drawrun.viewmodel.SearchViewModelFactory
@@ -43,6 +47,12 @@ class SearchResultFragment : Fragment() {
     private val viewModel: SearchViewModel by viewModels {
         SearchViewModelFactory(searchRepository, courseRepository)
     }
+
+    private val courseDetailsViewModel: CourseDetailsViewModel by viewModels {
+        CourseDetailsViewModelFactory(courseRepository)
+    }
+
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -81,10 +91,16 @@ class SearchResultFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        courseAdapter = CourseAdapter { course ->
+        courseAdapter = CourseAdapter(
+            { course ->
             Log.d("SearchSearch", "Bookmark clicked for course: ${course.courseName}")
             viewModel.toggleBookmark(course)
-        }
+        },
+            { course ->
+                Log.d("ClickClick", "Course clicked: ${course.courseName}")
+                fetchCourseDetails(course.courseId)
+            }
+        )
 
         binding.searchResultRecyclerView.apply {
             layoutManager = LinearLayoutManager(context).also {
@@ -96,6 +112,30 @@ class SearchResultFragment : Fragment() {
             }
         }
     }
+
+    private fun fetchCourseDetails(courseId: Int) {
+        Log.d("CourseDetailsViewModel", "Fetching details for courseId: $courseId") // ✅ 추가
+        courseDetailsViewModel.fetchCourseDetails(courseId) // ✅ ViewModel에 요청
+
+        courseDetailsViewModel.courseDetails.observe(viewLifecycleOwner) { result ->
+            result.onSuccess { details ->
+                Log.d("SearchResultFragment", "Loaded Course Details: $details")
+                showCourseDetailsDialog(details) // ✅ UI 업데이트
+            }.onFailure { e ->
+                Log.e("SearchResultFragment", "Error loading course details", e)
+            }
+        }
+    }
+
+    private fun showCourseDetailsDialog(details: CourseDetailsResponse) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Course Details")
+            .setMessage("PathId: ${details.userPathId}\nLocation: ${details.location}\nDistance: ${details.distance} km")
+            .setPositiveButton("OK", null)
+            .show()
+    }
+
+
 
     private fun setupToolbar() {
         // 거리 필터 스피너 설정

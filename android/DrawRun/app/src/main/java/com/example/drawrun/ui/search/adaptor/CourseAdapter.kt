@@ -13,7 +13,8 @@ import com.example.drawrun.databinding.ItemCourseBinding
 
 // 생성자에 콜백 추가
 class CourseAdapter(
-    private val onBookmarkClick: (CourseData) -> Unit
+    private val onBookmarkClick: (CourseData) -> Unit,
+    private val onCourseClick: (CourseData) -> Unit
 ) : ListAdapter<CourseData, CourseViewHolder>(CourseDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CourseViewHolder {
@@ -24,7 +25,8 @@ class CourseAdapter(
                 parent,
                 false
             ),
-            onBookmarkClick  // ViewHolder 생성 시 콜백 전달
+            onBookmarkClick,  // ViewHolder 생성 시 콜백 전달,
+            onCourseClick // ViewHolder에 전달
         )
     }
 
@@ -37,7 +39,8 @@ class CourseAdapter(
 
 class CourseViewHolder(
     private val binding: ItemCourseBinding,
-    private val onBookmarkClick: (CourseData) -> Unit  // 북마크 클릭 콜백 추가
+    private val onBookmarkClick: (CourseData) -> Unit,  // 북마크 클릭 콜백 추가
+    private val onCourseClick: (CourseData) -> Unit // 코스 클릭 리스너
 ) : RecyclerView.ViewHolder(binding.root) {
     fun bind(course: CourseData) {
         binding.apply {
@@ -70,6 +73,10 @@ class CourseViewHolder(
                     .load(url)
                     .circleCrop()
                     .into(profileImage)
+            }
+            // 아이템 전체 클릭 리스너
+            root.setOnClickListener {
+                onCourseClick(course)  // 클릭 이벤트 추가
             }
         }
     }
