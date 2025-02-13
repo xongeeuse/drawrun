@@ -1,5 +1,6 @@
 package com.dasima.drawrun.domain.user.controller;
 
+import com.dasima.drawrun.domain.user.dto.response.UserArtsResponse;
 import com.dasima.drawrun.domain.user.dto.response.UserHistoryResponse;
 import com.dasima.drawrun.domain.user.service.UserService;
 import com.dasima.drawrun.global.common.ApiResponseJson;
@@ -21,6 +22,15 @@ public class UserController {
     @GetMapping("/mypage")
     public ResponseEntity<ApiResponseJson> getMyHistory(@AuthenticationPrincipal UserPrinciple userPrinciple) {
         UserHistoryResponse response = userService.getHistoryById(userPrinciple.getUserId());
+
+        return ResponseEntity.ok(
+                new ApiResponseJson(true, 200, "정보 조회에 성공했습니다.", response)
+        );
+    }
+
+    @GetMapping("/art")
+    public ResponseEntity<ApiResponseJson> getArtHistory(@AuthenticationPrincipal UserPrinciple userPrinciple) {
+        UserArtsResponse response = userService.getArtById(userPrinciple.getUserId());
 
         return ResponseEntity.ok(
                 new ApiResponseJson(true, 200, "정보 조회에 성공했습니다.", response)
