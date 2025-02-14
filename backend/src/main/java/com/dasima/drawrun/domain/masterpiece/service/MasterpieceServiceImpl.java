@@ -212,4 +212,8 @@ public class MasterpieceServiceImpl implements MasterpieceService{
                         .build()
         );
     }
+
+    public int complete(int masterpieceSegId){
+        return masterpieceMapper.complete(masterpieceSegId);
+    }
 }

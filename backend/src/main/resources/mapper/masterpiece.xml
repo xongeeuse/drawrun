@@ -45,6 +45,11 @@
         <result column="masterpiece_seg_id" property="masterpieceSegId"/>
         <result column="create_date" property="createDate"/>
     </resultMap>
+    <update id="complete" parameterType="int">
+        update masterpiece_participant
+        set state = 1
+        where masterpiece_seg_id = #{masterpieceSegId}
+    </update>
 
     <insert id="join" parameterType="MasterpieceParticipant">
         insert into masterpiece_participant

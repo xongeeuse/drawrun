@@ -1,6 +1,7 @@
 package com.dasima.drawrun.domain.masterpiece.controller;
 
 
+import com.dasima.drawrun.domain.masterpiece.dto.request.MasterpieceCompleteRequest;
 import com.dasima.drawrun.domain.masterpiece.dto.request.MasterpieceJoinRequest;
 import com.dasima.drawrun.domain.masterpiece.dto.request.MasterpieceSaveRequest;
 import com.dasima.drawrun.domain.masterpiece.service.MasterpieceService;
@@ -43,5 +44,12 @@ public class MasterpieceController {
     public ResponseEntity<?> join(@AuthenticationPrincipal UserPrinciple userPrinciple,
                                   @RequestBody MasterpieceJoinRequest masterpieceJoinRequest){
         return ResponseEntity.ok(masterpieceService.join(masterpieceJoinRequest, userPrinciple.getUserId()));
+    }
+
+    // 완료
+    @PostMapping("/complete")
+    public ResponseEntity<?> complete(@AuthenticationPrincipal UserPrinciple userPrinciple, @RequestBody MasterpieceCompleteRequest masterpieceCompleteRequest)
+    {
+        return ResponseEntity.ok(masterpieceService.complete(masterpieceCompleteRequest.getMasterpieceSegId()));
     }
 }
