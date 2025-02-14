@@ -15,6 +15,7 @@ import com.example.drawrun.utils.SecureStorage
 import org.json.JSONObject
 import android.util.Base64
 import com.example.drawrun.ui.map.MapActivity
+import com.example.drawrun.ui.masterpiece.MasterpieceActivity
 import com.example.drawrun.ui.mypage.UserActivity
 import com.example.drawrun.ui.search.SearchActivity
 
@@ -100,6 +101,17 @@ class MainActivity : AppCompatActivity() {
             val accessToken = SecureStorage.getAccessToken(this)
             if (accessToken != null) {
                 val intent = Intent(this, SearchActivity::class.java)
+                startActivity(intent)
+            } else {
+                val intent = Intent(this, LoginActivity::class.java)
+                startActivity(intent)
+            }
+        }
+
+        findViewById<Button>(R.id.btnGoToMasterpiece).setOnClickListener {
+            val accessToken = SecureStorage.getAccessToken(this)
+            if (accessToken != null) {
+                val intent = Intent(this, MasterpieceActivity::class.java)
                 startActivity(intent)
             } else {
                 val intent = Intent(this, LoginActivity::class.java)
