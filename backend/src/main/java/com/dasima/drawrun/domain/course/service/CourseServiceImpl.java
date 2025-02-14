@@ -17,6 +17,7 @@ import com.dasima.drawrun.domain.user.entity.User;
 import com.dasima.drawrun.domain.user.repository.UserRepository;
 import com.dasima.drawrun.global.util.KakaoAddressGenerator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.geo.Point;
 import org.springframework.data.mongodb.core.geo.GeoJsonLineString;
@@ -34,6 +35,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CourseServiceImpl implements CourseService{
 
     private final UserRepository userRepository;
@@ -103,8 +105,8 @@ public class CourseServiceImpl implements CourseService{
         List<CourseListResponse> courseListResponses = new ArrayList<>();
         for(UserPath userPath : userPaths){
             // username 추출
-            User user = userRepository.findById(userPath.getUserId()).orElse(null);
-
+            User user = userRepository.findByUserId(userPath.getUserId()).orElse(null);
+            if(user == null) continue;
              // 구 정보 추출
              String address = userPath.getAddress();
              int guIndex = address.indexOf("구");
@@ -156,7 +158,6 @@ public class CourseServiceImpl implements CourseService{
                 .location(userPath.getAddress())
                 .path(geoPoints)
                 .build();
-
     }
 
 
