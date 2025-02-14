@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.drawrun.data.dto.request.masterpiece.MasterpieceSaveRequest
 import com.example.drawrun.data.dto.response.masterpiece.Masterpiece
+import com.example.drawrun.data.dto.response.masterpiece.MasterpieceDetailResponse
 import com.example.drawrun.data.repository.MasterpieceRepository
 import kotlinx.coroutines.launch
 
@@ -16,6 +17,9 @@ class MasterpieceViewModel(private val repository: MasterpieceRepository) : View
 
     private val _masterpieceList = MutableLiveData<List<Masterpiece>>()
     val masterpieceList: LiveData<List<Masterpiece>> get() = _masterpieceList
+
+    private val _masterpieceDetail = MutableLiveData<MasterpieceDetailResponse>()
+    val masterpieceDetail: LiveData<MasterpieceDetailResponse> get() = _masterpieceDetail
 
     fun saveMasterpiece(request: MasterpieceSaveRequest) {
         viewModelScope.launch {
@@ -43,6 +47,21 @@ class MasterpieceViewModel(private val repository: MasterpieceRepository) : View
                 }
             } catch (e: Exception) {
                 Log.e("MasterpieceViewModel", "Exception fetching masterpiece list", e)
+            }
+        }
+    }
+
+    fun fetchMasterpieceDetail(masterpieceBoardId: Int) {
+        viewModelScope.launch {
+            try {
+                val response = repository.getMasterpieceDetail(masterpieceBoardId)
+                if (response.isSuccessful) {
+                    _masterpieceDetail.value = response.body()
+                } else {
+                    // 에러 처리 (필요 시)
+                }
+            } catch (e: Exception) {
+                // 네트워크 에러 처리 (필요 시)
             }
         }
     }

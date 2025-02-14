@@ -7,9 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.drawrun.data.dto.response.masterpiece.Masterpiece
 import com.example.drawrun.databinding.FragmentMasterpieceDetailBinding
+import com.example.drawrun.viewmodel.MasterpieceViewModel
 import com.mapbox.api.directions.v5.DirectionsCriteria
 import com.mapbox.api.directions.v5.models.RouteOptions
 import com.mapbox.geojson.LineString
@@ -37,6 +39,8 @@ class MasterpieceDetailFragment : Fragment() {
     private var _binding: FragmentMasterpieceDetailBinding? = null
     private val binding get() = _binding!!
 
+    private val viewModel: MasterpieceViewModel by viewModels()
+
     private lateinit var polylineAnnotationManager: PolylineAnnotationManager
     private lateinit var mapboxNavigation: MapboxNavigation // MapboxNavigation 객체 선언
 
@@ -54,7 +58,10 @@ class MasterpieceDetailFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // 전달받은 데이터 가져오기
+
         val masterpiece = arguments?.getSerializable("masterpiece") as? Masterpiece
+        // 전달받은 masterpieceBoardId 가져오기
+        val masterpieceBoardId = arguments?.getInt("masterpieceBoardId") ?: return
 
         // MapboxNavigation 초기화
         mapboxNavigation = MapboxNavigationProvider.create(

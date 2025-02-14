@@ -18,6 +18,7 @@ class MasterpieceAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: Masterpiece) {
+            binding.titleText.text = " \uD83D\uDC64 ${ item.courseName }"
             binding.nicknameText.text = " \uD83D\uDC64 ${ item.nickname }"
             binding.distanceText.text = " \uD83C\uDFC3 ${item.distance} km"
             binding.guText.text = " \uD83D\uDCCD ${item.gu}"
