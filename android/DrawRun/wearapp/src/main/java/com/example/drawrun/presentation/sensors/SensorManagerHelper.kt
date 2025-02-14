@@ -47,12 +47,13 @@ class SensorManagerHelper(private val context: Context) {
             event?.let {
                 when (it.sensor.type) {
                     Sensor.TYPE_HEART_RATE -> {
-                        heartRateFlow.value = it.values[0]
-//                        Log.d("SensorManagerHelper", "Heart rate data: ${it.values[0]}")
+                        val heartRate = event.values[0]
+                        heartRateFlow.value = heartRate
+                        Log.d("SensorManagerHelper", "💓 심박수 감지됨: $heartRate BPM") // ✅ 로그 추가
                     }
                     Sensor.TYPE_STEP_DETECTOR -> {
                         stepCountFlow.value += 1
-//                        Log.d("SensorManagerHelper", "Step detected! Total steps: ${stepCountFlow.value}")
+                        Log.d("SensorManagerHelper", "👣 스텝 감지됨! 총 스텝 수: ${stepCountFlow.value}") // ✅ 로그 추가
                     }
 
                     else -> {}
@@ -110,7 +111,10 @@ class SensorManagerHelper(private val context: Context) {
             sensorManager.registerListener(sensorEventListener, it, SensorManager.SENSOR_DELAY_NORMAL)
             Log.d("SensorManagerHelper", "Step Detector sensor registered successfully")
         } ?: Log.e("SensorManagerHelper", "Step detector sensor not available")
-
+        heartRateSensor?.let {
+            sensorManager.registerListener(sensorEventListener, it, SensorManager.SENSOR_DELAY_NORMAL)
+            Log.d("SensorManagerHelper", "💓 심박수 센서 등록 완료")
+        }
         try {
             locationManager.requestLocationUpdates(
                 LocationManager.GPS_PROVIDER,

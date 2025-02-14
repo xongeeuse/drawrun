@@ -31,7 +31,7 @@ class DataViewModel : ViewModel() {
 
     // ✅ 목적지 도착 여부 체크
     fun checkDestinationReached(distanceRemaining: Double) {
-        _isDestinationReached.value = distanceRemaining <= 0.0
+        _isDestinationReached.value = distanceRemaining <= 5
     }
 
     fun updateData(
