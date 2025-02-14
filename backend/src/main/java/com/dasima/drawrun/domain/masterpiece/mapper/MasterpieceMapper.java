@@ -1,6 +1,7 @@
 package com.dasima.drawrun.domain.masterpiece.mapper;
 
 import com.dasima.drawrun.domain.masterpiece.entity.MasterpieceBoard;
+import com.dasima.drawrun.domain.masterpiece.entity.MasterpieceParticipant;
 import com.dasima.drawrun.domain.masterpiece.entity.MasterpieceSeg;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -16,4 +17,6 @@ public interface MasterpieceMapper {
     List<MasterpieceBoard> list();
     MasterpieceBoard search(int masterpieceBoardId);
     List<MasterpieceSeg> pathlist(int masterpieceBoardId);
+
+    MasterpieceParticipant searchparticipant(int masterpieceSegId);
 }

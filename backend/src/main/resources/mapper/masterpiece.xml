@@ -68,6 +68,7 @@
             up.path_img_url,
             up.distance,
             up.address,
+            up.name,
             COUNT(mp.masterpiece_participant_id) AS participant_count  -- 참가자 수 계산
         FROM
             masterpiece_board mb
@@ -105,6 +106,7 @@
             up.path_img_url,
             up.distance,
             up.address,
+            up.name,
             COUNT(mp.masterpiece_participant_id) AS participant_count  -- 참가자 수 계산
         FROM
             masterpiece_board mb
@@ -131,6 +133,12 @@
         select *
         from masterpiece_seg
         where masterpiece_board_id = #{masterpieceBoardId}
+    </select>
+
+    <select id="searchparticipant" parameterType="integer" resultMap="MasterpieceParticipantResultMap">
+        select *
+        from masterpiece_participant
+        where masterpiece_seg_id = #{masterpieceSegId}
     </select>
 
 </mapper>

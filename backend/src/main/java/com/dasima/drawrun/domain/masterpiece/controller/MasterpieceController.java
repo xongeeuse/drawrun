@@ -32,8 +32,9 @@ public class MasterpieceController {
         return ResponseEntity.ok(masterpieceService.search(masterpieceBoardId));
     }
 
+    // 조각 조회
     @GetMapping("/pathlist/{masterpieceBoardId}")
     public ResponseEntity<?> pathlist(@PathVariable int masterpieceBoardId){
-        return ResponseEntity.ok();
+        return ResponseEntity.ok(masterpieceService.pathlist(masterpieceBoardId));
     }
 }

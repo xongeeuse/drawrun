@@ -21,4 +21,5 @@ public class MasterpieceListResponse {
     private double distance;
     private int joinCount;
     private int dDay;
+    private String courseName;
 }

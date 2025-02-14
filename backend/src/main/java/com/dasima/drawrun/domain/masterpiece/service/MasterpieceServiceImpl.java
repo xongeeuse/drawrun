@@ -7,6 +7,7 @@ import com.dasima.drawrun.domain.masterpiece.dto.request.MasterpieceSaveRequest;
 import com.dasima.drawrun.domain.masterpiece.dto.response.MasterpieceListResponse;
 import com.dasima.drawrun.domain.masterpiece.dto.response.PathListResponse;
 import com.dasima.drawrun.domain.masterpiece.entity.MasterpieceBoard;
+import com.dasima.drawrun.domain.masterpiece.entity.MasterpieceParticipant;
 import com.dasima.drawrun.domain.masterpiece.entity.MasterpieceSeg;
 import com.dasima.drawrun.domain.masterpiece.mapper.MasterpieceMapper;
 import com.dasima.drawrun.domain.course.entity.Path;
@@ -116,6 +117,7 @@ public class MasterpieceServiceImpl implements MasterpieceService{
                             .restrictCount(masterpieceBoard.getRestrictCount())
                             .userId(masterpieceBoard.getUserId())
                             .masterpieceBoardId(masterpieceBoard.getMasterpieceBoardId())
+                            .courseName(masterpieceBoard.getUserPath().getName())
                             .build()
             );
         }
@@ -150,6 +152,7 @@ public class MasterpieceServiceImpl implements MasterpieceService{
                 .userPathId(masterpieceBoard.getUserPath().getUserPathId())
                 .restrictCount(masterpieceBoard.getRestrictCount())
                 .userId(masterpieceBoard.getUserId())
+                        .courseName(masterpieceBoard.getUserPath().getName())
                 .masterpieceBoardId(masterpieceBoard.getMasterpieceBoardId())
                 .build();
     }
@@ -164,18 +167,36 @@ public class MasterpieceServiceImpl implements MasterpieceService{
             List<Point> list = geoJsonLineString.getCoordinates();
 
             // geoPoints로 변환
-            // 경로
-            List<GeoPoint> geoPoints = new ArrayList<GeoPoint>();
+            List<GeoPoint> geoPoints = new ArrayList<GeoPoint>(); // 경로
 
             for(Point point : list){
                 GeoPoint tmp = new GeoPoint(point.getX(), point.getY());
                 geoPoints.add(tmp);
             }
 
-            
+            // 참가자 조회
+            MasterpieceParticipant masterpieceParticipant = masterpieceMapper.searchparticipant(masterpieceSeg.getMasterpieceSegId());
 
+            String nicknameOrState = null; // 경로의 상태
 
+            // 참가자가 없다는 뜻
+            if(masterpieceParticipant == null) nicknameOrState = "달리기 시작";
+            else if(masterpieceParticipant.getState() == 1){
+                User user = userRepository.findById(masterpieceParticipant.getUserId()).orElse(null);
+                nicknameOrState = user.getUserNickname();
+            } else if(masterpieceParticipant.getState() == 0)
+                nicknameOrState = "달리는 중";
+
+            // PathListResponse build
+            listResponses.add(
+                    PathListResponse.builder()
+                            .path(geoPoints)
+                            .masterpieceSegId(masterpieceSeg.getMasterpieceSegId())
+                            .nickname(nicknameOrState)
+                            .address(masterpieceSeg.getAddress())
+                            .build()
+            );
         }
-
+        return listResponses;
     }
 }
