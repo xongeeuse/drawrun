@@ -42,4 +42,22 @@ class SearchRepository(private val api: SearchApi) {
             Result.failure(e)
         }
     }
+
+    // 인기코스 Top10
+    suspend fun getTopCourses(): Result<SearchResponse> {
+        return try {
+            Log.d("SearchSearch", "인기 코스 API 호출 했습니다.")
+            val response = api.getTopCourses()
+            if (response.isSuccessful) {
+                Log.d("SearchSearch", "인기 코스 API 호출 성공.")
+                Result.success(response.body() ?: throw Exception("Response body is null"))
+            } else {
+                Log.d("SearchSearch", "인기 코스 API 호출 실패")
+                Result.failure(Exception("Fetching popular courses failed: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Log.d("SearchSearch", "인기 코스 API 호출 뭔가 실패")
+            Result.failure(e)
+        }
+    }
 }
