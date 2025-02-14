@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Bundle
+import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.view.Window
 import android.widget.Button
@@ -20,6 +21,7 @@ import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.example.drawrun.R
 import com.example.drawrun.data.model.ParcelablePoint
+import com.example.drawrun.services.NavigationForegroundService
 import com.example.drawrun.ui.map.fragment.CourseCompleteBottomSheet
 import com.example.drawrun.ui.runrecord.RunRecordActivity
 import com.example.drawrun.utils.RetrofitInstance
@@ -38,6 +40,8 @@ import com.mapbox.maps.ImageHolder
 import com.mapbox.maps.MapView
 import com.mapbox.maps.Style
 import com.mapbox.maps.extension.localization.localizeLabels
+import com.mapbox.maps.extension.style.layers.addLayerAbove
+import com.mapbox.maps.extension.style.layers.getLayer
 import com.mapbox.maps.plugin.LocationPuck2D
 import com.mapbox.maps.plugin.annotation.annotations
 import com.mapbox.maps.plugin.annotation.generated.PolylineAnnotationManager
@@ -75,7 +79,6 @@ import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 
@@ -84,6 +87,7 @@ class MapActivity : AppCompatActivity() {
     // MapBox 관련 변수 초기화
     private lateinit var mapView: MapView
     private lateinit var polylineAnnotationManager: PolylineAnnotationManager  // 지도에 경로를 표시할 관리 객체
+    private lateinit var trackingAnnotationManager: PolylineAnnotationManager // ✅ 트래킹 선 (초록색)
     private lateinit var mapboxNavigation: MapboxNavigation
     private lateinit var routeLineApi: MapboxRouteLineApi
     private lateinit var routeLineView: MapboxRouteLineView
@@ -95,6 +99,10 @@ class MapActivity : AppCompatActivity() {
     private val points = mutableListOf<Point>() // 사용자가 선택한 지점들을 저장하는 리스트
     private val trackingPoints = mutableListOf<Point>() // 사용자의 이동 경로를 저장하는 리스트
     private var lastAnnouncement: String? = null // 마지막 안내 메시지 저장 변수
+
+    // 백그라운드에서 음성안내 실시
+    private lateinit var tts: TextToSpeech
+    private var isNavigating = false
 
     // 위치 권한 요청을 처리하기 위하 ActivityResultLanuncher
     private val locationPermissionRequest = registerForActivityResult(
@@ -117,7 +125,12 @@ class MapActivity : AppCompatActivity() {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-
+        // 백그라운드 tts
+        tts = TextToSpeech(this){ status ->
+            if(status == TextToSpeech.SUCCESS) {
+                tts.language = Locale.KOREAN
+            }
+        }
 
         // 음성 안내 API 초기화
         speechApi = MapboxSpeechApi(
@@ -207,6 +220,18 @@ class MapActivity : AppCompatActivity() {
                 enabled = true // 현재 위치 표시 활성화
                 pulsingEnabled = true // 현재 위치에 펄싱 효과 추가
             }
+            // ✅ 경로(빨간색)와 트래킹 선(초록색)을 따로 관리하여 트래킹 선이 위로 보이게 함
+            polylineAnnotationManager = mapView.annotations.createPolylineAnnotationManager()
+            trackingAnnotationManager = mapView.annotations.createPolylineAnnotationManager() // ✅ 트래킹 선 추가
+
+            Log.d("MapActivity", "✅ polylineAnnotationManager & trackingAnnotationManager 초기화 완료")
+
+            moveTrackingLineAboveRoute()
+
+            mapView.gestures.addOnMapClickListener { point ->
+                handleMapClick(point)
+                true
+            }
 
             // 경로 생성 버튼 클릭 시 동작 추가
             generateRouteButton.setOnClickListener {
@@ -231,6 +256,8 @@ class MapActivity : AppCompatActivity() {
             startButton.setOnClickListener {
                 if (points.isEmpty()) {
                     Toast.makeText(this, "최소 출발지와 도착지를 선택해주세요.", Toast.LENGTH_SHORT).show()
+                    isNavigating = true
+                    startNavigationForegroundService()
                     return@setOnClickListener
                 }
 
@@ -242,7 +269,7 @@ class MapActivity : AppCompatActivity() {
 
                         val distance = TurfMeasurement.distance(userPoint, startPoint, "meters")
 
-                        if (distance > 20) {
+                        if (distance > 50) {
                             Toast.makeText(this@MapActivity, "출발지로 이동 후 시작해주세요.", Toast.LENGTH_SHORT).show()
                         } else {
                             // ✅ 출발지와 가까운 경우 기존 내비게이션 시작 로직 실행
@@ -307,18 +334,15 @@ class MapActivity : AppCompatActivity() {
 
 
             stopButton.setOnClickListener {
+                stopNavigationForegroundService()
                 stopNavigation()
             }
 
-            polylineAnnotationManager = mapView.annotations.createPolylineAnnotationManager()
-            mapView.gestures.addOnMapClickListener { point ->
-                handleMapClick(point)
-                true
-            }
+//            polylineAnnotationManager = mapView.annotations.createPolylineAnnotationManager()
+
 
             val listener = object : OnIndicatorPositionChangedListener {
                 override fun onIndicatorPositionChanged(point: Point) {
-
                     mapView.getMapboxMap().setCamera(
                         CameraOptions.Builder()
                             .center(point)
@@ -331,12 +355,12 @@ class MapActivity : AppCompatActivity() {
 
             mapView.location.addOnIndicatorPositionChangedListener(listener)
 
-            // 지도 클릭 시 위치 추가
-            polylineAnnotationManager = mapView.annotations.createPolylineAnnotationManager()
-            mapView.gestures.addOnMapClickListener { point ->
-                handleMapClick(point)
-                true
-            }
+//            // 지도 클릭 시 위치 추가
+//            polylineAnnotationManager = mapView.annotations.createPolylineAnnotationManager()
+//            mapView.gestures.addOnMapClickListener { point ->
+//                handleMapClick(point)
+//                true
+//            }
         }
     }
 
@@ -355,12 +379,14 @@ class MapActivity : AppCompatActivity() {
 
     // 경로에 지도에 그리기
     private fun drawLine(points: List<Point>) {
+        polylineAnnotationManager.deleteAll()
+
         val polylineOptions = PolylineAnnotationOptions()
             .withPoints(points)
             .withLineColor("#FF0000") // 경로 색상(빨간색)
             .withLineWidth(4.0)  // 경로 두께
 
-        polylineAnnotationManager.deleteAll()  // 기존 경로 삭제
+//        polylineAnnotationManager.deleteAll()  // 기존 경로 삭제
         polylineAnnotationManager.create(polylineOptions)  // 새로운 경로 추가
     }
 
@@ -593,13 +619,16 @@ class MapActivity : AppCompatActivity() {
 
     // ✅ 이동한 경로를 초록색으로 그리는 함수
     private fun drawTrackingLine(points: List<Point>) {
+        trackingAnnotationManager.deleteAll()
         val polylineOptions = PolylineAnnotationOptions()
             .withPoints(points)
             .withLineColor("#00FF00") // 초록색
             .withLineWidth(8.0)
 
-        polylineAnnotationManager.deleteAll()  // 기존 트래킹 경로 삭제
+//        polylineAnnotationManager.deleteAll()  // 기존 트래킹 경로 삭제
         polylineAnnotationManager.create(polylineOptions)  // 새로운 경로 추가
+        trackingAnnotationManager.create(polylineOptions)   // 위로 올리기 방금 추가
+        Log.d("Tracking", "✅ 트래킹 선 업데이트 완료")
     }
 
 
@@ -612,7 +641,7 @@ class MapActivity : AppCompatActivity() {
         val stepProgress = routeProgress.currentLegProgress?.currentStepProgress
         val distanceToNextTurn = stepProgress?.distanceRemaining?.toDouble() ?: 0.0
         val voiceInstrunction = routeProgress.voiceInstructions?.announcement() ?: "안내 없음"
-
+//        speakNavigationInstructions(voiceInstrunction)
         // 데이터 로그 출력
         Log.d("NAVINAVI", "다음 지시까지 남은 거리: ${distanceToNextTurn}m, 방향 안내: ${voiceInstrunction}")
 
@@ -629,7 +658,7 @@ class MapActivity : AppCompatActivity() {
             durationRemaining
         )
         // 목적지 도착 시 안내 종료
-        if (distanceRemaining < 1) { // 남은 거리가 1m 미만일 경우 종료
+        if (distanceRemaining < 5) { // 남은 거리가 1m 미만일 경우 종료
             routeProgress.route.legs()?.let { legs ->
                 if (routeProgress.currentLegProgress?.legIndex == legs.size - 1) {
                     val totalDistance = routeProgress.route.distance() // 총 이동 거리 (미터)
@@ -709,14 +738,18 @@ class MapActivity : AppCompatActivity() {
 
         val imageView = dialogView.findViewById<ImageView>(R.id.trackingSnapshotImageView)
         val finishButton = dialogView.findViewById<Button>(R.id.finishRunButton)
+        Log.d("showArrivalDialog", "📌 스냅샷 로드 시도 - trackingSnapshotUrl: $trackingSnapshotUrl")
 
-        // ✅ 스냅샷이 있으면 Glide로 로드
-        trackingSnapshotUrl?.let { imageUrl ->
+        if (trackingSnapshotUrl != null) {
+            Log.d("showArrivalDialog", "📌 로드할 스냅샷 경로: $trackingSnapshotUrl")
             Glide.with(this)
-                .load(imageUrl)
-                .placeholder(R.drawable.search_background) // 로드 전 기본 이미지
+                .load(trackingSnapshotUrl)
+                .placeholder(R.drawable.search_background) // 기본 이미지 설정
                 .into(imageView)
-        } ?: imageView.setImageResource(R.drawable.search_background) // 기본 이미지 설정
+        } else {
+            Log.e("showArrivalDialog", "❌ trackingSnapshotUrl이 null이거나 비어 있음")
+            imageView.setImageResource(R.drawable.search_background) // 기본 이미지 설정
+        }
 
         finishButton.setOnClickListener {
             dialog.dismiss()
@@ -765,11 +798,10 @@ class MapActivity : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
-//        mapboxNavigation.apply {
-//            unregisterLocationObserver(realTimeLocationObserver)
-//            unregisterRouteProgressObserver(routeProgressObserver)
-//        }
-        stopNavigation()
+        if (isNavigating) { // ✅ 내비게이션이 실행 중일 때만 정지
+            stopNavigation()
+            isNavigating = false
+        }
     }
 
     override fun onDestroy() {
@@ -812,14 +844,14 @@ class MapActivity : AppCompatActivity() {
         totalDuration: Int,
         distanceInKm: Double,
         time: Int,
-        trackingSnapshotUrl: String?
+        snapshotUrl: String?
     ) {
         val intent = Intent(this, RunRecordActivity::class.java).apply {
             putExtra("totalDistance", totalDistance)
             putExtra("distanceInKm", distanceInKm)
             putExtra("totalDuration", totalDuration)
             putExtra("time", time)
-            putExtra("trackingSnapshotUrl", trackingSnapshotUrl)
+            putExtra("trackingSnapshotUrl", snapshotUrl)
             putExtra("pathId", 1)
         }
         startActivity(intent)
@@ -852,22 +884,27 @@ class MapActivity : AppCompatActivity() {
                 if (bitmap != null) {
                     Log.d("TrackingSnapshot", "✅ 스냅샷 캡처 성공: 비트맵 크기 ${bitmap.width}x${bitmap.height}")
 
+                    // 📌 비트맵을 파일로 저장하는 함수 호출
+                    val filePath = saveBitmapToFile(bitmap)
+
+                    if (filePath != null) {
+                        trackingSnapshotUrl = filePath // ✅ trackingSnapshotUrl 업데이트
+                        Log.d("TrackingSnapshot", "📌 스냅샷 저장 성공 - 경로: $filePath")
+                    } else {
+                        Log.e("TrackingSnapshot", "❌ 스냅샷 저장 실패")
+                    }
+                    Log.d("TrackingSnapshot", "📌 trackingSnapshotUrl 값 확인: $trackingSnapshotUrl")
                     // ✅ Firebase 업로드 대신, ImageView에 표시하여 확인
                     runOnUiThread {
-                        findViewById<ImageView>(R.id.trackingImageView).setImageBitmap(bitmap)
-                        Log.d("TrackingSnapshot", "📌 캡처된 이미지가 ImageView에 표시됨")
-                    }
+                        val trackingImageView = findViewById<ImageView>(R.id.trackingImageView)
 
-                    // Firebase 업로드는 비활성화
-//                lifecycleScope.launch {
-//                    val imageUrl = uploadTrackingImage(bitmap)
-//                    if (imageUrl != null) {
-//                        trackingSnapshotUrl = imageUrl  // ✅ 스냅샷 URL 저장
-//                        Log.d("TrackingSnapshot", "트래킹 스냅샷 저장 완료: $imageUrl")
-//                    } else {
-//                        Log.e("TrackingSnapshot", "트래킹 스냅샷 업로드 실패")
-//                    }
-//                }
+                        if (trackingImageView != null) { // ✅ Null 체크 추가
+                            trackingImageView.setImageBitmap(bitmap)
+                            Log.d("TrackingSnapshot", "📌 캡처된 이미지가 ImageView에 표시됨")
+                        } else {
+                            Log.e("TrackingSnapshot", "❌ trackingImageView가 존재하지 않음!")
+                        }
+                    }
                 } else {
                     Log.e("TrackingSnapshot", "❌ 스냅샷 캡처 실패")
                 }
@@ -875,7 +912,20 @@ class MapActivity : AppCompatActivity() {
         }, 1400)
     }
 
-
+    private fun saveBitmapToFile(bitmap: Bitmap): String? {
+        return try {
+            val file = File(getExternalFilesDir(null), "tracking_snapshot.png")
+            val outputStream = FileOutputStream(file)
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+            outputStream.flush()
+            outputStream.close()
+            Log.d("TrackingSnapshot", "✅ 비트맵 파일 저장 완료: ${file.absolutePath}")
+            file.absolutePath // ✅ 저장된 파일의 경로 반환
+        } catch (e: Exception) {
+            Log.e("TrackingSnapshot", "🚨 비트맵 파일 저장 실패", e)
+            null
+        }
+    }
 //    private suspend fun uploadTrackingImage(bitmap: Bitmap): String? {
 //        Log.d("UploadTrackingImage", "🟢 트래킹 스냅샷 업로드 시작")
 //
@@ -899,6 +949,49 @@ class MapActivity : AppCompatActivity() {
 //            return null
 //        }
 //    }
+
+    private fun startNavigationForegroundService() {
+        val intent = Intent(this, NavigationForegroundService::class.java)
+        startService(intent)
+    }
+
+    private fun stopNavigationForegroundService() {
+        val intent = Intent(this, NavigationForegroundService::class.java)
+        stopService(intent)
+    }
+
+    // 🚀 네비게이션 안내 음성 출력
+    private fun speakNavigationInstructions(text: String) {
+        tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
+    }
+
+    private fun moveTrackingLineAboveRoute() {
+        val trackingLineLayerId = "tracking-line-layer"
+        val routeLayerId = "mapbox-navigation-route-layer" // 네비 경로 Layer ID
+
+        mapView.getMapboxMap().getStyle { style ->
+            val trackingLineLayer = style.getLayer(trackingLineLayerId)
+            val routeLayer = style.getLayer(routeLayerId)
+
+            if (trackingLineLayer == null) {
+                Log.e("Tracking", "❌ 트래킹 선 Layer ($trackingLineLayerId) 를 찾을 수 없음!")
+                return@getStyle
+            }
+            if (routeLayer == null) {
+                Log.e("Tracking", "❌ 네비 경로 Layer ($routeLayerId) 를 찾을 수 없음!")
+                return@getStyle
+            }
+
+            // 🟢 기존 트래킹 선 레이어를 제거한 후, 다시 추가하여 경로 위로 배치
+            style.removeStyleLayer(trackingLineLayerId)
+            style.addLayerAbove(trackingLineLayer, routeLayerId)
+
+            Log.d("Tracking", "✅ 트래킹 선을 네비 경로 위로 이동 완료")
+        }
+    }
+
+
+
 
 }
 

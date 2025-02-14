@@ -1,6 +1,10 @@
 package com.example.drawrun.ui.runrecord
 
+import android.annotation.SuppressLint
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -18,6 +22,7 @@ class RunRecordActivity : ComponentActivity() {
     private var pathId: Int = 0
     private var trackingSnapshotUrl: String? = null
 //    private lateinit var viewModel: RunRecordViewModel  // ✅ ViewModel 제거
+    private lateinit var heartRateTextView: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,15 +43,22 @@ class RunRecordActivity : ComponentActivity() {
         Log.d("RunRecordActivity", "🟢 받은 pathId: $pathId")
         Log.d("RunRecordActivity", "🟢 받은 trackingSnapshotUrl: $trackingSnapshotUrl")
 
-        if (trackingSnapshotUrl.isNullOrEmpty()) {
-            Log.e("RunRecordActivity", "❌ trackingSnapshotUrl이 null 또는 빈 값임")
+        if (trackingImageView == null) {
+            Log.e("RunRecordActivity", "🚨 ERROR: trackingImageView가 UI에서 존재하지 않음!")
         } else {
-            Log.d("RunRecordActivity", "🟢 trackingSnapshotUrl 정상적으로 받음: $trackingSnapshotUrl")
-            Glide.with(this)
-                .load(trackingSnapshotUrl)
-                .placeholder(R.drawable.search_background)  // 기본 이미지 설정
-                .into(trackingImageView)
-            Log.d("RunRecordActivity", "🟢 Glide로 이미지 로드 시도")
+            Log.d("RunRecordActivity", "✅ trackingImageView 찾음! 이미지 로드 시도")
+        }
+
+        if (!isDestroyed && !isFinishing) {
+            trackingSnapshotUrl?.let {
+                Glide.with(this)
+                    .load(it)
+                    .placeholder(R.drawable.search_background)  // 기본 이미지 설정
+                    .into(trackingImageView)
+                Log.d("RunRecordActivity", "🟢 Glide로 이미지 로드 성공")
+            } ?: Log.e("RunRecordActivity", "❌ trackingSnapshotUrl이 null이거나 비어 있음")
+        } else {
+            Log.e("RunRecordActivity", "🚨 ERROR: Activity가 종료된 상태에서 Glide 실행 시도!")
         }
 
         // ✅ 거리, 시간, 심박수 데이터 받기
@@ -99,5 +111,29 @@ class RunRecordActivity : ComponentActivity() {
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
         startActivity(intent)
         finish() // 현재 액티비티 종료
+    }
+
+    // 📡 BroadcastReceiver 설정 (심박수 데이터 받기)
+    private val heartRateReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val heartRate = intent?.getFloatExtra("averageHeartRate", 0f) ?: 0f
+            Log.d("RunRecordActivity", "💓 수신된 평균 심박수: $heartRate BPM")
+
+            // UI 업데이트
+            heartRateTextView.text = "평균 심박수: %.0f BPM".format(heartRate)
+        }
+    }
+
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
+    override fun onResume() {
+        super.onResume()
+        registerReceiver(heartRateReceiver, IntentFilter("com.example.drawrun.HEART_RATE_UPDATE"))
+        Log.d("RunRecordActivity", "📡 브로드캐스트 리시버 등록 완료")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        unregisterReceiver(heartRateReceiver)
+        Log.d("RunRecordActivity", "📡 브로드캐스트 리시버 해제 완료")
     }
 }
