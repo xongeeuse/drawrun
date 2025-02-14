@@ -3,6 +3,7 @@ package com.dasima.drawrun.domain.masterpiece.service;
 import com.dasima.drawrun.domain.course.repository.CourseRepository;
 import com.dasima.drawrun.domain.course.vo.GeoPoint;
 import com.dasima.drawrun.domain.course.vo.KakaoRegionResponse;
+import com.dasima.drawrun.domain.masterpiece.dto.request.MasterpieceJoinRequest;
 import com.dasima.drawrun.domain.masterpiece.dto.request.MasterpieceSaveRequest;
 import com.dasima.drawrun.domain.masterpiece.dto.response.MasterpieceListResponse;
 import com.dasima.drawrun.domain.masterpiece.dto.response.PathListResponse;
@@ -118,6 +119,7 @@ public class MasterpieceServiceImpl implements MasterpieceService{
                             .userId(masterpieceBoard.getUserId())
                             .masterpieceBoardId(masterpieceBoard.getMasterpieceBoardId())
                             .courseName(masterpieceBoard.getUserPath().getName())
+                            .joinCount(masterpieceBoard.getParticipantCount())
                             .build()
             );
         }
@@ -154,6 +156,7 @@ public class MasterpieceServiceImpl implements MasterpieceService{
                 .userId(masterpieceBoard.getUserId())
                         .courseName(masterpieceBoard.getUserPath().getName())
                 .masterpieceBoardId(masterpieceBoard.getMasterpieceBoardId())
+                        .joinCount(masterpieceBoard.getParticipantCount())
                 .build();
     }
 
@@ -198,5 +201,15 @@ public class MasterpieceServiceImpl implements MasterpieceService{
             );
         }
         return listResponses;
+    }
+
+    public int join(MasterpieceJoinRequest masterpieceJoinRequest, int userId){
+        return masterpieceMapper.join(
+                MasterpieceParticipant.builder()
+                        .masterpieceSegId(masterpieceJoinRequest.getMasterpieceSegId())
+                        .state(0)
+                        .userId(userId)
+                        .build()
+        );
     }
 }

@@ -46,6 +46,10 @@
         <result column="create_date" property="createDate"/>
     </resultMap>
 
+    <insert id="join" parameterType="MasterpieceParticipant">
+        insert into masterpiece_participant
+        values (0, #{userId}, #{state}, #{masterpieceSegId}, now())
+    </insert>
     <insert id="save" parameterType="MasterpieceBoard" useGeneratedKeys="true" keyProperty="masterpieceBoardId">
         insert into masterpiece_board
         values (0, #{userId}, #{restrictCount}, #{state}, #{userPathId}, now(), now(), #{expireDate})
