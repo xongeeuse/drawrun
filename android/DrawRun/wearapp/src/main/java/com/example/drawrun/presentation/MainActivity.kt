@@ -11,6 +11,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
@@ -29,7 +30,9 @@ class MainActivity : ComponentActivity() {
     }
 
     private lateinit var sensorManagerHelper: SensorManagerHelper
-
+    private val sensorViewModel: SensorViewModel by viewModels {
+        SensorViewModelFactory(sensorManagerHelper)  // ✅ sensorManagerHelper 전달
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

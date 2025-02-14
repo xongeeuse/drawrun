@@ -4,6 +4,7 @@ import android.content.Context
 import com.example.drawrun.data.api.AuthApi
 import com.example.drawrun.data.api.CourseApi
 import com.example.drawrun.data.api.ImageUploadApi
+import com.example.drawrun.data.api.RunRecordApi
 import com.example.drawrun.data.api.MasterpieceApi
 import com.example.drawrun.data.api.SearchApi
 import com.example.drawrun.data.api.UserApi
@@ -42,6 +43,7 @@ object RetrofitInstance {
     fun SearchApi(context: Context): SearchApi = getRetrofit(context).create(SearchApi::class.java)
     fun CourseApi(context: Context): CourseApi = getRetrofit(context).create(CourseApi::class.java)
     fun ImageUploadApi(context: Context): ImageUploadApi = getRetrofit(context).create(ImageUploadApi::class.java)
+    fun RunRecordApi(context: Context): RunRecordApi = getRetrofit(context).create(RunRecordApi::class.java)
     fun MasterpieceApi(context: Context): MasterpieceApi = getRetrofit(context).create(MasterpieceApi::class.java)
 
 }

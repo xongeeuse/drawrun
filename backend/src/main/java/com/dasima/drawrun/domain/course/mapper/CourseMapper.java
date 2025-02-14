@@ -1,7 +1,6 @@
 package com.dasima.drawrun.domain.course.mapper;
 
 import com.dasima.drawrun.domain.course.entity.Bookmark;
-import com.dasima.drawrun.domain.course.entity.Path;
 import com.dasima.drawrun.domain.course.entity.UserPath;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -19,4 +18,7 @@ public interface CourseMapper {
     Boolean isBookmark(@Param("userId") int userId, @Param("userPathId") int userPathId);
     List<UserPath> keyword(String keyword);
     List<UserPath> area(String area);
+
+    List<UserPath> findByUserPK(Integer userPK);
+
 }

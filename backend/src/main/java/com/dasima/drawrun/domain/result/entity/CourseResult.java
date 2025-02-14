@@ -18,10 +18,11 @@ public class CourseResult {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "stat_id")
   private Integer statId;
-  private Float distanceKm;
+  private Double distanceKm;
+  @Column(name = "time_s")
   private Long timeS;
+  @Column(name = "pace_s")
   private Long paceS;
-  private Float calorie;
   private Integer state;
   @CreationTimestamp
   @Column(name = "date")
@@ -30,6 +31,5 @@ public class CourseResult {
   private String runImgUrl;
   private Integer cadence;
   private Integer userId;
-  private Integer userPathId;
 
 }
