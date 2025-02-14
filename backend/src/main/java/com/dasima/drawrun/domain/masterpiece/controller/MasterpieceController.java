@@ -19,8 +19,22 @@ public class MasterpieceController {
         return ResponseEntity.ok(masterpieceService.save(dto, userPrinciple.getUserId()));
     }
 
+
+    // 다건 조회
     @GetMapping("/list")
     public ResponseEntity<?> list(){
         return ResponseEntity.ok(masterpieceService.list());
+    }
+
+    // 단건 조회
+    @GetMapping("/search/{masterpieceBoardId}")
+    public ResponseEntity<?> search(@PathVariable int masterpieceBoardId){
+        return ResponseEntity.ok(masterpieceService.search(masterpieceBoardId));
+    }
+
+    // 조각 조회
+    @GetMapping("/pathlist/{masterpieceBoardId}")
+    public ResponseEntity<?> pathlist(@PathVariable int masterpieceBoardId){
+        return ResponseEntity.ok(masterpieceService.pathlist(masterpieceBoardId));
     }
 }
