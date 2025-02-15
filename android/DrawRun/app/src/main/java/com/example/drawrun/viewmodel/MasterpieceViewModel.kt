@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.drawrun.data.dto.request.masterpiece.MasterpieceSaveRequest
 import com.example.drawrun.data.dto.response.masterpiece.Masterpiece
 import com.example.drawrun.data.dto.response.masterpiece.MasterpieceDetailResponse
+import com.example.drawrun.data.dto.response.masterpiece.SectionInfoResponse
 import com.example.drawrun.data.repository.MasterpieceRepository
 import kotlinx.coroutines.launch
 
@@ -20,6 +21,9 @@ class MasterpieceViewModel(private val repository: MasterpieceRepository) : View
 
     private val _masterpieceDetail = MutableLiveData<MasterpieceDetailResponse>()
     val masterpieceDetail: LiveData<MasterpieceDetailResponse> get() = _masterpieceDetail
+
+    private val _sectionInfo = MutableLiveData<SectionInfoResponse>()
+    val sectionInfo: LiveData<SectionInfoResponse> get() = _sectionInfo
 
     fun saveMasterpiece(request: MasterpieceSaveRequest) {
         viewModelScope.launch {
@@ -56,14 +60,38 @@ class MasterpieceViewModel(private val repository: MasterpieceRepository) : View
             try {
                 val response = repository.getMasterpieceDetail(masterpieceBoardId)
                 if (response.isSuccessful) {
-                    _masterpieceDetail.value = response.body()
+                    response.body()?.let { detail ->
+                        _masterpieceDetail.value = detail
+                        Log.d("MasterpieceViewModel", "Fetched Detail: $detail")
+                    }
                 } else {
-                    // 에러 처리 (필요 시)
+                    Log.e("MasterpieceViewModel", "Error: ${response.code()} - ${response.message()}")
                 }
             } catch (e: Exception) {
-                // 네트워크 에러 처리 (필요 시)
+                Log.e("MasterpieceViewModel", "Exception: ${e.message}")
             }
         }
     }
+
+    fun fetchMasterpieceSectionInfo(masterpieceBoardId: Int) {
+        viewModelScope.launch {
+            try {
+                val result = repository.getMasterpieceSectionInfo(masterpieceBoardId)
+                if (result.isSuccess) {
+                    result.getOrNull()?.let { sectionInfo ->
+                        _sectionInfo.value = sectionInfo
+                        Log.d("MasterpieceViewModel", "Fetched Section Info: $sectionInfo")
+                    }
+                } else {
+                    Log.e("MasterpieceViewModel", "Error fetching section info: ${result.exceptionOrNull()?.message}")
+                }
+            } catch (e: Exception) {
+                Log.e("MasterpieceViewModel", "Exception fetching section info", e)
+            }
+        }
+    }
+
+
+
 
 }

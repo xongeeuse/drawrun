@@ -6,6 +6,7 @@ import com.example.drawrun.data.dto.request.masterpiece.MasterpieceSaveRequest
 import com.example.drawrun.data.dto.response.masterpiece.Masterpiece
 import com.example.drawrun.data.dto.response.masterpiece.MasterpieceDetailResponse
 import com.example.drawrun.data.dto.response.masterpiece.MasterpieceListResponse
+import com.example.drawrun.data.dto.response.masterpiece.SectionInfoResponse
 import retrofit2.Response
 
 class MasterpieceRepository (private val api: MasterpieceApi) {
@@ -49,5 +50,18 @@ class MasterpieceRepository (private val api: MasterpieceApi) {
 
     suspend fun getMasterpieceDetail(masterpieceBoardId: Int): Response<MasterpieceDetailResponse> {
         return api.getMasterpieceDetail(masterpieceBoardId)
+    }
+
+    suspend fun getMasterpieceSectionInfo(masterpieceBoardId: Int): Result<SectionInfoResponse> {
+        return try {
+            val response = api.getMasterpieceSectionInfo(masterpieceBoardId)
+            if (response.isSuccessful) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Error fetching section info: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 }

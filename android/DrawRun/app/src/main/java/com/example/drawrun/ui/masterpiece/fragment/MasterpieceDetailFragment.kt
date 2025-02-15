@@ -2,16 +2,23 @@ package com.example.drawrun.ui.masterpiece.fragment
 
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
 import com.example.drawrun.data.dto.response.masterpiece.Masterpiece
+import com.example.drawrun.data.repository.MasterpieceRepository
 import com.example.drawrun.databinding.FragmentMasterpieceDetailBinding
+import com.example.drawrun.ui.masterpiece.adapter.SectionInfoAdapter
+import com.example.drawrun.utils.RetrofitInstance
 import com.example.drawrun.viewmodel.MasterpieceViewModel
+import com.example.drawrun.viewmodel.MasterpieceViewModelFactory
 import com.mapbox.api.directions.v5.DirectionsCriteria
 import com.mapbox.api.directions.v5.models.RouteOptions
 import com.mapbox.geojson.LineString
@@ -39,8 +46,9 @@ class MasterpieceDetailFragment : Fragment() {
     private var _binding: FragmentMasterpieceDetailBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: MasterpieceViewModel by viewModels()
+    private lateinit var viewModel: MasterpieceViewModel
 
+    private lateinit var sectionInfoAdapter: SectionInfoAdapter
     private lateinit var polylineAnnotationManager: PolylineAnnotationManager
     private lateinit var mapboxNavigation: MapboxNavigation // MapboxNavigation 객체 선언
 
@@ -57,13 +65,40 @@ class MasterpieceDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        Log.d("masterpiecemasterpiece  ", "onViewCreated started")
+
+        val repository = MasterpieceRepository(RetrofitInstance.MasterpieceApi(requireContext()))
+        val viewModelFactory = MasterpieceViewModelFactory(repository)
+        viewModel = ViewModelProvider(this, viewModelFactory)[MasterpieceViewModel::class.java]
+
         // 전달받은 데이터 가져오기
 
         val masterpiece = arguments?.getSerializable("masterpiece") as? Masterpiece
-        // 전달받은 masterpieceBoardId 가져오기
-        val masterpieceBoardId = arguments?.getInt("masterpieceBoardId") ?: return
+        Log.d("masterpiecemasterpiece  ", "받은 마스터피스 데이터: $masterpiece")
 
-        // MapboxNavigation 초기화
+        // 전달받은 masterpieceBoardId 가져오기
+        val masterpieceBoardId = masterpiece?.masterpieceBoardId
+        if (masterpieceBoardId == null) {
+            Log.e("masterpiecemasterpiece", "masterpieceBoardId is null")
+            return
+        }
+
+        Log.d("masterpiecemasterpiece", "Fetching masterpiece detail for id: $masterpieceBoardId")
+
+        // 데이터 요청 및 관찰
+        viewModel.fetchMasterpieceDetail(masterpieceBoardId)
+        viewModel.masterpieceDetail.observe(viewLifecycleOwner) { detail ->
+            if (detail != null) {
+                Log.d("masterpiecemasterpiece", "Received Detail: $detail")
+                // UI 업데이트 추가해야 함
+
+            } else {
+                Log.e("masterpiecemasterpiece", "Failed to fetch detail")
+            }
+        }
+
+
+            // MapboxNavigation 초기화
         mapboxNavigation = MapboxNavigationProvider.create(
             NavigationOptions.Builder(requireContext()).build()
         )
@@ -94,7 +129,30 @@ class MasterpieceDetailFragment : Fragment() {
 
         // RecyclerView 초기화 (구간 정보 표시)
         binding.sectionInfoList.layoutManager = LinearLayoutManager(requireContext())
+
+        setupRecyclerView()
+        observeSectionInfo()
+
+        // masterpieceBoardId를 사용하여 구간 정보 요청
+        viewModel.fetchMasterpieceSectionInfo(masterpieceBoardId)
     }
+
+    private fun setupRecyclerView() {
+        sectionInfoAdapter = SectionInfoAdapter()
+        binding.sectionInfoList.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = sectionInfoAdapter
+        }
+    }
+
+    private fun observeSectionInfo() {
+        viewModel.sectionInfo.observe(viewLifecycleOwner) { sectionInfoResponse ->
+            sectionInfoResponse?.let {
+                sectionInfoAdapter.updateSections(it)
+            }
+        }
+    }
+
 
     private fun requestWalkingRoute(coordinates: List<Point>) {
         mapboxNavigation.requestRoutes(
