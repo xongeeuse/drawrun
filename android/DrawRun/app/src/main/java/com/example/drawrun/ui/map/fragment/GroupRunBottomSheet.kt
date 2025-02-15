@@ -302,22 +302,28 @@ class GroupRunBottomSheet : BottomSheetDialogFragment() {
     // 포인트 리스트를 인원수에 맞게 나누는 함수
     private fun dividePath(points: List<Point>, memberCount: Int): List<List<Point>> {
         val result = mutableListOf<List<Point>>()
-        // 멤버 한 명당 할당될 기본 포인트 수 계산
-        val pointsPerMember = points.size / memberCount
-        // 나누고 남은 포인트 수
-        var remainingPoints = points.size % memberCount
+        val totalPoints = points.size
+        val basePointsPerMember = totalPoints / memberCount
+        val extraPoints = totalPoints % memberCount
 
         var startIndex = 0
         for (i in 0 until memberCount) {
-            val endIndex = startIndex + pointsPerMember + (if (remainingPoints > 0) 1 else 0)
-            result.add(points.subList(startIndex, endIndex.coerceAtMost(points.size)))
-            // 다음 구간의 시작점을 현재 구간의 마지막 포인트로 설정 (중복 포인트)
-            startIndex = endIndex - 1
-            remainingPoints--
+            val pointsForThisMember = basePointsPerMember + if (i < extraPoints) 1 else 0
+            val endIndex = (startIndex + pointsForThisMember).coerceAtMost(totalPoints)
+
+            if (i > 0) {
+                startIndex -= 1 // 이전 구간의 마지막 포인트를 포함
+            }
+
+            result.add(points.subList(startIndex, endIndex))
+            startIndex = endIndex
         }
 
         return result
     }
+
+
+
 
 
     override fun onDestroyView() {
