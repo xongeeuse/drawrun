@@ -153,15 +153,20 @@ class MasterpieceDetailFragment : Fragment() {
 
 
     private fun setupRecyclerView() {
-        sectionInfoAdapter = SectionInfoAdapter { masterpieceSegId ->
-            viewModel.joinMasterpiece(masterpieceSegId)
+        sectionInfoAdapter = SectionInfoAdapter { masterpieceSegId, masterpieceBoardId, position ->
+            viewModel.joinMasterpiece(masterpieceSegId, masterpieceBoardId, position)
         }
+
+        sectionInfoAdapter.setMasterpieceBoardId(viewModel.masterpieceDetail.value?.masterpieceBoardId ?: 0)
 
         binding.sectionInfoList.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = sectionInfoAdapter
         }
     }
+
+
+
 
     private fun observeSectionInfo() {
         viewModel.sectionInfo.observe(viewLifecycleOwner) { sectionInfoResponse ->

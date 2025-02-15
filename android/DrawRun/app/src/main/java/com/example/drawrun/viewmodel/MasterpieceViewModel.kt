@@ -95,29 +95,29 @@ class MasterpieceViewModel(private val repository: MasterpieceRepository) : View
         }
     }
 
-    fun joinMasterpiece(masterpieceSegId: Int) {
+    fun joinMasterpiece(masterpieceSegId: Int, masterpieceBoardId: Int, position: Int) {
         viewModelScope.launch {
             try {
-                Log.d("MasterpieceViewModel", "Joining masterpiece with segId: $masterpieceSegId")
                 val request = MasterpieceJoinRequest(masterpieceSegId)
                 val result = repository.joinMasterpiece(request)
-                Log.d("MasterpieceViewModel", "Join request: $request")
-                Log.d("MasterpieceViewModel", "Join result: $result")
-                _joinMasterpieceResult.value = result.isSuccess
                 if (result.isSuccess) {
                     Log.d("MasterpieceViewModel", "Join successful")
+                    // 성공 시 해당 섹션의 nickname을 "달리는 중"으로 업데이트
+                    _sectionInfo.value?.let { currentSections ->
+                        val updatedSections = currentSections.toMutableList()
+                        updatedSections[position] = updatedSections[position].copy(nickname = "달리는 중")
+                        _sectionInfo.postValue(updatedSections)
+                    }
                 } else {
                     Log.e("MasterpieceViewModel", "Join failed. Error: ${result.exceptionOrNull()?.message}")
                 }
+                _joinMasterpieceResult.postValue(result.isSuccess)
             } catch (e: Exception) {
                 Log.e("MasterpieceViewModel", "Exception during join: ${e.message}")
-                _joinMasterpieceResult.value = false
+                _joinMasterpieceResult.postValue(false)
             }
         }
     }
-
-
-
 
 
 

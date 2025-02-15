@@ -8,17 +8,38 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.drawrun.data.dto.response.masterpiece.SectionInfo
 import com.example.drawrun.databinding.ItemSectionInfoBinding
 
-class SectionInfoAdapter(private val onJoinClick: (Int) -> Unit) : RecyclerView.Adapter<SectionInfoAdapter.ViewHolder>() {
+class SectionInfoAdapter(private val onJoinClick: (Int, Int, Int) -> Unit) : RecyclerView.Adapter<SectionInfoAdapter.ViewHolder>() {
     private var sections: List<SectionInfo> = emptyList()
     private val distances = mutableMapOf<Int, Double>()
     private val colors = mutableMapOf<Int, String>()
+    private var masterpieceBoardId: Int = 0  // 추가된 필드
 
-    class ViewHolder(private val binding: ItemSectionInfoBinding, private val onJoinClick: (Int) -> Unit) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(sectionInfo: SectionInfo, position: Int, distance: Double?, color: String?) {
+    // masterpieceBoardId를 설정하는 함수 추가
+    fun setMasterpieceBoardId(id: Int) {
+        masterpieceBoardId = id
+    }
+
+    fun updateNickname(position: Int, newNickname: String) {
+        val updatedSection = sections[position].copy(nickname = newNickname)
+        sections = sections.toMutableList().apply {
+            set(position, updatedSection)
+        }
+        notifyItemChanged(position, PAYLOAD_NICKNAME)
+    }
+
+
+    companion object {
+        private const val PAYLOAD_NICKNAME = "payload_nickname"
+    }
+
+
+    class ViewHolder(private val binding: ItemSectionInfoBinding, private val onJoinClick: (Int, Int, Int) -> Unit) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(sectionInfo: SectionInfo, position: Int, distance: Double?, color: String?, masterpieceBoardId: Int) {
             binding.sectionNumber.text = (position + 1).toString()
             binding.sectionAddress.text = sectionInfo.address
             binding.sectionDistance.text = distance?.let { String.format("%.2f km", it / 1000) } ?: "계산 중..."
             binding.sectionStatusButton.text = sectionInfo.nickname
+            updateNickname(sectionInfo.nickname)
 
             // 동그란 배경 크기 조정
             binding.sectionNumber.layoutParams.width = binding.sectionNumber.layoutParams.height
@@ -40,9 +61,15 @@ class SectionInfoAdapter(private val onJoinClick: (Int) -> Unit) : RecyclerView.
             // 클릭 리스너 설정
             binding.sectionStatusButton.setOnClickListener {
                 if (isJoinable) {
-                    onJoinClick(sectionInfo.masterpieceSegId)
+                    onJoinClick(sectionInfo.masterpieceSegId, masterpieceBoardId, position)
                 }
             }
+        }
+        fun updateNickname(nickname: String) {
+            binding.sectionStatusButton.text = nickname
+            val isJoinable = nickname == "달리기 시작"
+            binding.sectionStatusButton.isEnabled = isJoinable
+            binding.sectionStatusButton.alpha = if (isJoinable) 1f else 0.5f
         }
     }
 
@@ -52,8 +79,23 @@ class SectionInfoAdapter(private val onJoinClick: (Int) -> Unit) : RecyclerView.
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(sections[position], position, distances[position], colors[position])
+        holder.bind(sections[position], position, distances[position], colors[position], masterpieceBoardId)
     }
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int, payloads: List<Any>) {
+        if (payloads.isNotEmpty()) {
+            for (payload in payloads) {
+                if (payload == PAYLOAD_NICKNAME) {
+                    holder.updateNickname(sections[position].nickname)
+                    return
+                }
+            }
+        }
+        holder.bind(sections[position], position, distances[position], colors[position], masterpieceBoardId)
+    }
+
+
+
 
     override fun getItemCount() = sections.size
 
