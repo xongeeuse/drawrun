@@ -79,17 +79,18 @@ class MasterpieceDetailFragment : Fragment() {
 
         // 전달받은 데이터 가져오기
 
-        val masterpiece = arguments?.getSerializable("masterpiece") as? Masterpiece
-        Log.d("masterpiecemasterpiece  ", "받은 마스터피스 데이터: $masterpiece")
+//        val masterpiece = arguments?.getSerializable("masterpiece") as? Masterpiece
+//        Log.d("masterpiecemasterpiece  ", "받은 마스터피스 데이터: $masterpiece")
 
         // 전달받은 masterpieceBoardId 가져오기
-        val masterpieceBoardId = masterpiece?.masterpieceBoardId
+        val masterpieceBoardId = arguments?.getInt("masterpieceBoardId")
         if (masterpieceBoardId == null) {
             Log.e("masterpiecemasterpiece", "masterpieceBoardId is null")
             return
         }
 
         Log.d("masterpiecemasterpiece", "Fetching masterpiece detail for id: $masterpieceBoardId")
+
 
         // 데이터 요청 및 관찰
         viewModel.fetchMasterpieceDetail(masterpieceBoardId)

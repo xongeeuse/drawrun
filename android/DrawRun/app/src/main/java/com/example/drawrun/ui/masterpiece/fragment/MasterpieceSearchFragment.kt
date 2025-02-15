@@ -45,8 +45,8 @@ class MasterpieceSearchFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // RecyclerView 설정
-        adapter = MasterpieceAdapter(emptyList()) { masterpiece ->
-            navigateToDetail(masterpiece) // 아이템 클릭 시 호출
+        adapter = MasterpieceAdapter(emptyList()) { masterpieceBoardId ->
+            navigateToDetail(masterpieceBoardId) // 아이템 클릭 시 호출
         }
         binding.searchResultRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.searchResultRecyclerView.adapter = adapter
@@ -67,11 +67,10 @@ class MasterpieceSearchFragment : Fragment() {
         viewModel.getMasterpieceList()
     }
 
-    private fun navigateToDetail(masterpiece: Masterpiece) {
-        Log.d("masterpiecemasterpiece", "navigate 실행하면서 데이터 전달: ${masterpiece}")
+    private fun navigateToDetail(masterpieceBoardId: Int) {
         val fragment = MasterpieceDetailFragment().apply {
             arguments = Bundle().apply {
-                putSerializable("masterpiece", masterpiece) // 데이터 전달
+                putInt("masterpieceBoardId", masterpieceBoardId)
             }
         }
         parentFragmentManager.beginTransaction()
@@ -79,4 +78,5 @@ class MasterpieceSearchFragment : Fragment() {
             .addToBackStack(null)
             .commit()
     }
+
 }

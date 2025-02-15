@@ -10,69 +10,75 @@
     <!-- 경로 이미지 -->
     <ImageView
         android:id="@+id/path_image"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
         android:scaleType="centerCrop"
         android:src="@drawable/course_img_example"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- 코스 제목 -->
-    <TextView
-        android:id="@+id/title_text"
+    <LinearLayout
+        android:id="@+id/info_layout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="코스 이름"
-        android:textColor="@color/white"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toStartOf="@id/d_day_text"
+        android:orientation="vertical"
+        android:layout_marginLeft="12dp"
         app:layout_constraintStart_toEndOf="@id/path_image"
-        app:layout_constraintTop_toTopOf="@id/path_image"/>
+        app:layout_constraintEnd_toStartOf="@id/d_day_text"
+        app:layout_constraintTop_toTopOf="@id/path_image">
+
+        <!-- 코스 제목 -->
+        <TextView
+            android:id="@+id/title_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="코스 이름"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <!-- 구 정보 -->
+        <TextView
+            android:id="@+id/gu_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="\uD83D\uDCCD 지역정보"
+            android:textColor="@color/gray"
+            android:textSize="14sp"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/distance_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="\uD83C\uDFC3 00.00km"
+            android:textColor="@color/gray"
+            android:textSize="14sp"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/nickname_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="\uD83D\uDC64 작성자 닉네임"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:layout_marginTop="4dp" />
+
+    </LinearLayout>
 
     <!-- D-Day -->
     <TextView
         android:id="@+id/d_day_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="D-1"
+        android:text="D - 1"
         android:textColor="@color/white"
         android:textSize="14sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/title_text"/>
-
-    <!-- 구 정보 -->
-    <TextView
-        android:id="@+id/gu_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="\uD83D\uDCCD 지역정보"
-        android:textColor="@color/gray"
-        android:textSize="14sp"
-        app:layout_constraintStart_toStartOf="@id/title_text"
-        app:layout_constraintTop_toBottomOf="@id/title_text"/>
-
-    <TextView
-        android:id="@+id/distance_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="\uD83C\uDFC3 00.00km"
-        android:textColor="@color/gray"
-        android:textSize="14sp"
-        app:layout_constraintStart_toStartOf="@id/title_text"
-        app:layout_constraintTop_toBottomOf="@id/gu_text"/>
-
-    <TextView
-        android:id="@+id/nickname_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="\uD83D\uDC64 작성자 닉네임"
-        android:textColor="@color/white"
-        android:textSize="14sp"
-        app:layout_constraintStart_toStartOf="@id/title_text"
-        app:layout_constraintTop_toBottomOf="@id/distance_text"/>
+        app:layout_constraintTop_toTopOf="@id/info_layout"/>
 
     <!-- 제한 인원 -->
     <TextView
@@ -82,6 +88,6 @@
         android:text="\uD83D\uDC65 0 / 0"
         android:textColor="@color/gray"
         android:textSize="14sp"
-        app:layout_constraintBottom_toBottomOf="@id/nickname_text"
-        app:layout_constraintEnd_toEndOf="@id/d_day_text"/>
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>
