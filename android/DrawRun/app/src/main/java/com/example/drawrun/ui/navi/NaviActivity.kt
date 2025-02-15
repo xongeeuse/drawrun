@@ -21,6 +21,7 @@ import com.example.drawrun.dto.course.PathPoint
 import com.google.android.gms.location.LocationServices
 import com.mapbox.api.directions.v5.DirectionsCriteria
 import com.mapbox.api.directions.v5.models.RouteOptions
+import com.mapbox.bindgen.Expected
 import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
@@ -41,12 +42,16 @@ import com.mapbox.navigation.base.route.RouterFailure
 import com.mapbox.navigation.core.MapboxNavigation
 import com.mapbox.navigation.core.MapboxNavigationProvider
 import com.mapbox.navigation.core.trip.session.RouteProgressObserver
+import com.mapbox.navigation.ui.base.util.MapboxNavigationConsumer
 import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineApi
 import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineView
 import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineApiOptions
 import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineViewOptions
 import com.mapbox.navigation.voice.api.MapboxSpeechApi
 import com.mapbox.navigation.voice.api.MapboxVoiceInstructionsPlayer
+import com.mapbox.navigation.voice.model.SpeechAnnouncement
+import com.mapbox.navigation.voice.model.SpeechError
+import com.mapbox.navigation.voice.model.SpeechValue
 import com.mapbox.turf.TurfMeasurement
 import java.util.Locale
 
@@ -126,6 +131,8 @@ class NaviActivity : AppCompatActivity() {
             mapboxMap = mapView.getMapboxMap()
             mapboxMap.loadStyleUri(Style.DARK) { style ->
                 style.localizeLabels(Locale("ko"))
+
+                enableUserLocation() // 현위치 마커 활성화
                 routeLineApi = MapboxRouteLineApi(MapboxRouteLineApiOptions.Builder().build())
                 routeLineView = MapboxRouteLineView(MapboxRouteLineViewOptions.Builder(this).build())
 
@@ -134,6 +141,36 @@ class NaviActivity : AppCompatActivity() {
 
                 binding.progressBar.visibility = View.GONE
             }
+        }
+
+        // ✅ 내비게이션 음성 안내 등록
+        mapboxNavigation.registerVoiceInstructionsObserver { voiceInstructions ->
+            speechApi.generate(
+                voiceInstructions,
+                object : MapboxNavigationConsumer<Expected<SpeechError, SpeechValue>> {
+                    override fun accept(expected: Expected<SpeechError, SpeechValue>) {
+                        expected.fold({ error ->
+                            voiceInstructionsPlayer.play(
+                                error.fallback,
+                                object : MapboxNavigationConsumer<SpeechAnnouncement> {
+                                    override fun accept(value: SpeechAnnouncement) {
+                                        speechApi.clean(value)
+                                    }
+                                }
+                            )
+                        }, { value ->
+                            voiceInstructionsPlayer.play(
+                                value.announcement,
+                                object : MapboxNavigationConsumer<SpeechAnnouncement> {
+                                    override fun accept(value: SpeechAnnouncement) {
+                                        speechApi.clean(value)
+                                    }
+                                }
+                            )
+                        })
+                    }
+                }
+            )
         }
         checkAndRequestPermissions() // ✅ 위치 권한 요청 실행
         binding.startLocation.text = "$startLocation"
@@ -144,6 +181,16 @@ class NaviActivity : AppCompatActivity() {
             startNavigation(path)
         }
 
+    }
+
+    // ✅ 사용자의 현재 위치 마커를 활성화하는 함수 (추가된 부분)
+    private fun enableUserLocation() {
+        val locationComponentPlugin = binding.mapView?.location
+
+        locationComponentPlugin?.updateSettings {
+            enabled = true // 현재 위치 마커 활성화
+            pulsingEnabled = true // 펄스 효과 추가 (선택)
+        }
     }
 
     // ✅ startButton 클릭 시 내비게이션 시작하는 함수
@@ -250,6 +297,7 @@ class NaviActivity : AppCompatActivity() {
                                             .build()
                                     )
 
+
                                     Toast.makeText(this@NaviActivity, "내비게이션 시작!", Toast.LENGTH_SHORT).show()
                                 } else {
                                     Toast.makeText(this@NaviActivity, "경로 생성 실패!", Toast.LENGTH_SHORT).show()
@@ -271,6 +319,8 @@ class NaviActivity : AppCompatActivity() {
             Toast.makeText(this, "위치 정보 오류 발생!", Toast.LENGTH_SHORT).show()
         }
     }
+
+
 
 
 
@@ -369,4 +419,7 @@ class NaviActivity : AppCompatActivity() {
             }
         )
     }
+
+
+
 }
