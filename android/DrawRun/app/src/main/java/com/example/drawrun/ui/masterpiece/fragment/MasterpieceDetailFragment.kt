@@ -68,6 +68,11 @@ class MasterpieceDetailFragment : Fragment() {
 
         Log.d("masterpiecemasterpiece  ", "onViewCreated started")
 
+        // MapboxNavigation 초기화
+        mapboxNavigation = MapboxNavigationProvider.create(
+            NavigationOptions.Builder(requireContext()).build()
+        )
+
         val repository = MasterpieceRepository(RetrofitInstance.MasterpieceApi(requireContext()))
         val viewModelFactory = MasterpieceViewModelFactory(repository)
         viewModel = ViewModelProvider(this, viewModelFactory)[MasterpieceViewModel::class.java]
@@ -130,13 +135,28 @@ class MasterpieceDetailFragment : Fragment() {
 
         setupRecyclerView()
         observeSectionInfo()
+        observeJoinResult() // 새로운 함수 추가
 
         // masterpieceBoardId를 사용하여 구간 정보 요청
         viewModel.fetchMasterpieceSectionInfo(masterpieceBoardId)
     }
 
+    private fun observeJoinResult() {
+        viewModel.joinMasterpieceResult.observe(viewLifecycleOwner) { isSuccess ->
+            if (isSuccess) {
+                Toast.makeText(context, "마스터피스 참여 성공", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, "마스터피스 참여 실패", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+
     private fun setupRecyclerView() {
-        sectionInfoAdapter = SectionInfoAdapter()
+        sectionInfoAdapter = SectionInfoAdapter { masterpieceSegId ->
+            viewModel.joinMasterpiece(masterpieceSegId)
+        }
+
         binding.sectionInfoList.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = sectionInfoAdapter
@@ -216,26 +236,6 @@ class MasterpieceDetailFragment : Fragment() {
     }
 
 
-    private fun drawRouteInSections(routeCoordinates: List<Point>, sections: Int) {
-        polylineAnnotationManager.deleteAll() // 기존 경로 삭제
-
-        val sectionSize = routeCoordinates.size / sections
-        val colors = generateColors(sections) // 랜덤 색상 선택 사용
-
-        for (i in 0 until sections) {
-            val start = i * sectionSize
-            val end = if (i == sections - 1) routeCoordinates.size else (i + 1) * sectionSize
-            val sectionCoordinates = routeCoordinates.subList(start, end)
-
-            val polylineOptions = PolylineAnnotationOptions()
-                .withPoints(sectionCoordinates)
-                .withLineColor(colors[i])
-                .withLineWidth(5.0)
-
-            polylineAnnotationManager.create(polylineOptions)
-        }
-    }
-
     private fun adjustCamera(sections: List<SectionInfo>) {
         val allCoordinates = sections.flatMap { it.path.map { coord -> Point.fromLngLat(coord.longitude, coord.latitude) } }
         val cameraOptions = binding.mapView.getMapboxMap().cameraForCoordinates(
@@ -247,29 +247,10 @@ class MasterpieceDetailFragment : Fragment() {
         binding.mapView.getMapboxMap().setCamera(cameraOptions)
     }
 
-
-    private fun extractCoordinatesFromJson(): List<Point> {
-        return listOf(
-            Point.fromLngLat(128.88189078375206, 35.08677284699564),
-            Point.fromLngLat(128.8819939469559, 35.08621769582258),
-            Point.fromLngLat(128.88189078375206, 35.08561506086515),
-            Point.fromLngLat(128.88118090232263, 35.08567181529165),
-            Point.fromLngLat(128.8799691627463, 35.08560045113647),
-            Point.fromLngLat(128.87998553227607, 35.08619415246808),
-            Point.fromLngLat(128.88117245103422, 35.08619414722901),
-            Point.fromLngLat(128.881173951037, 35.086657644114354),
-            Point.fromLngLat(128.87995654687, 35.086703796420196),
-            Point.fromLngLat(128.87994786146623, 35.08730019496652),
-            Point.fromLngLat(128.8788491628615, 35.08724513336804),
-            Point.fromLngLat(128.87906830382883, 35.08779816664506),
-            Point.fromLngLat(128.8787948694096, 35.08785261167259)
-        )
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
         polylineAnnotationManager.deleteAll() // 뷰가 파괴될 때 모든 주석 삭제
-//        mapboxNavigation.onDestroy() // MapboxNavigation 정리
+        MapboxNavigationProvider.destroy()
         _binding = null
     }
 }

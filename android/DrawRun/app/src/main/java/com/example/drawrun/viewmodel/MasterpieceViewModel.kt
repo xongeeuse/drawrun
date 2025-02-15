@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.drawrun.data.dto.request.masterpiece.MasterpieceJoinRequest
 import com.example.drawrun.data.dto.request.masterpiece.MasterpieceSaveRequest
 import com.example.drawrun.data.dto.response.masterpiece.Masterpiece
 import com.example.drawrun.data.dto.response.masterpiece.MasterpieceDetailResponse
@@ -24,6 +25,9 @@ class MasterpieceViewModel(private val repository: MasterpieceRepository) : View
 
     private val _sectionInfo = MutableLiveData<SectionInfoResponse>()
     val sectionInfo: LiveData<SectionInfoResponse> get() = _sectionInfo
+
+    private val _joinMasterpieceResult = MutableLiveData<Boolean>()
+    val joinMasterpieceResult: LiveData<Boolean> = _joinMasterpieceResult
 
     fun saveMasterpiece(request: MasterpieceSaveRequest) {
         viewModelScope.launch {
@@ -90,6 +94,29 @@ class MasterpieceViewModel(private val repository: MasterpieceRepository) : View
             }
         }
     }
+
+    fun joinMasterpiece(masterpieceSegId: Int) {
+        viewModelScope.launch {
+            try {
+                Log.d("MasterpieceViewModel", "Joining masterpiece with segId: $masterpieceSegId")
+                val request = MasterpieceJoinRequest(masterpieceSegId)
+                val result = repository.joinMasterpiece(request)
+                Log.d("MasterpieceViewModel", "Join request: $request")
+                Log.d("MasterpieceViewModel", "Join result: $result")
+                _joinMasterpieceResult.value = result.isSuccess
+                if (result.isSuccess) {
+                    Log.d("MasterpieceViewModel", "Join successful")
+                } else {
+                    Log.e("MasterpieceViewModel", "Join failed. Error: ${result.exceptionOrNull()?.message}")
+                }
+            } catch (e: Exception) {
+                Log.e("MasterpieceViewModel", "Exception during join: ${e.message}")
+                _joinMasterpieceResult.value = false
+            }
+        }
+    }
+
+
 
 
 
