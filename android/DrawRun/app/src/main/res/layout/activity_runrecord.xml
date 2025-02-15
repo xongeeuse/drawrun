@@ -1,80 +1,166 @@
-<?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#171515">  <!-- ✅ 다크 모드 배경 적용 -->
+    android:background="#171515">
 
-    <LinearLayout
+    <!-- ✅ 날짜 및 러닝 기록 타이틀 -->
+    <TextView
+        android:id="@+id/textDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="2025.01.22(Wed) 러닝 기록"
+        android:textColor="@android:color/white"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="30dp"/>
+
+    <!-- ✅ 트래킹 이미지 (러닝 경로 지도) -->
+    <ImageView
+        android:id="@+id/trackingImageView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="280dp"
+        android:layout_marginTop="20dp"
+        android:scaleType="fitCenter"
+        app:layout_constraintTop_toBottomOf="@id/textDate"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- ✅ 거리 텍스트 -->
+    <TextView
+        android:id="@+id/textDistance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="6.2"
+        android:textColor="#00FF00"
+        android:textSize="48sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/trackingImageView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="10dp"/>
+
+    <TextView
+        android:id="@+id/textDistanceUnit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="킬로미터"
+        android:textColor="#00FF00"
+        android:textSize="18sp"
+        app:layout_constraintTop_toBottomOf="@id/textDistance"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- ✅ 러닝 정보 (시간, 페이스, 심박수) -->
+    <LinearLayout
+        android:id="@+id/layoutRunningInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
         android:gravity="center"
-        android:orientation="vertical"
-        android:padding="20dp"
-        tools:layout_editor_absoluteX="95dp"
-        tools:layout_editor_absoluteY="150dp">
+        android:layout_marginTop="20dp"
+        app:layout_constraintTop_toBottomOf="@id/textDistanceUnit"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-        <ImageView
-            android:id="@+id/trackingImageView"
-            android:layout_width="200dp"
-            android:layout_height="200dp"
-            android:scaleType="fitCenter"
-            android:layout_marginTop="10dp"/>
-
-        <!-- ✅ 타이틀 텍스트 (흰색) -->
-        <TextView
-            android:id="@+id/textTitle"
-            android:layout_width="wrap_content"
+        <!-- 러닝 시간 -->
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:paddingBottom="20dp"
-            android:text="러닝 기록"
-            android:textColor="@android:color/white"
-            android:textSize="24sp"
-            android:textStyle="bold" />
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
 
-        <!-- ✅ 거리 텍스트 -->
-        <TextView
-            android:id="@+id/textDistance"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="거리: 0.00 km"
-            android:textColor="@android:color/white"
-            android:textSize="20sp" /> <!-- ✅ 흰색 텍스트 -->
+            <TextView
+                android:id="@+id/textRunningTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="test"
+                android:textColor="@android:color/white"
+                android:textSize="22sp"
+                android:textStyle="bold"/>
 
-        <!-- ✅ 시간 텍스트 -->
-        <TextView
-            android:id="@+id/textTime"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="시간: 0분 00초"
-            android:textColor="@android:color/white"
-            android:textSize="20sp" /> <!-- ✅ 흰색 텍스트 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="러닝 시간"
+                android:textColor="@android:color/white"
+                android:textSize="14sp"/>
+        </LinearLayout>
 
-        <!-- ✅ 평균 심박수 텍스트 -->
-        <TextView
-            android:id="@+id/textHeartRate"
-            android:layout_width="wrap_content"
+        <!-- 평균 페이스 -->
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="평균 심박수: 0 BPM"
-            android:textColor="@android:color/white"
-            android:textSize="20sp" /> <!-- ✅ 흰색 텍스트 -->
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
 
-        <!-- ✅ 러닝 기록 저장 버튼 -->
-        <Button
-            android:id="@+id/buttonFinish"
-            android:layout_width="wrap_content"
+            <TextView
+                android:id="@+id/textAvgPace"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="test"
+                android:textColor="@android:color/white"
+                android:textSize="22sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="평균 페이스"
+                android:textColor="@android:color/white"
+                android:textSize="14sp"/>
+        </LinearLayout>
+
+        <!-- 평균 심박수 -->
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="러닝 기록 저장" />
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/textHeartRate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="test"
+                android:textColor="@android:color/white"
+                android:textSize="22sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="평균 심박수"
+                android:textColor="@android:color/white"
+                android:textSize="14sp"/>
+        </LinearLayout>
     </LinearLayout>
 
+    <!-- ✅ 러닝 기록 저장 버튼 (아래 배치) -->
+    <Button
+        android:id="@+id/buttonFinish"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="러닝 기록 저장"
+        android:textSize="16sp"
+        android:padding="10dp"
+        app:layout_constraintTop_toBottomOf="@id/layoutRunningInfo"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="30dp"/>
+
+    <!-- ✅ 하단 네비게이션 바 -->
     <include
         layout="@layout/layout_bottom_navigation"
         android:id="@+id/bottomNavigationLayout"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        app:layout_constraintBottom_toBottomOf="parent" />
-
+        app:layout_constraintBottom_toBottomOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
