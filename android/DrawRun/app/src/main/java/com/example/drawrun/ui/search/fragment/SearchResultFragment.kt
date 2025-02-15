@@ -118,6 +118,7 @@ class SearchResultFragment : Fragment() {
 
     private fun fetchCourseDetails(courseId: Int) {
         Log.d("CourseDetailsViewModel", "Fetching details for courseId: $courseId") // ✅ 추가
+        courseDetailsViewModel.courseDetails.removeObservers(viewLifecycleOwner)
         courseDetailsViewModel.fetchCourseDetails(courseId) // ✅ ViewModel에 요청
 
         courseDetailsViewModel.courseDetails.observe(viewLifecycleOwner) { result ->
@@ -135,6 +136,7 @@ class SearchResultFragment : Fragment() {
                     putExtra("distance", details.distance) // ✅ 거리 정보 전달
                 }
                 startActivity(intent) // ✅ `NaviActivity` 실행!
+                requireActivity().overridePendingTransition(0, 0) // ✅ 애니메이션 제거
 
 
             }.onFailure { e ->
@@ -207,6 +209,11 @@ class SearchResultFragment : Fragment() {
                     is SearchState.Success -> hideLoading()
                     is SearchState.Empty -> showEmptyState()
                     is SearchState.Error -> showError(state.message)
+                    SearchState.Empty -> TODO()
+                    is SearchState.Error -> TODO()
+                    SearchState.Initial -> TODO()
+                    SearchState.Loading -> TODO()
+                    SearchState.Success -> TODO()
                 }
             }
         }

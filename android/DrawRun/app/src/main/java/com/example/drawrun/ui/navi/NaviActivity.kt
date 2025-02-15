@@ -1,8 +1,15 @@
 package com.example.drawrun.ui.navi
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.view.WindowManager
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.drawrun.R
 import com.example.drawrun.databinding.ActivityNaviBinding
@@ -43,11 +50,12 @@ class NaviActivity : AppCompatActivity() {
     private lateinit var routeLineView: MapboxRouteLineView
 
 
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        setIntent(intent)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         binding = ActivityNaviBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        binding.progressBar.visibility = View.VISIBLE
 
         // Mapbox 내비게이션 초기화
         mapboxNavigation = MapboxNavigationProvider.create(
@@ -58,6 +66,18 @@ class NaviActivity : AppCompatActivity() {
         val path = intent.getParcelableArrayListExtra<PathPoint>("path") ?: emptyList()
         val startLocation = intent.getStringExtra("startLocation") ?: "정보 없음"
         val distance = intent.getDoubleExtra("distance", 0.0)
+
+//        val startLocation = findViewById<TextView>(R.id.startLocation)
+        val copyAddress = findViewById<TextView>(R.id.copyAddress)
+
+        copyAddress.setOnClickListener {
+            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clip = ClipData.newPlainText("주소", startLocation)
+            clipboard.setPrimaryClip(clip)
+
+            Toast.makeText(this, "주소가 복사되었습니다.", Toast.LENGTH_SHORT).show()
+        }
+
 
         Log.d("pathpath", "${path}")
 
@@ -78,12 +98,15 @@ class NaviActivity : AppCompatActivity() {
                 // ✅ 도보 경로 요청 (타입 변경)
                 requestWalkingRoute(path.map { Point.fromLngLat(it.latitude, it.longitude) })
 
+
+                // ✅ 모든 로딩이 끝나면 ProgressBar 숨김
+                binding.progressBar.visibility = View.GONE
             }
         }
 
         // ✅ UI 업데이트
-        binding.startLocation.text = "📍 $startLocation"
-        binding.distance.text = "📏 거리: ${distance} km"
+        binding.startLocation.text = "$startLocation"
+        binding.distance.text = "${distance} km"
     }
 
     // ✅ 도보 경로 요청 및 지도에 표시
@@ -91,6 +114,13 @@ class NaviActivity : AppCompatActivity() {
         if (path.size < 2) {
             Log.e("NaviActivity", "경로 요청 실패: 최소 2개 이상의 좌표가 필요합니다.")
             return
+        }
+
+        // ✅ 기존 경로 초기화 (이전 경로 제거)
+        routeLineApi.setNavigationRoutes(emptyList()) { value ->
+            binding.mapView.getMapboxMap().getStyle()?.apply {
+                routeLineView.renderRouteDrawData(this, value)
+            }
         }
 
         // ✅ 경도(longitude) -> 위도(latitude) 순서로 변환 (순서 변경!)
@@ -156,6 +186,9 @@ class NaviActivity : AppCompatActivity() {
             Log.d("NaviActivity", "Moving to start point: ${path.first().longitude}, ${path.first().latitude}")
         }
     }
+
+
+
 
 
 
