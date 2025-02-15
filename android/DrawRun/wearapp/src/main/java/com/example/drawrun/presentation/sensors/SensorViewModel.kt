@@ -47,7 +47,7 @@ class SensorViewModel(private val sensorManagerHelper: SensorManagerHelper) : Vi
         viewModelScope.launch {
             while (_isRunning.value) {
                 delay(1000)  // ✅ 1초마다 실행
-                saveHeartRate()  // ✅ 항상 심박수 저장
+//                saveHeartRate()  // ✅ 항상 심박수 저장
                 saveHeartRateDuringNavigation()
                 Log.d("SensorViewModel", "📡 심박수 측정 중... 현재 심박수: ${heartRate.value}")
             }

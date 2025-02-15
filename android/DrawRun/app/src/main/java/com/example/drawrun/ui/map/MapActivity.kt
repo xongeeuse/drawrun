@@ -19,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.drawrun.R
 import com.example.drawrun.data.model.ParcelablePoint
 import com.example.drawrun.services.NavigationForegroundService
@@ -744,11 +745,15 @@ class MapActivity : AppCompatActivity() {
             Log.d("showArrivalDialog", "📌 로드할 스냅샷 경로: $trackingSnapshotUrl")
             Glide.with(this)
                 .load(trackingSnapshotUrl)
-                .placeholder(R.drawable.search_background) // 기본 이미지 설정
                 .into(imageView)
         } else {
             Log.e("showArrivalDialog", "❌ trackingSnapshotUrl이 null이거나 비어 있음")
-            imageView.setImageResource(R.drawable.search_background) // 기본 이미지 설정
+            // ✅ 기본 GIF (`gps_art_run_done.gif`) 적용
+            Glide.with(this)
+                .asGif() // GIF로 로드
+                .load(R.drawable.gps_art_run_done) // ✅ drawable에 있는 GIF
+                .diskCacheStrategy(DiskCacheStrategy.ALL) // 캐싱 전략
+                .into(imageView)
         }
 
         finishButton.setOnClickListener {

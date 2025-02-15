@@ -1,21 +1,27 @@
 package com.example.drawrun.ui.runrecord
 
 import android.annotation.SuppressLint
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.drawrun.MainActivity
 import com.example.drawrun.R
+import com.example.drawrun.data.dto.request.runrecord.RunRecordRequest
+import com.example.drawrun.utils.RetrofitInstance
+import com.example.drawrun.viewmodel.RunRecordViewModel
+import com.example.drawrun.viewmodel.RunRecordViewModelFactory
 import com.google.android.gms.wearable.DataMapItem
 import com.google.android.gms.wearable.Wearable
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -35,6 +41,10 @@ class RunRecordActivity : ComponentActivity() {
     private lateinit var finishButton: Button
     private lateinit var dateTextView: TextView
     private lateinit var paceTextView: TextView
+
+    private val viewModel: RunRecordViewModel by viewModels {
+        RunRecordViewModelFactory(RetrofitInstance.RunRecordApi(this))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,8 +71,6 @@ class RunRecordActivity : ComponentActivity() {
         totalDuration = intent.getIntExtra("totalDuration", 0)
         averageHeartRate = intent.getFloatExtra("averageHeartRate", -1f)
 
-        Log.d("RunRecordActivity", "🟢 받은 평균 심박수: $averageHeartRate BPM")
-
         Log.d("RunRecordActivity", "🟢 받은 pathId: $pathId")
         Log.d("RunRecordActivity", "🟢 받은 trackingSnapshotUrl: $trackingSnapshotUrl")
 
@@ -71,17 +79,36 @@ class RunRecordActivity : ComponentActivity() {
 
         // ✅ '러닝 기록 저장' 버튼 클릭 시 처리
         finishButton.setOnClickListener {
-            Log.d("RunRecordActivity", "🚀 러닝 기록 저장 버튼 클릭됨 (현재 API 요청은 실행 안됨)")
+            if (averageHeartRate == -1f) {
+                Log.e("RunRecordActivity", "🚨 심박수 데이터가 아직 업데이트되지 않음! 저장 중단")
+                Toast.makeText(this, "심박수 데이터를 가져오는 중입니다. 잠시만 기다려주세요.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            saveRunRecord()
+            Log.d("RunRecordActivity", "🚀 러닝 기록 저장 버튼 클릭됨")
+        }
+        // ✅ 서버 저장 결과 감지하여 UI 업데이트
+        lifecycleScope.launch {
+            viewModel.saveResult.collect { result ->
+                result?.let {
+                    if (it.isSuccess) {
+                        Log.d("RunRecordActivity", "✅ 러닝 기록 저장 성공")
+                        navigateToMainScreen()
+                    } else {
+                        Log.e("RunRecordActivity", "🚨 러닝 기록 저장 실패: ${it.exceptionOrNull()?.message}")
+                    }
+                }
+            }
         }
     }
 
     // ✅ UI 업데이트 함수
     private fun updateUI(distance: Double, timeSeconds: Int, heartRate: Float) {
         dateTextView.text = SimpleDateFormat("yyyy.MM.dd (E) 러닝 기록", Locale.KOREA).format(Date())
-
+        val paceSeconds = calculatePaceInSeconds(distance, timeSeconds)
         distanceTextView.text = String.format("%.2f km", distance)
         timeTextView.text = formatTime(timeSeconds)
-        paceTextView.text = calculatePace(distance, timeSeconds)
+        paceTextView.text = formatPaceToString(paceSeconds)
         heartRateTextView.text = String.format("%d BPM", heartRate.toInt())
 
         // ✅ 트래킹 스냅샷 이미지 로드 (Glide) - `null` 체크 후 실행
@@ -91,6 +118,15 @@ class RunRecordActivity : ComponentActivity() {
                 .placeholder(R.drawable.search_background)  // 기본 이미지
                 .into(trackingImageView)
         }
+    }
+    // ✅ 초 단위를 "X'YY\"" 형식으로 변환하는 함수
+    private fun formatPaceToString(paceSeconds: Int): String {
+        val minutes = paceSeconds / 60
+        val seconds = paceSeconds % 60
+        val formattedPace = String.format("%d'%02d\"", minutes, seconds)
+
+        Log.d("RunRecordActivity", "✅ UI 변환 pace: ${paceSeconds}초 -> $formattedPace") // 🔥 변환 로그 추가
+        return formattedPace
     }
 
     // ✅ 초 → "X분 Y초" 형식 변환 함수
@@ -110,6 +146,14 @@ class RunRecordActivity : ComponentActivity() {
         }
     }
 
+    private fun calculatePaceInSeconds(distanceKm: Double, runningTimeSeconds: Int): Int {
+        return when {
+            distanceKm == 0.0 -> 0  // 예외처리
+            distanceKm < 0.5 -> (runningTimeSeconds / (distanceKm * 1000)).toInt().coerceAtLeast(5) // 500m 이하는 미터 단위 pace 보정
+            else -> (runningTimeSeconds / distanceKm).toInt().coerceAtLeast(10)  // 정상적인 거리에서는 기존 km 단위 pace 적용
+        }
+    }
+
     // ✅ 저장 후 메인 화면으로 이동하는 함수
     private fun navigateToMainScreen() {
         val intent = Intent(this, MainActivity::class.java)
@@ -118,21 +162,6 @@ class RunRecordActivity : ComponentActivity() {
         finish()
     }
 
-//    // 📡 BroadcastReceiver 설정 (심박수 데이터 받기)
-//    private val heartRateReceiver = object : BroadcastReceiver() {
-//        override fun onReceive(context: Context?, intent: Intent?) {
-//            val heartRate = intent?.getFloatExtra("averageHeartRate", 0f) ?: 0f
-//            Log.d("RunRecordActivity", "💓 수신된 평균 심박수: $heartRate BPM")
-//
-//            if (heartRate > 0f) {
-//                runOnUiThread {
-//                    heartRateTextView.text = String.format("%d BPM", heartRate.toInt())
-//                }
-//            } else {
-//                Log.e("RunRecordActivity", "🚨 수신된 심박수 값이 올바르지 않음")
-//            }
-//        }
-//    }
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override fun onResume() {
@@ -154,6 +183,18 @@ class RunRecordActivity : ComponentActivity() {
                         val receivedHeartRate = dataMap.getFloat("averageHeartRate", -1f)
                         Log.d("RunRecordActivity", "💓 Wearable에서 받은 평균 심박수: $receivedHeartRate BPM")
 
+                        if (receivedHeartRate > 0) {
+                            averageHeartRate = receivedHeartRate
+                            Log.d("RunRecordActivity", "✅ 심박수 업데이트 완료: $averageHeartRate BPM")
+
+                            // ✅ 버튼 활성화
+                            runOnUiThread {
+                                finishButton.isEnabled = true
+                            }
+                        } else {
+                            Log.e("RunRecordActivity", "🚨 심박수 값이 올바르지 않음")
+                        }
+
                         // UI 업데이트
                         runOnUiThread {
                             heartRateTextView.text = String.format("%d BPM", receivedHeartRate.toInt())
@@ -165,6 +206,33 @@ class RunRecordActivity : ComponentActivity() {
             .addOnFailureListener { e ->
                 Log.e("RunRecordActivity", "🚨 Wearable에서 평균 심박수 가져오기 실패", e)
             }
+    }
+
+    private fun saveRunRecord() {
+        if (averageHeartRate == -1f) {
+            Log.e("RunRecordActivity", "🚨 심박수 데이터가 아직 업데이트되지 않음! 저장 중단")
+            return
+        }
+        val runImgUrl = trackingSnapshotUrl
+        val distanceKm = totalDistance
+        val timeS = totalDuration
+        val paceS = calculatePaceInSeconds(totalDistance, totalDuration) // ✅ 초 단위 변환
+        val heartbeat = averageHeartRate.toInt()
+        Log.d("RunRecordActivity", "✅ 거리: $distanceKm km, 시간: $timeS 초")
+        Log.d("RunRecordActivity", "✅ paceS 계산값: $paceS 초") // 🔥 디버깅 추가
+
+        val request = RunRecordRequest(
+            runImgUrl = runImgUrl,
+            distanceKm = distanceKm,
+            timeS = timeS,
+            paceS = paceS, // ✅ 초 단위 저장
+            state = 1,
+            heartbeat = heartbeat,
+            cadence = null
+        )
+
+        Log.d("RunRecordActivity", "📡 러닝 기록 저장 요청 데이터: $request")
+        viewModel.saveRunRecord(request)
     }
 
 
