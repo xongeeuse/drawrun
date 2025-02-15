@@ -107,6 +107,9 @@ dependencies {
     // Mapbox Navigation Core (모든 기능 포함)
     implementation(libs.mapbox.navigationcore.android)
 
+
+
+
     // Mapbox Maps SDK (필수)
     implementation(libs.mapbox.maps)
 //    implementation(libs.mapbox.search)
