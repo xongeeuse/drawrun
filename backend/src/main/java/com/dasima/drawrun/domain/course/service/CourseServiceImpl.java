@@ -55,7 +55,7 @@ public class CourseServiceImpl implements CourseService{
         // 몽고디비 해쉬값 받아옴
         // MongoDB Geojson 저장
         List<GeoPoint> dtoList = dto.getPath();
-        List<Point> entityList = dtoList.stream().map(geoPoint -> new Point(geoPoint.getLongitude(), geoPoint.getLatitude())).collect(Collectors.toList());
+        List<Point> entityList = dtoList.stream().map(geoPoint -> new Point(geoPoint.getLatitude(), geoPoint.getLongitude())).collect(Collectors.toList());
 
 
         Path path = courseRepository.save(new Path(entityList));
