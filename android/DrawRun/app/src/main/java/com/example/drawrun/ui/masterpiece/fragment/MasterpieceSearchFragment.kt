@@ -1,6 +1,7 @@
 package com.example.drawrun.ui.masterpiece.fragment
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -67,6 +68,7 @@ class MasterpieceSearchFragment : Fragment() {
     }
 
     private fun navigateToDetail(masterpiece: Masterpiece) {
+        Log.d("masterpiecemasterpiece", "navigate 실행하면서 데이터 전달: ${masterpiece}")
         val fragment = MasterpieceDetailFragment().apply {
             arguments = Bundle().apply {
                 putSerializable("masterpiece", masterpiece) // 데이터 전달

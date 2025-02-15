@@ -4,7 +4,10 @@ import android.util.Log
 import com.example.drawrun.data.api.MasterpieceApi
 import com.example.drawrun.data.dto.request.masterpiece.MasterpieceSaveRequest
 import com.example.drawrun.data.dto.response.masterpiece.Masterpiece
+import com.example.drawrun.data.dto.response.masterpiece.MasterpieceDetailResponse
 import com.example.drawrun.data.dto.response.masterpiece.MasterpieceListResponse
+import com.example.drawrun.data.dto.response.masterpiece.SectionInfoResponse
+import retrofit2.Response
 
 class MasterpieceRepository (private val api: MasterpieceApi) {
     // 응답으로 0 or 걸작 게시글 PK
@@ -12,6 +15,7 @@ class MasterpieceRepository (private val api: MasterpieceApi) {
         Log.d("MasterpieceRepository", "Sending request: $request")
         return api.saveMasterpiece(request)
     }
+
 
     suspend fun getMasterpieceList(): Result<List<Masterpiece>> {
         return try {
@@ -30,8 +34,6 @@ class MasterpieceRepository (private val api: MasterpieceApi) {
     }
 
 
-
-
     suspend fun getMasterpieceListByArea(area: String): Result<MasterpieceListResponse> {
         return try {
             val response = api.getMasterpieceListByArea(area)
@@ -39,6 +41,24 @@ class MasterpieceRepository (private val api: MasterpieceApi) {
                 Result.success(response.body()!!)
             } else {
                 Result.failure(Exception("Error fetching masterpiece list by area: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+
+    suspend fun getMasterpieceDetail(masterpieceBoardId: Int): Response<MasterpieceDetailResponse> {
+        return api.getMasterpieceDetail(masterpieceBoardId)
+    }
+
+    suspend fun getMasterpieceSectionInfo(masterpieceBoardId: Int): Result<SectionInfoResponse> {
+        return try {
+            val response = api.getMasterpieceSectionInfo(masterpieceBoardId)
+            if (response.isSuccessful) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Error fetching section info: ${response.code()}"))
             }
         } catch (e: Exception) {
             Result.failure(e)
