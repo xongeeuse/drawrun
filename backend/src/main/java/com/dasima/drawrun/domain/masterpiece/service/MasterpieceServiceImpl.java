@@ -82,7 +82,8 @@ public class MasterpieceServiceImpl implements MasterpieceService{
                             .build()
             );
         }
-        return res;
+        if(res == 1) return masterpieceBoard.getMasterpieceBoardId();
+        else return 0;
     }
 
     public List<MasterpieceListResponse> list(){
