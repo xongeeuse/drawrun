@@ -1,5 +1,6 @@
 package com.example.drawrun.ui.navi
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -11,6 +12,7 @@ import com.mapbox.api.directions.v5.models.RouteOptions
 import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
+import com.mapbox.maps.EdgeInsets
 import com.mapbox.maps.MapboxMap
 import com.mapbox.maps.Style
 import com.mapbox.maps.extension.localization.localizeLabels
@@ -41,8 +43,9 @@ class NaviActivity : AppCompatActivity() {
     private lateinit var routeLineView: MapboxRouteLineView
 
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
         binding = ActivityNaviBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -153,4 +156,9 @@ class NaviActivity : AppCompatActivity() {
             Log.d("NaviActivity", "Moving to start point: ${path.first().longitude}, ${path.first().latitude}")
         }
     }
+
+
+
+
+
 }

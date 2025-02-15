@@ -63,6 +63,7 @@
             android:exported="false" />
         <activity
             android:name=".ui.navi.NaviActivity"
+            android:launchMode="singleTop"
             android:exported="false" />
         <activity
             android:name=".ui.auth.RegisterActivity"
