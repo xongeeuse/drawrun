@@ -1,17 +1,16 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
-
 from makeRoute import makeRouteNodeList
+from pydantic import BaseModel
 
 app = FastAPI()
 
 class MapRequest(BaseModel):
     lon: float
     lat: float
-    mapData: str
+    mapDataUrl: str
     imgUrl: str
     
 @app.post("/api/v1/createMap")
 async def create_map(request: MapRequest):
-    makeRouteNodeList(request.lon, request.lat, request.mapData, request.imgUrl)
-    return {"test": []}
+    nodeList = makeRouteNodeList(request.lon, request.lat, request.mapDataUrl, request.imgUrl)
+    return {"data": nodeList}
