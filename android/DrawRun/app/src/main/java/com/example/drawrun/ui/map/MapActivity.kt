@@ -19,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.drawrun.R
 import com.example.drawrun.data.model.ParcelablePoint
 import com.example.drawrun.services.NavigationForegroundService
@@ -248,7 +249,7 @@ class MapActivity : AppCompatActivity() {
 
             // 경로 라인 표시 옵션 설정
             val routeLineOptions = MapboxRouteLineViewOptions.Builder(this)
-                .routeLineBelowLayerId("road-label")
+                .routeLineBelowLayerId("waterway-label")
                 .build()
             routeLineApi = MapboxRouteLineApi(MapboxRouteLineApiOptions.Builder().build())
             routeLineView = MapboxRouteLineView(routeLineOptions)
@@ -563,7 +564,7 @@ class MapActivity : AppCompatActivity() {
         closeButton.setOnClickListener {
             dialog.dismiss() // 다이얼로그 닫기
 
-        // ✅ 닫기 버튼 누르면 위치 마커 다시 활성화
+        // ✅ 닫기 버튼 누르면 위치 마커 다시 활성
         mapView.location.updateSettings {
             enabled = true // 위치 마커 다시 활성화
             }
@@ -744,11 +745,15 @@ class MapActivity : AppCompatActivity() {
             Log.d("showArrivalDialog", "📌 로드할 스냅샷 경로: $trackingSnapshotUrl")
             Glide.with(this)
                 .load(trackingSnapshotUrl)
-                .placeholder(R.drawable.search_background) // 기본 이미지 설정
                 .into(imageView)
         } else {
             Log.e("showArrivalDialog", "❌ trackingSnapshotUrl이 null이거나 비어 있음")
-            imageView.setImageResource(R.drawable.search_background) // 기본 이미지 설정
+            // ✅ 기본 GIF (`gps_art_run_done.gif`) 적용
+            Glide.with(this)
+                .asGif() // GIF로 로드
+                .load(R.drawable.gps_art_run_done) // ✅ drawable에 있는 GIF
+                .diskCacheStrategy(DiskCacheStrategy.ALL) // 캐싱 전략
+                .into(imageView)
         }
 
         finishButton.setOnClickListener {
@@ -867,50 +872,101 @@ class MapActivity : AppCompatActivity() {
 
         if (trackingPoints.size < 2) {
             Log.e("TrackingSnapshot", "❌ 트래킹 포인트가 부족하여 스냅샷을 캡처할 수 없음")
-            Log.e("TrackingSnapshot", "❌ $trackingPoints")
             return
         }
 
-        val cameraOptions = mapView.mapboxMap.cameraForCoordinates(
-            trackingPoints,
-            EdgeInsets(300.0, 300.0, 300.0, 300.0)
-        )
-
-        mapView.mapboxMap.setCamera(cameraOptions)
-        Log.d("TrackingSnapshot", "📷 카메라 설정 완료")
-
-        mapView.postDelayed({
-            mapView.snapshot { bitmap ->
-                if (bitmap != null) {
-                    Log.d("TrackingSnapshot", "✅ 스냅샷 캡처 성공: 비트맵 크기 ${bitmap.width}x${bitmap.height}")
-
-                    // 📌 비트맵을 파일로 저장하는 함수 호출
-                    val filePath = saveBitmapToFile(bitmap)
-
-                    if (filePath != null) {
-                        trackingSnapshotUrl = filePath // ✅ trackingSnapshotUrl 업데이트
-                        Log.d("TrackingSnapshot", "📌 스냅샷 저장 성공 - 경로: $filePath")
-                    } else {
-                        Log.e("TrackingSnapshot", "❌ 스냅샷 저장 실패")
-                    }
-                    Log.d("TrackingSnapshot", "📌 trackingSnapshotUrl 값 확인: $trackingSnapshotUrl")
-                    // ✅ Firebase 업로드 대신, ImageView에 표시하여 확인
-                    runOnUiThread {
-                        val trackingImageView = findViewById<ImageView>(R.id.trackingImageView)
-
-                        if (trackingImageView != null) { // ✅ Null 체크 추가
-                            trackingImageView.setImageBitmap(bitmap)
-                            Log.d("TrackingSnapshot", "📌 캡처된 이미지가 ImageView에 표시됨")
-                        } else {
-                            Log.e("TrackingSnapshot", "❌ trackingImageView가 존재하지 않음!")
-                        }
-                    }
-                } else {
-                    Log.e("TrackingSnapshot", "❌ 스냅샷 캡처 실패")
-                }
+        // 1️⃣ 경로 바운딩 박스 계산 (최소/최대 좌표 찾기)
+        val routeBounds = trackingPoints.fold(null as Pair<Point, Point>?) { bounds, point ->
+            when (bounds) {
+                null -> Pair(point, point)
+                else -> Pair(
+                    Point.fromLngLat(
+                        minOf(bounds.first.longitude(), point.longitude()),
+                        minOf(bounds.first.latitude(), point.latitude())
+                    ),
+                    Point.fromLngLat(
+                        maxOf(bounds.second.longitude(), point.longitude()),
+                        maxOf(bounds.second.latitude(), point.latitude())
+                    )
+                )
             }
-        }, 1400)
+        }
+
+        routeBounds?.let { (southWest, northEast) ->
+            val width = TurfMeasurement.distance(
+                Point.fromLngLat(southWest.longitude(), southWest.latitude()),
+                Point.fromLngLat(northEast.longitude(), southWest.latitude()), "meters"
+            )
+
+            val height = TurfMeasurement.distance(
+                Point.fromLngLat(southWest.longitude(), southWest.latitude()),
+                Point.fromLngLat(southWest.longitude(), northEast.latitude()), "meters"
+            )
+
+            Log.d("TrackingSnapshot", "📐 경로 크기 계산 완료 - Width: ${width}m, Height: ${height}m")
+
+            // 2️⃣ 정사각형 크기 결정 (더 긴 쪽 기준)
+            val squareSize = maxOf(width, height) * 1.3  // ✅ 30% 추가해서 여백 확보
+
+            // 3️⃣ 자동 줌 설정 (적절한 여백을 추가한 상태에서 캡처)
+            val zoomLevel = when {
+                squareSize > 2000 -> 13.0
+                squareSize > 1000 -> 14.0
+                squareSize > 500 -> 15.0
+                squareSize > 200 -> 16.0
+                squareSize > 100 -> 17.0
+                squareSize > 50 -> 18.0
+                else -> 19.0
+            }
+
+            Log.d("TrackingSnapshot", "🔍 자동 줌 설정 - Zoom Level: $zoomLevel")
+
+            // 4️⃣ 캡처할 카메라 중앙 위치 계산
+            val centerPoint = Point.fromLngLat(
+                (southWest.longitude() + northEast.longitude()) / 2,
+                (southWest.latitude() + northEast.latitude()) / 2
+            )
+
+            val cameraOptions = CameraOptions.Builder()
+                .center(centerPoint)
+                .zoom(zoomLevel)
+                .build()
+
+            mapView.mapboxMap.setCamera(cameraOptions)
+
+            // 5️⃣ 스냅샷 캡처 실행
+            mapView.postDelayed({
+                mapView.snapshot { bitmap ->
+                    if (bitmap != null) {
+                        Log.d("TrackingSnapshot", "✅ 스냅샷 캡처 성공: 비트맵 크기 ${bitmap.width}x${bitmap.height}")
+
+                        // ✅ 정사각형 크롭 적용
+                        val squareBitmap = cropBitmapToSquare(bitmap)
+
+                        lifecycleScope.launch {
+                            val imageUrl = uploadImage(squareBitmap)  // ✅ 기존 uploadImage() 재사용
+                            if (imageUrl != null) {
+                                trackingSnapshotUrl = imageUrl
+                                Log.d("TrackingSnapshot", "📌 스냅샷 업로드 성공 - URL: $imageUrl")
+
+                            } else {
+                                Log.e("TrackingSnapshot", "❌ 스냅샷 업로드 실패")
+                            }
+                        }
+
+                        runOnUiThread {
+                            val trackingImageView = findViewById<ImageView>(R.id.trackingImageView)
+                            trackingImageView?.setImageBitmap(squareBitmap)
+                                ?: Log.e("TrackingSnapshot", "❌ trackingImageView가 존재하지 않음!")
+                        }
+                    } else {
+                        Log.e("TrackingSnapshot", "❌ 스냅샷 캡처 실패")
+                    }
+                }
+            }, 1400) // ✅ 카메라 이동 후 1.4초 대기 (안정적 캡처)
+        }
     }
+
 
     private fun saveBitmapToFile(bitmap: Bitmap): String? {
         return try {
@@ -926,29 +982,6 @@ class MapActivity : AppCompatActivity() {
             null
         }
     }
-//    private suspend fun uploadTrackingImage(bitmap: Bitmap): String? {
-//        Log.d("UploadTrackingImage", "🟢 트래킹 스냅샷 업로드 시작")
-//
-//        // ✅ 스냅샷을 Firebase Storage `snapshots/tracking/` 경로에 저장
-//        val imageRef = storageReference.child("snapshots/tracking/${System.currentTimeMillis()}.jpg")
-//
-//        val baos = ByteArrayOutputStream()
-//        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
-//        val data = baos.toByteArray()
-//
-//        return try {
-//            val uploadTask = imageRef.putBytes(data).await()
-//            Log.d("UploadTrackingImage", "✅ 이미지 업로드 성공")
-//
-//            val downloadUrl = imageRef.downloadUrl.await().toString()
-//            Log.d("UploadTrackingImage", "✅ 다운로드 URL 생성: $downloadUrl")
-//
-//            return downloadUrl
-//        } catch (e: Exception) {
-//            Log.e("UploadTrackingImage", "❌ 트래킹 스냅샷 업로드 실패: ${e.message}")
-//            return null
-//        }
-//    }
 
     private fun startNavigationForegroundService() {
         val intent = Intent(this, NavigationForegroundService::class.java)
