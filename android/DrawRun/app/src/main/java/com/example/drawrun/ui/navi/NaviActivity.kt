@@ -15,9 +15,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import android.Manifest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import com.example.drawrun.R
 import com.example.drawrun.databinding.ActivityNaviBinding
 import com.example.drawrun.dto.course.PathPoint
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.mapbox.api.directions.v5.DirectionsCriteria
 import com.mapbox.api.directions.v5.models.RouteOptions
@@ -59,8 +64,10 @@ class NaviActivity : AppCompatActivity() {
     private lateinit var binding: ActivityNaviBinding
     private lateinit var mapboxMap: MapboxMap
     private lateinit var mapboxNavigation: MapboxNavigation
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var locationCallback: LocationCallback
 
-    private var polylineAnnotationManager: PolylineAnnotationManager? = null
+    private var trackingLineManager: PolylineAnnotationManager? = null
     private lateinit var routeLineApi: MapboxRouteLineApi
     private lateinit var routeLineView: MapboxRouteLineView
 
@@ -69,6 +76,9 @@ class NaviActivity : AppCompatActivity() {
 
     private lateinit var speechApi: MapboxSpeechApi
     private lateinit var voiceInstructionsPlayer: MapboxVoiceInstructionsPlayer
+
+    private val trackedPath = mutableListOf<Point>() // 사용자가 지나간 경로 저장
+    private var isTrackingStarted = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -133,7 +143,7 @@ class NaviActivity : AppCompatActivity() {
                 style.localizeLabels(Locale("ko"))
 
                 enableUserLocation() // 현위치 마커 활성화
-                routeLineApi = MapboxRouteLineApi(MapboxRouteLineApiOptions.Builder().build())
+                routeLineApi = MapboxRouteLineApi(MapboxRouteLineApiOptions.Builder().vanishingRouteLineEnabled(true).build())
                 routeLineView = MapboxRouteLineView(MapboxRouteLineViewOptions.Builder(this).build())
 
                 moveToPathStart(path) // 지도 중심 이동
@@ -176,9 +186,12 @@ class NaviActivity : AppCompatActivity() {
         binding.startLocation.text = "$startLocation"
         binding.distance.text = "${distance} km"
 
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
         // ✅ startButton 클릭 시 내비게이션 시작
         binding.startButton.setOnClickListener {
             startNavigation(path)
+
         }
 
     }
@@ -294,8 +307,11 @@ class NaviActivity : AppCompatActivity() {
                                         CameraOptions.Builder()
                                             .center(startPoint)
                                             .zoom(17.0) // 도보 모드에 적절한 줌 레벨
+                                            .bearing(location.bearing.toDouble()) // 사용자의 바라보는 방향으로 회전
                                             .build()
                                     )
+
+                                    startTrackingUserLocation() // 트래킹 시작
 
 
                                     Toast.makeText(this@NaviActivity, "내비게이션 시작!", Toast.LENGTH_SHORT).show()
@@ -370,13 +386,31 @@ class NaviActivity : AppCompatActivity() {
     private val routeProgressObserver = RouteProgressObserver { routeProgress ->
         val distanceRemaining = routeProgress.distanceRemaining
         val durationRemaining = routeProgress.durationRemaining
+        val totalDistance = routeProgress.route.distance() // 전체 경로 거리
+        val currentLegIndex = routeProgress.currentLegProgress?.legIndex // 현재 구간 인덱스
+
         Log.d("NAVINAVI", "남은 거리: $distanceRemaining, 남은 시간: $durationRemaining")
+
+        // 목적지 도착 여부 확인 (남은 거리가 1m 이하일 경우 종료)
+        if (distanceRemaining < 1) {
+            routeProgress.route.legs()?.let { legs ->
+                if (routeProgress.currentLegProgress?.legIndex == legs.size - 1) {
+                    val totalDuration = routeProgress.route.duration().toInt()  // 총 소요 시간 (초)
+                    val totalDistanceInKm = totalDistance / 1000 // 미터 -> 킬로미터 변환
+
+                    stopNavigation() // 내비게이션 종료
+                    showArrivalDialog(totalDistanceInKm, totalDuration) // ✅ 도착 모달 표시
+                }
+            }
+        }
     }
 
     // ✅ 도보 경로 요청
     private fun requestWalkingRoute(path: List<Point>) {
         if (path.size < 2) {
             Log.e("NaviActivity", "경로 요청 실패: 최소 2개 이상의 좌표가 필요합니다.")
+
+
             return
         }
 
@@ -418,6 +452,111 @@ class NaviActivity : AppCompatActivity() {
                 override fun onCanceled(routeOptions: RouteOptions, routerOrigin: String) {}
             }
         )
+    }
+
+    // ✅ 사용자의 현재 위치 트래킹 (도착 시 stopNavigation() 호출)
+    private fun startTrackingUserLocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            locationCallback = object : LocationCallback() {
+                override fun onLocationResult(locationResult: LocationResult) {
+                    for (location in locationResult.locations) {
+                        val userPoint = Point.fromLngLat(location.longitude, location.latitude)
+
+                        // ✅ 목적지 좌표 가져오기
+                        val destinationPoint = Point.fromLngLat(path.last().longitude, path.last().latitude)
+
+                        // ✅ 남은 거리 계산
+                        val remainingDistance = TurfMeasurement.distance(userPoint, destinationPoint, "meters")
+
+                        Log.d("NAVINAVI", "현재 위치: ${userPoint.longitude()}, ${userPoint.latitude()}")
+                        Log.d("NAVINAVI", "목적지 위치: ${destinationPoint.longitude()}, ${destinationPoint.latitude()}")
+                        Log.d("NAVINAVI", "남은 거리: ${remainingDistance}m")
+
+//                        // ✅ 목적지 도착 시 위치 업데이트 중지 & 내비게이션 종료
+//                        if (remainingDistance < 5.0) {
+//                            stopNavigation() // 내비게이션 종료 (트래킹 중지)
+//                            return
+//                        }
+
+                        // ✅ 트래킹 경로 추가 (삭제 X)
+                        if (trackedPath.isEmpty() || trackedPath.last() != userPoint) {
+                            trackedPath.add(userPoint)
+                            updateTrackingLine() // 지도에 초록색 트래킹 경로 표시
+                        }
+                        updateTrackingLine() // 지도에 초록색 트래킹 경로 표시
+                    }
+                }
+            }
+
+            val locationRequest = LocationRequest.create().apply {
+                interval = 1000 // 1초마다 위치 업데이트
+                fastestInterval = 500
+                priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+            }
+
+            fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
+        }
+    }
+
+    // ✅ 지나온 네비게이션 경로(파란색) 삭제
+    private fun updateNavigationRoute() {
+        val updatedRoutes = mapboxNavigation.getNavigationRoutes()
+        if (updatedRoutes.isNotEmpty()) {
+            mapboxNavigation.setNavigationRoutes(updatedRoutes) // 🔥 실시간으로 경로를 줄이기
+        }
+    }
+
+
+
+
+
+    // 최종 목적지 도착 시 내비게이션과 트래킹 종료
+    private fun stopNavigation() {
+        // 위치 업데이트 중지
+        fusedLocationClient.removeLocationUpdates(locationCallback)
+
+        // 🚫 내비게이션 종료 및 경로 초기화
+        mapboxNavigation.stopTripSession()
+        mapboxNavigation.setNavigationRoutes(emptyList()) // ❌ Mapbox 도보 경로 제거
+
+        isTrackingStarted = false // 트래킹 중지 (하지만 지나간 경로는 유지됨)
+
+        Toast.makeText(this, "🎉 목적지에 도착했습니다! 내비게이션 종료.", Toast.LENGTH_LONG).show()
+
+
+    }
+
+
+
+    private fun showArrivalDialog(distance: Double, duration: Int) {
+        val timeInMinutes = duration / 60 // 초 → 분 변환
+
+        val message = "🏁 목적지 도착!\n총 이동 거리: ${String.format("%.2f", distance)}km\n소요 시간: ${timeInMinutes}분"
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("🎉 도착 완료")
+            .setMessage(message)
+            .setPositiveButton("확인") { dialog, _ -> dialog.dismiss() }
+            .create()
+
+        dialog.show()
+    }
+
+    private fun updateTrackingLine() {
+        val mapView = binding.mapView
+        val annotations = mapView.annotations
+        val trackingColor = "#00FF00" // 초록색
+
+        // 기존의 트래킹 라인 제거 후 다시 그림 (계속 이어지게)
+        trackingLineManager?.deleteAll()
+        trackingLineManager = annotations.createPolylineAnnotationManager()
+
+        val polyline = PolylineAnnotationOptions()
+            .withPoints(trackedPath) // 사용자가 이동한 경로
+            .withLineColor(trackingColor) // 초록색
+            .withLineWidth(7.0) // 선 두께
+
+        trackingLineManager?.create(polyline)
     }
 
 
