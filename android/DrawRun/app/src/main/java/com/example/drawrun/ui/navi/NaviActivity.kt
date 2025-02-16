@@ -252,6 +252,7 @@ class NaviActivity : AppCompatActivity() {
         locationComponentPlugin?.updateSettings {
             enabled = true // 현재 위치 마커 활성화
             pulsingEnabled = true // 펄스 효과 추가 (선택)
+            layerAbove = "waterway-label" // ✅ 사용자 마커를 도로 레이어 위에 배치
         }
     }
 
@@ -262,14 +263,6 @@ class NaviActivity : AppCompatActivity() {
             return
         }
 
-        val startPoint = Point.fromLngLat(path.first().longitude, path.first().latitude)
-        binding.mapView.getMapboxMap().setCamera(
-            CameraOptions.Builder()
-                .center(startPoint)
-                .zoom(17.0)
-                .bearing(currentBearing.toDouble()) // ✅ 사용자의 현재 나침반 방향 반영
-                .build()
-        )
 
 
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
@@ -322,6 +315,17 @@ class NaviActivity : AppCompatActivity() {
                 if (distance > 20) {
                     Toast.makeText(this, "출발지로 이동 후 시작해주세요.", Toast.LENGTH_SHORT).show()
                 } else {
+                    binding.bottomLayout.visibility = View.GONE // 내비게이션 시작 시 코스 정보 숨김
+
+                    val startPoint = Point.fromLngLat(path.first().longitude, path.first().latitude)
+                    binding.mapView.getMapboxMap().setCamera(
+                        CameraOptions.Builder()
+                            .center(startPoint)
+                            .zoom(17.0)
+                            .bearing(currentBearing.toDouble()) // ✅ 사용자의 현재 나침반 방향 반영
+                            .build()
+                    )
+
                     // ✅ 내비게이션 시작
                     val points = path.map { Point.fromLngLat(it.longitude, it.latitude) }
 
@@ -555,21 +559,6 @@ class NaviActivity : AppCompatActivity() {
             fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
         }
     }
-
-    // ✅ 지나온 네비게이션 경로(파란색) 삭제
-    private fun updateNavigationRoute() {
-        val updatedRoutes = mapboxNavigation.getNavigationRoutes()
-        if (updatedRoutes.isNotEmpty()) {
-            mapboxNavigation.setNavigationRoutes(updatedRoutes) // 🔥 실시간으로 경로를 줄이기
-        }
-    }
-
-
-
-
-
-
-
 
 
     // ✅ 도착 시 모달 표시 (실제 거리 + 시간 적용)
