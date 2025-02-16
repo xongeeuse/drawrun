@@ -69,7 +69,16 @@ class CourseViewHolder(
 
             // 북마크 버튼 클릭 리스너
             btnBookmark.setOnClickListener {
-                onBookmarkClick(course)  // 콜백 호출
+                onBookmarkClick(course)
+                it.isClickable = false
+                it.postDelayed({ it.isClickable = true }, 300)
+            }
+
+            // 아이템 전체 클릭 리스너
+            root.setOnClickListener {
+                if (!btnBookmark.isPressed) {
+                    onCourseClick(course)
+                }
             }
 
             // 북마크 상태 처리
