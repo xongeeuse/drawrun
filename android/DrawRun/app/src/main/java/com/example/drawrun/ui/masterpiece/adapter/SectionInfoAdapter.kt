@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.drawrun.data.dto.response.masterpiece.SectionInfo
 import com.example.drawrun.databinding.ItemSectionInfoBinding
 
-class SectionInfoAdapter(private val onJoinClick: (Int, Int, Int) -> Unit) : RecyclerView.Adapter<SectionInfoAdapter.ViewHolder>() {
+class SectionInfoAdapter(private val onJoinClick: (SectionInfo, Int, Int) -> Unit) : RecyclerView.Adapter<SectionInfoAdapter.ViewHolder>() {
     private var sections: List<SectionInfo> = emptyList()
     private val distances = mutableMapOf<Int, Double>()
     private val colors = mutableMapOf<Int, String>()
@@ -33,7 +33,7 @@ class SectionInfoAdapter(private val onJoinClick: (Int, Int, Int) -> Unit) : Rec
     }
 
 
-    class ViewHolder(private val binding: ItemSectionInfoBinding, private val onJoinClick: (Int, Int, Int) -> Unit) : RecyclerView.ViewHolder(binding.root) {
+    class ViewHolder(private val binding: ItemSectionInfoBinding, private val onJoinClick: (SectionInfo, Int, Int) -> Unit) : RecyclerView.ViewHolder(binding.root) {
         fun bind(sectionInfo: SectionInfo, position: Int, distance: Double?, color: String?, masterpieceBoardId: Int) {
             binding.sectionNumber.text = (position + 1).toString()
             binding.sectionAddress.text = sectionInfo.address
@@ -61,7 +61,7 @@ class SectionInfoAdapter(private val onJoinClick: (Int, Int, Int) -> Unit) : Rec
             // 클릭 리스너 설정
             binding.sectionStatusButton.setOnClickListener {
                 if (isJoinable) {
-                    onJoinClick(sectionInfo.masterpieceSegId, masterpieceBoardId, position)
+                    onJoinClick(sectionInfo, masterpieceBoardId, position)
                 }
             }
         }
@@ -114,5 +114,9 @@ class SectionInfoAdapter(private val onJoinClick: (Int, Int, Int) -> Unit) : Rec
     fun updateDistance(position: Int, distance: Double) {
         distances[position] = distance
         notifyItemChanged(position)
+    }
+
+    fun getDistance(position: Int): Double? {
+        return distances[position]
     }
 }
