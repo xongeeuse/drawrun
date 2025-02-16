@@ -14,20 +14,30 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import android.Manifest
+import android.graphics.Bitmap
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.widget.Button
+import android.widget.ImageView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.drawrun.R
 import com.example.drawrun.databinding.ActivityNaviBinding
 import com.example.drawrun.dto.course.PathPoint
+import com.example.drawrun.ui.runrecord.RunRecordActivity
+import com.example.drawrun.utils.RetrofitInstance
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.wearable.PutDataMapRequest
+import com.google.android.gms.wearable.Wearable
 import com.mapbox.api.directions.v5.DirectionsCriteria
 import com.mapbox.api.directions.v5.models.RouteOptions
 import com.mapbox.bindgen.Expected
@@ -35,6 +45,7 @@ import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.EdgeInsets
+import com.mapbox.maps.MapView
 import com.mapbox.maps.MapboxMap
 import com.mapbox.maps.Style
 import com.mapbox.maps.extension.localization.localizeLabels
@@ -62,6 +73,14 @@ import com.mapbox.navigation.voice.model.SpeechAnnouncement
 import com.mapbox.navigation.voice.model.SpeechError
 import com.mapbox.navigation.voice.model.SpeechValue
 import com.mapbox.turf.TurfMeasurement
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.File
+import java.io.FileOutputStream
 import java.util.Locale
 
 class NaviActivity : AppCompatActivity() {
@@ -87,6 +106,9 @@ class NaviActivity : AppCompatActivity() {
     private var navigationStartTime: Long = 0L // 내비게이션 시작 시간
     private lateinit var sensorManager: SensorManager
     private var currentBearing: Float = 0f // ✅ 사용자의 현재 방향
+
+    private var trackingSnapshotUrl : String? = null
+    private lateinit var mapView: MapView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -146,6 +168,7 @@ class NaviActivity : AppCompatActivity() {
 
         // ✅ Mapbox 초기화
         binding.mapView?.let { mapView ->
+            this.mapView = mapView
             mapboxMap = mapView.getMapboxMap()
             mapboxMap.loadStyleUri(Style.DARK) { style ->
                 style.localizeLabels(Locale("ko"))
@@ -159,7 +182,7 @@ class NaviActivity : AppCompatActivity() {
 
                 binding.progressBar.visibility = View.GONE
             }
-        }
+        } ?: Log.e("NaviActivity", "❌ `mapView`가 초기화되지 않았음!")
 
         // ✅ 내비게이션 음성 안내 등록
         mapboxNavigation.registerVoiceInstructionsObserver { voiceInstructions ->
@@ -363,7 +386,7 @@ class NaviActivity : AppCompatActivity() {
                                     mapboxNavigation.startTripSession()
                                     mapboxNavigation.setNavigationRoutes(listOf(route))
                                     mapboxNavigation.registerRouteProgressObserver(routeProgressObserver)
-
+                                    sendStartNavigationCommandToWatch()
                                     // 🚶‍♂️ 내비게이션 시작 시 지도 줌 설정
                                     binding.mapView.getMapboxMap().setCamera(
                                         CameraOptions.Builder()
@@ -450,17 +473,32 @@ class NaviActivity : AppCompatActivity() {
         val durationRemaining = routeProgress.durationRemaining
         val totalDistance = routeProgress.route.distance() // 전체 경로 거리
         val currentLegIndex = routeProgress.currentLegProgress?.legIndex // 현재 구간 인덱스
-
+        val stepProgress = routeProgress.currentLegProgress?.currentStepProgress
+        val distanceToNextTurn = stepProgress?.distanceRemaining?.toDouble() ?: 0.0
+        val voiceInstrunction = routeProgress.voiceInstructions?.announcement() ?: "안내 없음"
         Log.d("NAVINAVI", "남은 거리: $distanceRemaining, 남은 시간: $durationRemaining")
 
+        // 데이터 전송 함수 호출
+        sendNavigationInstructionToWatch(
+            distanceToNextTurn,
+            voiceInstrunction,
+            totalDistance,
+            distanceRemaining,
+            durationRemaining
+        )
+
         // 목적지 도착 여부 확인 (남은 거리가 1m 이하일 경우 종료)
-        if (distanceRemaining < 1) {
+        if (distanceRemaining < 5) {
             routeProgress.route.legs()?.let { legs ->
                 if (routeProgress.currentLegProgress?.legIndex == legs.size - 1) {
-//                    val totalDuration = routeProgress.route.duration().toInt()  // 총 소요 시간 (초)
-//                    val totalDistanceInKm = totalDistance / 1000 // 미터 -> 킬로미터 변환
+                    val totalDuration = routeProgress.route.duration().toInt()  // 총 소요 시간 (초)
+                    val totalDistanceInKm = totalDistance / 1000 // 미터 -> 킬로미터 변환
+                    val totalDistance = routeProgress.route.distance()
 
                     stopNavigation() // 내비게이션 종료
+
+                    captureTrackingSnapshot()
+                    showArrivalDialog(totalDistanceInKm, totalDuration, totalDistance, totalDuration)
 
                 }
             }
@@ -561,22 +599,62 @@ class NaviActivity : AppCompatActivity() {
     }
 
 
-    // ✅ 도착 시 모달 표시 (실제 거리 + 시간 적용)
-    private fun showArrivalDialog() {
+    private fun showArrivalDialog(distanceInKm: Double, time: Int, totalDistance: Double, totalDuration: Int) {
         val totalDistance = calculateTotalDistance() / 1000.0 // 미터 → 킬로미터 변환
         val (minutes, seconds) = calculateElapsedTime()
+        val totalDuration = minutes * 60 + seconds // 전체 이동 시간 (초 단위)
 
-        val message = "🏁 목적지 도착!\n총 이동 거리: ${String.format("%.2f", totalDistance)} km\n소요 시간: ${minutes}분 ${seconds}초"
+        val dialogView = layoutInflater.inflate(R.layout.dialog_arrival, null)
+        val dialog = AlertDialog.Builder(this).setView(dialogView).create()
 
-        runOnUiThread {
-            val dialog = AlertDialog.Builder(this)
-                .setTitle("🎉 도착 완료")
-                .setMessage(message)
-                .setPositiveButton("확인") { dialog, _ -> dialog.dismiss() }
-                .create()
-            dialog.show()
+        val imageView = dialogView.findViewById<ImageView>(R.id.trackingSnapshotImageView)
+        val finishButton = dialogView.findViewById<Button>(R.id.finishRunButton)
+
+        Log.d("showArrivalDialog", "📌 스냅샷 로드 시도 - trackingSnapshotUrl: $trackingSnapshotUrl")
+
+        if (!trackingSnapshotUrl.isNullOrEmpty()) {
+            Log.d("showArrivalDialog", "📌 로드할 스냅샷 경로: $trackingSnapshotUrl")
+            Glide.with(this)
+                .load(trackingSnapshotUrl)
+                .into(imageView)
+        } else {
+            Log.e("showArrivalDialog", "❌ trackingSnapshotUrl이 null이거나 비어 있음")
+            // ✅ 기본 GIF (`gps_art_run_done.gif`) 적용
+            Glide.with(this)
+                .asGif() // GIF로 로드
+                .load(R.drawable.gps_art_run_done) // ✅ drawable에 있는 GIF
+                .diskCacheStrategy(DiskCacheStrategy.ALL) // 캐싱 전략
+                .into(imageView)
         }
+
+        finishButton.setOnClickListener {
+            dialog.dismiss()
+            navigateToRunRecordActivity(totalDistance, totalDuration, distanceInKm, time, trackingSnapshotUrl)
+        }
+
+        dialog.show()
     }
+
+    // ✅ RunRecordActivity로 이동하는 함수
+    private fun navigateToRunRecordActivity(
+        totalDistance: Double,
+        totalDuration: Int,
+        distanceInKm: Double,
+        time: Int,
+        snapshotUrl: String?
+    ) {
+        val intent = Intent(this, RunRecordActivity::class.java).apply {
+            putExtra("totalDistance", totalDistance)
+            putExtra("distanceInKm", distanceInKm)
+            putExtra("totalDuration", totalDuration)
+            putExtra("time", time)
+            putExtra("trackingSnapshotUrl", snapshotUrl)
+            putExtra("pathId", 1)
+        }
+        startActivity(intent)
+        finish() // 현재 액티비티 종료
+    }
+
 
     private fun updateTrackingLine() {
         val mapView = binding.mapView
@@ -605,12 +683,251 @@ class NaviActivity : AppCompatActivity() {
         mapboxNavigation.setNavigationRoutes(emptyList()) // ❌ Mapbox 도보 경로 제거
 
         isTrackingStarted = false // 트래킹 중지 (하지만 지나간 경로는 유지됨)
-        showArrivalDialog() // ✅ 도착 모달 호출 추가
         Toast.makeText(this, "🎉 목적지에 도착했습니다! 내비게이션 종료.", Toast.LENGTH_LONG).show()
 
+        if (trackedPath.size < 2) {
+            Log.e("NaviActivity", "❌ 트래킹 경로 부족! 캡처 생략")
+            return
+        }
+
+//        captureTrackingSnapshot() // ✅ 네비게이션 종료 후 트래킹 스냅샷 실행
 
     }
 
+    private fun sendStartNavigationCommandToWatch() {
+        Wearable.getNodeClient(this).connectedNodes.addOnSuccessListener { nodes ->
+            if (nodes.isNotEmpty()) {
+                val nodeId = nodes.first().id  // 첫 번째 연결된 노드 ID 가져오기
+                Log.d("PhoneData", "전송 대상 노드 ID: $nodeId")
+
+                Wearable.getMessageClient(this).sendMessage(
+                    nodeId,
+                    "/start_navigation",
+                    "start".toByteArray()
+                ).addOnSuccessListener {
+                    Log.d("PhoneData", "워치로 내비게이션 시작 명령 전송 성공")
+                }.addOnFailureListener { e ->
+                    Log.e("PhoneData", "워치로 내비게이션 시작 명령 전송 실패", e)
+                }
+            } else {
+                Log.e("PhoneData", "연결된 노드가 없습니다.")
+            }
+        }.addOnFailureListener { e ->
+            Log.e("PhoneData", "노드 탐색 실패", e)
+        }
+    }
 
 
+    // 🚀 **워치에 내비게이션 지시 정보 전송**
+    private fun sendNavigationInstructionToWatch(
+        distanceToNextTurn: Double,
+        voiceInstruction: String,
+        totalDistance: Double,
+        distanceRemaining: Float,
+        durationRemaining: Double
+    ) {
+        val dataClient = Wearable.getDataClient(this)
+        val path = "/navigation/instructions"
+
+        val dataMap = PutDataMapRequest.create(path).apply {
+            dataMap.putDouble("distanceToNextTurn", distanceToNextTurn)
+            dataMap.putString("voiceInstruction", voiceInstruction)
+            dataMap.putDouble("totalDistance", totalDistance)
+            dataMap.putFloat("distanceRemaining", distanceRemaining)
+            dataMap.putDouble("durationRemaining", durationRemaining)
+        }
+
+        dataClient.putDataItem(dataMap.asPutDataRequest()).addOnSuccessListener {
+            Log.d("PhoneData", "내비게이션 지시 데이터 전송 성공")
+        }.addOnFailureListener { e ->
+            Log.e("PhoneData", "내비게이션 지시 데이터 전송 실패", e)
+        }
+    }
+
+
+    private fun captureTrackingSnapshot() {
+        Log.d("NaviActivity", "🟢 captureTrackingSnapshot() 호출됨")
+
+        if (!this::mapView.isInitialized || mapView == null) {
+            Log.e("TrackingSnapshot", "❌ mapView가 초기화되지 않음! 캡처 중단")
+            return
+        }
+
+        if (trackedPath.size < 2) {
+            Log.e("TrackingSnapshot", "❌ 트래킹 포인트가 부족하여 스냅샷을 캡처할 수 없음")
+            return
+        }
+
+        // 1️⃣ 경로 바운딩 박스 계산 (최소/최대 좌표 찾기)
+        val routeBounds = trackedPath.fold(null as Pair<Point, Point>?) { bounds, point ->
+            when (bounds) {
+                null -> Pair(point, point)
+                else -> Pair(
+                    Point.fromLngLat(
+                        minOf(bounds.first.longitude(), point.longitude()),
+                        minOf(bounds.first.latitude(), point.latitude())
+                    ),
+                    Point.fromLngLat(
+                        maxOf(bounds.second.longitude(), point.longitude()),
+                        maxOf(bounds.second.latitude(), point.latitude())
+                    )
+                )
+            }
+        }
+
+        routeBounds?.let { (southWest, northEast) ->
+            val width = TurfMeasurement.distance(
+                Point.fromLngLat(southWest.longitude(), southWest.latitude()),
+                Point.fromLngLat(northEast.longitude(), southWest.latitude()), "meters"
+            )
+
+            val height = TurfMeasurement.distance(
+                Point.fromLngLat(southWest.longitude(), southWest.latitude()),
+                Point.fromLngLat(southWest.longitude(), northEast.latitude()), "meters"
+            )
+
+            Log.d("TrackingSnapshot", "📐 경로 크기 계산 완료 - Width: ${width}m, Height: ${height}m")
+
+            // 2️⃣ 정사각형 크기 결정 (더 긴 쪽 기준)
+            val squareSize = maxOf(width, height) * 1.3  // ✅ 30% 추가해서 여백 확보
+
+            // 3️⃣ 자동 줌 설정 (적절한 여백을 추가한 상태에서 캡처)
+            val zoomLevel = when {
+                squareSize > 2000 -> 13.0
+                squareSize > 1000 -> 14.0
+                squareSize > 500 -> 15.0
+                squareSize > 200 -> 16.0
+                squareSize > 100 -> 17.0
+                squareSize > 50 -> 18.0
+                else -> 19.0
+            }
+
+            Log.d("TrackingSnapshot", "🔍 자동 줌 설정 - Zoom Level: $zoomLevel")
+
+            // 4️⃣ 캡처할 카메라 중앙 위치 계산
+            val centerPoint = Point.fromLngLat(
+                (southWest.longitude() + northEast.longitude()) / 2,
+                (southWest.latitude() + northEast.latitude()) / 2
+            )
+
+            val cameraOptions = CameraOptions.Builder()
+                .center(centerPoint)
+                .zoom(zoomLevel)
+                .build()
+
+            mapView.mapboxMap.setCamera(cameraOptions)
+
+            // 5️⃣ 스냅샷 캡처 실행
+            mapView.postDelayed({
+                mapView.snapshot { bitmap ->
+                    if (bitmap != null) {
+                        Log.d("TrackingSnapshot", "✅ 스냅샷 캡처 성공: 비트맵 크기 ${bitmap.width}x${bitmap.height}")
+
+                        // ✅ 정사각형 크롭 적용
+                        val squareBitmap = cropBitmapToSquare(bitmap)
+
+                        lifecycleScope.launch {
+                            val imageUrl = uploadImage(squareBitmap)  // ✅ 기존 uploadImage() 재사용
+                            if (imageUrl != null) {
+                                trackingSnapshotUrl = imageUrl
+                                Log.d("TrackingSnapshot", "📌 스냅샷 업로드 성공 - URL: $imageUrl")
+                            } else {
+                                Log.e("TrackingSnapshot", "❌ 스냅샷 업로드 실패")
+                            }
+                        }
+
+                        runOnUiThread {
+                            val trackingImageView = findViewById<ImageView>(R.id.trackingImageView)
+                            trackingImageView?.setImageBitmap(squareBitmap)
+                                ?: Log.e("TrackingSnapshot", "❌ trackingImageView가 존재하지 않음!")
+                        }
+                    } else {
+                        Log.e("TrackingSnapshot", "❌ 스냅샷 캡처 실패")
+                    }
+                }
+            }, 1400) // ✅ 카메라 이동 후 1.4초 대기 (안정적 캡처)
+        }
+    }
+
+    // ✅ 정사각형 크롭 함수 (중앙 기준)
+    private fun cropBitmapToSquare(bitmap: Bitmap): Bitmap {
+        val width = bitmap.width
+        val height = bitmap.height
+        val size = minOf(width, height) // 정사각형 크기 설정 (가장 작은 변을 기준)
+
+        val xOffset = (width - size) / 2
+        val yOffset = (height - size) / 2
+
+        return Bitmap.createBitmap(bitmap, xOffset, yOffset, size, size)
+    }
+
+
+    // 🚀 **이미지 업로드 (서버에 저장)**
+    private suspend fun uploadImage(bitmap: Bitmap): String? {
+        return withContext(Dispatchers.IO) {
+            val timestamp = System.currentTimeMillis() // ✅ 현재 시간(밀리초) 추가
+            val file = File(cacheDir, "tracking_snapshot_$timestamp.jpg") // ✅ 파일명에 타임스탬프 추가
+
+            FileOutputStream(file).use { out ->
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+            }
+
+            val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+            val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
+
+            try {
+                val imageUploadApi = RetrofitInstance.ImageUploadApi(this@NaviActivity)
+                val response = imageUploadApi.uploadImage(body)
+                if (response.isSuccess) {
+                    response.data?.url
+                } else {
+                    null
+                }
+            } catch (e: Exception) {
+                null
+            } finally {
+                file.delete()
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d("NaviActivity", "🛑 onDestroy() 호출됨 - mapView 유지")
+
+        // ❌ 직접 `onDestroy()` 호출 X → MapboxNavigationProvider 사용
+        if (MapboxNavigationProvider.isCreated()) {
+            MapboxNavigationProvider.destroy()
+            Log.d("NaviActivity", "🛑 MapboxNavigation 인스턴스가 안전하게 삭제됨")
+        }
+    }
+
+//    // 🚀 **도착 시 모달 다이얼로그 표시 (캡처된 이미지 사용)**
+//    private fun showArrivalDialog(context: Context, distanceInKm: Double, time: Int, onComplete: () -> Unit) {
+//        val dialogView = AlertDialog.Builder(context).setView(R.layout.dialog_arrival).create()
+//
+//        val imageView = dialogView.findViewById<ImageView>(R.id.trackingSnapshotImageView)
+//        val finishButton = dialogView.findViewById<Button>(R.id.finishRunButton)
+//
+//        if (trackingSnapshotUrl != null) {
+//            if (imageView != null) {
+//                Glide.with(context).load(trackingSnapshotUrl).into(imageView)
+//            }
+//        } else {
+//            if (imageView != null) {
+//                Glide.with(context)
+//                    .asGif()
+//                    .load(R.drawable.gps_art_run_done)
+//                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+//                    .into(imageView)
+//            }
+//        }
+//
+//        finishButton?.setOnClickListener {
+//            dialogView.dismiss()
+//            onComplete()
+//        }
+//
+//        dialogView.show()
+//    }
 }
