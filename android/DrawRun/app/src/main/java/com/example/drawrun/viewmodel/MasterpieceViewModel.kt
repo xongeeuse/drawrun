@@ -29,6 +29,9 @@ class MasterpieceViewModel(private val repository: MasterpieceRepository) : View
     private val _joinMasterpieceResult = MutableLiveData<Boolean>()
     val joinMasterpieceResult: LiveData<Boolean> = _joinMasterpieceResult
 
+    private val _filteredMasterpieceList = MutableLiveData<List<Masterpiece>>()
+    val filteredMasterpieceList: LiveData<List<Masterpiece>> = _filteredMasterpieceList
+
     fun saveMasterpiece(request: MasterpieceSaveRequest) {
         viewModelScope.launch {
             try {
@@ -47,9 +50,9 @@ class MasterpieceViewModel(private val repository: MasterpieceRepository) : View
             try {
                 val result = repository.getMasterpieceList()
                 if (result.isSuccess) {
-                    // dday가 0 이상인 데이터만 필터링
-                    val filteredList = result.getOrNull()?.filter { it.dday >= 0 } ?: emptyList()
-                    _masterpieceList.value = filteredList
+                    _masterpieceList.value = result.getOrNull() ?: emptyList()
+                    // 초기 필터링 (그리는 중)
+                    filterMasterpieces(isInProgress = true)
                 } else {
                     Log.e("MasterpieceViewModel", "Error fetching masterpiece list")
                 }
@@ -119,16 +122,30 @@ class MasterpieceViewModel(private val repository: MasterpieceRepository) : View
         }
     }
 
-    private val _filteredMasterpieceList = MutableLiveData<List<Masterpiece>>()
-    val filteredMasterpieceList: LiveData<List<Masterpiece>> = _filteredMasterpieceList
 
-    // 검색 함수 추가
-    fun searchMasterpieces(query: String) {
+    fun filterMasterpieces(isInProgress: Boolean) {
+        val filteredList = _masterpieceList.value?.filter { masterpiece ->
+            val isCompleted = masterpiece.restrictCount == masterpiece.joinCount
+            when (isInProgress) {
+                true -> masterpiece.dday >= 0 && !isCompleted
+                false -> isCompleted
+            }
+        } ?: emptyList()
+        _filteredMasterpieceList.value = filteredList
+    }
+
+    fun searchMasterpieces(query: String, isInProgress: Boolean) {
         viewModelScope.launch {
             val filteredList = _masterpieceList.value?.filter {
-                it.gu.contains(query, ignoreCase = true)
+                it.gu.contains(query, ignoreCase = true) &&
+                        when (isInProgress) {
+                            true -> it.dday >= 0 && it.restrictCount != it.joinCount
+                            false -> it.restrictCount == it.joinCount
+                        }
             } ?: emptyList()
             _filteredMasterpieceList.value = filteredList
         }
     }
+
+
 }

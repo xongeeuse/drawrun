@@ -21,6 +21,7 @@ import com.example.drawrun.ui.masterpiece.adapter.MasterpieceAdapter
 import com.example.drawrun.utils.RetrofitInstance
 import com.example.drawrun.viewmodel.MasterpieceViewModel
 import com.example.drawrun.viewmodel.MasterpieceViewModelFactory
+import com.google.android.material.tabs.TabLayout
 
 class MasterpieceSearchFragment : Fragment() {
 
@@ -38,6 +39,13 @@ class MasterpieceSearchFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentMasterpieceSearchBinding.inflate(inflater, container, false)
+
+        // TabLayout 설정
+        setupTabLayout()
+
+        // 초기 탭 선택
+        binding.tabLayout.getTabAt(0)?.select()
+
         return binding.root
     }
 
@@ -56,7 +64,7 @@ class MasterpieceSearchFragment : Fragment() {
         binding.searchResultRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.searchResultRecyclerView.adapter = adapter
 
-        // 데이터 관찰 및 업데이트
+        /*// 데이터 관찰 및 업데이트
         viewModel.masterpieceList.observe(viewLifecycleOwner) { masterpieces ->
             if (masterpieces.isEmpty()) {
                 binding.emptyStateLayout.visibility = View.VISIBLE
@@ -66,7 +74,7 @@ class MasterpieceSearchFragment : Fragment() {
                 binding.searchResultRecyclerView.visibility = View.VISIBLE
                 adapter.updateData(masterpieces)
             }
-        }
+        }*/
 
         // 검색 버튼 클릭 리스너 추가
         binding.searchLayout.searchBtn.setOnClickListener {
@@ -83,17 +91,7 @@ class MasterpieceSearchFragment : Fragment() {
             }
         }
 
-        /*// 검색 기능 구현
-        binding.searchLayout.searchEditText.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                viewModel.searchMasterpieces(s.toString())
-            }
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-        })*/
-
-        // 필터링된 결과 관찰
+        // filteredMasterpieceList 관찰 코드를 masterpieceList 관찰 코드 대신 사용
         viewModel.filteredMasterpieceList.observe(viewLifecycleOwner) { masterpieces ->
             if (masterpieces.isEmpty()) {
                 binding.emptyStateLayout.visibility = View.VISIBLE
@@ -105,18 +103,24 @@ class MasterpieceSearchFragment : Fragment() {
             }
         }
 
+        // 초기 필터링 설정 (그리는 중)
+//        viewModel.filterMasterpieces(isInProgress = true)
+
+
         // 데이터 가져오기 호출
         viewModel.getMasterpieceList()
     }
 
     private fun performSearch() {
         val query = binding.searchLayout.searchEditText.text.toString()
-        viewModel.searchMasterpieces(query)
+        val isInProgress = binding.tabLayout.selectedTabPosition == 0
+        viewModel.searchMasterpieces(query, isInProgress)
 
         // 키보드 숨기기
         val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(view?.windowToken, 0)
     }
+
 
 
     private fun navigateToDetail(masterpieceBoardId: Int) {
@@ -130,5 +134,30 @@ class MasterpieceSearchFragment : Fragment() {
             .addToBackStack(null)
             .commit()
     }
+
+    private fun setupTabLayout() {
+        // TabLayout에 탭 추가
+        binding.tabLayout.addTab(binding.tabLayout.newTab().setText("그리는 중"))
+        binding.tabLayout.addTab(binding.tabLayout.newTab().setText("완성작"))
+
+        // 탭 선택 리스너 설정
+        binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                when (tab?.position) {
+                    0 -> viewModel.filterMasterpieces(isInProgress = true)
+                    1 -> viewModel.filterMasterpieces(isInProgress = false)
+                }
+                // 탭 변경 시 검색어 초기화
+                binding.searchLayout.searchEditText.setText("")
+                performSearch()
+            }
+            override fun onTabUnselected(tab: TabLayout.Tab?) {}
+            override fun onTabReselected(tab: TabLayout.Tab?) {}
+        })
+
+        // 초기 탭 선택
+        binding.tabLayout.getTabAt(0)?.select()
+    }
+
 
 }
