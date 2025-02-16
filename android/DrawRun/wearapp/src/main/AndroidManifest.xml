@@ -6,7 +6,7 @@
 
     <!--워치 하드웨어 명시-->
     <uses-feature android:name="android.hardware.type.watch" android:required="true"  />
-
+    <uses-feature android:name="android.hardware.sensor.heart_rate" android:required="true"/>
     <!-- 권한 설정 -->
     <uses-permission android:name="android.permission.BODY_SENSORS_BACKGROUND" />
     <uses-permission android:name="android.permission.BLUETOOTH" />

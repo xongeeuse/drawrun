@@ -147,4 +147,7 @@ dependencies {
     kapt ("com.github.bumptech.glide:compiler:4.14.2")
     implementation("com.google.android.gms:play-services-wearable:18.0.0")
     implementation("androidx.wear:wear:1.2.0")
+
+    // slide
+    implementation("androidx.viewpager2:viewpager2:1.0.0")
 }

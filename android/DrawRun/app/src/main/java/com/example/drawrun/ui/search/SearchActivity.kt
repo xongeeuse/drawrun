@@ -8,12 +8,14 @@ import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import com.example.drawrun.R
 import com.example.drawrun.databinding.ActivitySearchBinding
+import com.example.drawrun.ui.common.BaseActivity
 import com.example.drawrun.ui.search.fragment.RankingFragment
 import com.example.drawrun.ui.search.fragment.SearchResultFragment
 
-class SearchActivity : AppCompatActivity() {
+class SearchActivity : BaseActivity() {
     private lateinit var binding: ActivitySearchBinding
     private var isKeywordMode = true
+    override fun getLayoutId(): Int = R.layout.activity_masterpiece  // ✅ 레이아웃 리소스 지정
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

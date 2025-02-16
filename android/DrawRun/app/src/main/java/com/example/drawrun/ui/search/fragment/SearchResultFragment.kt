@@ -95,14 +95,15 @@ class SearchResultFragment : Fragment() {
 
     private fun setupRecyclerView() {
         courseAdapter = CourseAdapter(
-            { course ->
-            Log.d("SearchSearch", "Bookmark clicked for course: ${course.courseName}")
-            viewModel.toggleBookmark(course)
-        },
-            { course ->
+            onBookmarkClick = { course ->
+                Log.d("SearchSearch", "Bookmark clicked for course: ${course.courseName}")
+                viewModel.toggleBookmark(course)
+            },
+            onCourseClick = { course ->
                 Log.d("ClickClick", "Course clicked: ${course.courseName}")
                 fetchCourseDetails(course.courseId)
             }
+                    // showRanking 파라미터를 생략하면 기본값인 false가 사용됩니다.
         )
 
         binding.searchResultRecyclerView.apply {

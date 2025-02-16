@@ -49,6 +49,32 @@ class SearchViewModel(
         }
     }
 
+    // 인기 코스를 저장할 StateFlow
+    private val _topCourses = MutableStateFlow<List<CourseData>>(emptyList())
+    val topCourses: StateFlow<List<CourseData>> = _topCourses
+
+    // 인기 코스 가져오기 함수
+    fun getTopCourses() {
+        viewModelScope.launch {
+            Log.d("SearchSearch", "Fetching top courses")
+            _searchState.value = SearchState.Loading
+            val result = searchRepository.getTopCourses()
+            result.fold(
+                onSuccess = { response ->
+                    if (response.isEmpty()) {
+                        _searchState.value = SearchState.Empty
+                    } else {
+                        _topCourses.value = response
+                        _searchState.value = SearchState.Success
+                    }
+                },
+                onFailure = {
+                    _searchState.value = SearchState.Error(it.message ?: "Unknown error occurred")
+                }
+            )
+        }
+    }
+
     // 북마크 토글 함수 추가
     fun toggleBookmark(course: CourseData) {
         viewModelScope.launch {
@@ -73,17 +99,21 @@ class SearchViewModel(
     }
 
     private fun updateCourseBookmarkStatus(courseId: Int, isBookmarked: Boolean) {
-        val updatedList = _searchResults.value.map { course ->
-            if (course.courseId == courseId) {
-                course.copy(
-                    isBookmark = isBookmarked,
-                    bookmarkCount = course.bookmarkCount + if (isBookmarked) 1 else -1
-                )
-            } else {
-                course
+        val updateList = { list: List<CourseData> ->
+            list.map { course ->
+                if (course.courseId == courseId) {
+                    course.copy(
+                        isBookmark = isBookmarked,
+                        bookmarkCount = course.bookmarkCount + if (isBookmarked) 1 else -1
+                    )
+                } else {
+                    course
+                }
             }
         }
-        _searchResults.value = updatedList
+
+        _searchResults.value = updateList(_searchResults.value)
+        _topCourses.value = updateList(_topCourses.value)
     }
 }
 

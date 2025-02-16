@@ -47,24 +47,23 @@ class SensorManagerHelper(private val context: Context) {
             event?.let {
                 when (it.sensor.type) {
                     Sensor.TYPE_HEART_RATE -> {
-                        heartRateFlow.value = it.values[0]
-//                        Log.d("SensorManagerHelper", "Heart rate data: ${it.values[0]}")
+                        val heartRate = event.values[0]
+                        if (heartRate > 0) {
+                            heartRateFlow.value = heartRate
+                            Log.d("SensorManagerHelper", "💓 심박수 감지됨: $heartRate BPM")
+                        } else {
+                            Log.w("SensorManagerHelper", "🚨 심박수 값이 0 또는 유효하지 않음: $heartRate")
+                        }
                     }
-                    Sensor.TYPE_STEP_DETECTOR -> {
-                        stepCountFlow.value += 1
-//                        Log.d("SensorManagerHelper", "Step detected! Total steps: ${stepCountFlow.value}")
-                    }
-
                     else -> {}
                 }
             }
         }
 
         override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-//            Log.d("SensorManagerHelper", "Accuracy changed for sensor: ${sensor?.name}, accuracy: $accuracy")
+            Log.d("SensorManagerHelper", "⚠️ 센서 정확도 변경됨: ${sensor?.name}, 정확도: $accuracy")
         }
     }
-
     private val locationListener = object : LocationListener {
         override fun onLocationChanged(location: Location) {
             val minDistanceThreshold = 0.5f
@@ -98,7 +97,7 @@ class SensorManagerHelper(private val context: Context) {
         }
 
         isSensorRunning = true
-//        Log.d("SensorManagerHelper", "Starting sensors...")
+        Log.d("SensorManagerHelper", "✅ 센서 시작됨")
 
         heartRateSensor?.let {
             sensorManager.registerListener(sensorEventListener, it, SensorManager.SENSOR_DELAY_NORMAL)
@@ -111,6 +110,10 @@ class SensorManagerHelper(private val context: Context) {
             Log.d("SensorManagerHelper", "Step Detector sensor registered successfully")
         } ?: Log.e("SensorManagerHelper", "Step detector sensor not available")
 
+        heartRateSensor?.let {
+            sensorManager.registerListener(sensorEventListener, it, SensorManager.SENSOR_DELAY_NORMAL)
+            Log.d("SensorManagerHelper", "💓 심박수 센서 등록 완료")
+        }
         try {
             locationManager.requestLocationUpdates(
                 LocationManager.GPS_PROVIDER,

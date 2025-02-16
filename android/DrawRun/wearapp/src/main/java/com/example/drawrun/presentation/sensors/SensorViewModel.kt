@@ -15,7 +15,6 @@ import kotlinx.coroutines.launch
 class SensorViewModel(private val sensorManagerHelper: SensorManagerHelper) : ViewModel(),
     DefaultLifecycleObserver {
 
-    val heartRate: StateFlow<Float?> = sensorManagerHelper.heartRateFlow
     val accelerometer: StateFlow<List<Float>?> = sensorManagerHelper.accelerometerFlow
     val cadence: StateFlow<Int?> = sensorManagerHelper.cadenceFlow
     private val _cadence = MutableStateFlow<Int?>(null)
@@ -29,26 +28,28 @@ class SensorViewModel(private val sensorManagerHelper: SensorManagerHelper) : Vi
     val totalDistance = sensorManagerHelper.totalDistanceFlow
     private var timerJob: Job? = null  // 타이머 Job 추가
 
-
+    val heartRate: StateFlow<Float?> = sensorManagerHelper.heartRateFlow
+    private val _isNavigationRunning = MutableStateFlow(false)  // ✅ 네비게이션 실행 여부 저장
+    val isNavigationRunning: StateFlow<Boolean> = _isNavigationRunning
     // ✅ 네비게이션 중의 심박수 저장용 리스트
     private val _heartRateListDuringNavigation = mutableListOf<Float>()
 
     fun startMeasurement() {
-        if (_isRunning.value) return // 이미 실행 중이면 중복 실행 방지
+        if (_isRunning.value) {
+            Log.d("SensorViewModel", "⚠️ 이미 센서 측정이 실행 중임")
+            return
+        }
+
         _isRunning.value = true
         sensorManagerHelper.startSensors()
+        Log.d("SensorViewModel", "✅ 센서 측정 시작됨")
 
-        _heartRateListDuringNavigation.clear()
-
-        // 타이머 동작
         viewModelScope.launch {
             while (_isRunning.value) {
-                delay(1000)
-                _elapsedTime.update { it + 1 }
-                updatePaceAndCadence()
-                Log.d("SensorViewModel", "Elapsed time: $elapsedTime, Step count: ${stepCount.value}")
-                // ✅ 네비게이션 중의 심박수 저장
-                heartRate.value?.let { _heartRateListDuringNavigation.add(it) }
+                delay(1000)  // ✅ 1초마다 실행
+//                saveHeartRate()  // ✅ 항상 심박수 저장
+                saveHeartRateDuringNavigation()
+                Log.d("SensorViewModel", "📡 심박수 측정 중... 현재 심박수: ${heartRate.value}")
             }
         }
     }
@@ -58,6 +59,9 @@ class SensorViewModel(private val sensorManagerHelper: SensorManagerHelper) : Vi
         sensorManagerHelper.stopSensors()
         timerJob?.cancel()
         timerJob = null
+        _isNavigationRunning.value = false
+        Log.d("SensorViewModel", "🛑 네비게이션 종료됨 - 심박수 저장 중단")
+        Log.d("SensorViewModel", "⏳ 네비 상태 체크 (종료 후): _isNavigationRunning = ${_isNavigationRunning.value}")
     }
 
     fun resetMeasurement() {
@@ -89,12 +93,15 @@ class SensorViewModel(private val sensorManagerHelper: SensorManagerHelper) : Vi
     private val heartRateSum = MutableStateFlow(0f)
     private val heartRateCount = MutableStateFlow(0)
 
-    // ✅ 네비게이션 동안의 평균 심박수 계산 함수 추가
     fun getAverageHeartRateDuringNavigation(): Float {
         return if (_heartRateListDuringNavigation.isNotEmpty()) {
             _heartRateListDuringNavigation.average().toFloat()
-        } else 0f
+        } else {
+            Log.e("SensorViewModel", "🚨 네비게이션 중 저장된 심박수가 없음")
+            0f
+        }
     }
+
 
     fun getAverageHeartRate(): Float {
         return if (heartRateCount.value > 0) {
@@ -102,6 +109,59 @@ class SensorViewModel(private val sensorManagerHelper: SensorManagerHelper) : Vi
         } else 0f
     }
 
+    fun startNavigation() {
+        if (!_isNavigationRunning.value) {
+            _isNavigationRunning.value = true  // ✅ 네비게이션 시작!
+            _heartRateListDuringNavigation.clear()  // ✅ 기존 데이터 초기화
+            Log.d("SensorViewModel", "🚀 네비게이션 시작 - 심박수 저장 활성화 _isNavigationRunning 업데이트: ${_isNavigationRunning.value}")
+        } else {
+            Log.d("SensorViewModel", "⚠️ 이미 네비게이션이 실행 중입니다.")
+        }
+    }
+    fun stopNavigation(): Float {
+        if (_isNavigationRunning.value) {
+            Log.d("SensorViewModel", "📡 네비 종료 요청 - 저장된 심박수 개수: ${_heartRateListDuringNavigation.size}")
+            _isNavigationRunning.value = false
+
+            val avgHeartRate = if (_heartRateListDuringNavigation.isNotEmpty()) {
+                _heartRateListDuringNavigation.average().toFloat()
+            }  else {
+                Log.e("SensorViewModel", "🚨 네비게이션 중 저장된 심박수가 없음")
+                0f
+            }
+
+            Log.d("SensorViewModel", "🛑 네비게이션 종료 - 평균 심박수: $avgHeartRate BPM")
+
+            return avgHeartRate
+        } else {
+            Log.d("SensorViewModel", "⚠️ 네비게이션이 이미 종료된 상태입니다.")
+            return 0f
+        }
+    }
+
+    fun saveHeartRateDuringNavigation() {
+        val currentHeartRate = heartRate.value
+        if (_isNavigationRunning.value && currentHeartRate != null && currentHeartRate > 0) {
+            _heartRateListDuringNavigation.add(currentHeartRate)
+            Log.d("SensorViewModel", "💓 [네비 중] 심박수 저장: $currentHeartRate BPM")
+        }
+    }
+
+    fun updateNavigationStateFromWatch(isRunning: Boolean) {
+        _isNavigationRunning.value = isRunning
+        Log.d("SensorViewModel", "📡 워치에서 네비 상태 업데이트: $_isNavigationRunning")
+    }
+
+    fun saveHeartRate() {
+        val currentHeartRate = heartRate.value
+        if (currentHeartRate != null && currentHeartRate > 0) {
+            heartRateSum.value += currentHeartRate
+            heartRateCount.value += 1
+            Log.d("SensorViewModel", "💓 심박수 저장: $currentHeartRate BPM (총 ${heartRateCount.value}회 측정)")
+        } else {
+            Log.w("SensorViewModel", "🚨 심박수 값이 null 또는 0이라 저장되지 않음")
+        }
+    }
 
 }
 

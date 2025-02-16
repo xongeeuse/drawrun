@@ -15,6 +15,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.wear.compose.material.Icon
 import androidx.wear.compose.material.Text
 import com.example.drawrun.R
@@ -43,12 +44,18 @@ fun NavigationScreen(
     val heartRate by sensorViewModel.heartRate.collectAsState()
     val averageHeartRate = sensorViewModel.getAverageHeartRate()
 
+    val isNavigationRunning by sensorViewModel.isNavigationRunning.collectAsState()
+
     Log.d("NavigationScreen", "🔥 UI 업데이트: distanceToNextTurn=$distanceToNextTurn, voiceInstruction=$voiceInstruction, heartRate=$heartRate")
 
     // ✅ UI 강제 리렌더링 (데이터 변경 감지)
     LaunchedEffect(updateTrigger) {
         Log.d("NavigationScreen", "🟢 데이터 변경 감지됨: UI 리렌더링 중...")
     }
+    LaunchedEffect(isNavigationRunning) {
+        Log.d("NavigationScreen", "🔥 UI 감지: _isNavigationRunning = $isNavigationRunning")
+    }
+
 
     // ✅ 진행 상태 계산 (거리 기반)
     val progressPercentage = if (totalDistance > 0) {

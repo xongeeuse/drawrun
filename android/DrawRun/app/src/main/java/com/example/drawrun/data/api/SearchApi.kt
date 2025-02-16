@@ -7,7 +7,7 @@ import retrofit2.http.Query
 
 interface SearchApi {
     @GET("course/list")
-    suspend fun getTopCourses(@Query("limit") limit: Int = 10): Response<SearchResponse>
+    suspend fun getTopCourses(): Response<SearchResponse>
 
     @GET("course/list")
     suspend fun searchCoursesByKeyword(@Query("keyword") keyword: String): Response<SearchResponse>
