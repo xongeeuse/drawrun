@@ -263,14 +263,14 @@ class GroupRunBottomSheet : BottomSheetDialogFragment() {
         }
 
         // 마스터피스 저장 결과 관찰 (기존 코드)
-        masterpieceViewModel.saveMasterpieceResult.observe(viewLifecycleOwner) { result ->
-            result.onSuccess { masterpieceId ->
-                Toast.makeText(requireContext(), "걸작이 성공적으로 저장되었습니다. ID: $masterpieceId", Toast.LENGTH_SHORT).show()
-                dismiss()
-            }.onFailure { exception ->
-                Toast.makeText(requireContext(), "걸작 저장 실패: ${exception.message}", Toast.LENGTH_SHORT).show()
-            }
-        }
+//        masterpieceViewModel.saveMasterpieceResult.observe(viewLifecycleOwner) { result ->
+//            result.onSuccess { masterpieceId ->
+//                Toast.makeText(requireContext(), "걸작이 성공적으로 저장되었습니다. ID: $masterpieceId", Toast.LENGTH_SHORT).show()
+//                dismiss()
+//            }.onFailure { exception ->
+//                Toast.makeText(requireContext(), "걸작 저장 실패: ${exception.message}", Toast.LENGTH_SHORT).show()
+//            }
+//        }
     }
 
 
