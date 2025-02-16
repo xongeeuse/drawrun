@@ -25,7 +25,7 @@ class MasterpieceActivity : AppCompatActivity() {
         }
     }
 
-    fun navigateToMasterpieceDetail(masterpieceBoardId: Int) {
+    private fun navigateToMasterpieceDetail(masterpieceBoardId: Int) {
         val fragment = MasterpieceDetailFragment().apply {
             arguments = Bundle().apply {
                 putInt("masterpieceBoardId", masterpieceBoardId)
@@ -33,7 +33,6 @@ class MasterpieceActivity : AppCompatActivity() {
         }
         supportFragmentManager.beginTransaction()
             .replace(R.id.masterpiece_fragment_container, fragment)
-            .addToBackStack(null)
             .commit()
     }
 }
