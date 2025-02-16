@@ -228,7 +228,7 @@ class RunRecordActivity : ComponentActivity() {
             paceS = paceS, // ✅ 초 단위 저장
             state = 1,
             heartbeat = heartbeat,
-            cadence = null
+            cadence = 1
         )
 
         Log.d("RunRecordActivity", "📡 러닝 기록 저장 요청 데이터: $request")
