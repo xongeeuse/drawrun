@@ -2,6 +2,7 @@ package com.example.drawrun.data.repository
 
 import android.util.Log
 import com.example.drawrun.data.api.MasterpieceApi
+import com.example.drawrun.data.dto.request.masterpiece.MasterpieceJoinRequest
 import com.example.drawrun.data.dto.request.masterpiece.MasterpieceSaveRequest
 import com.example.drawrun.data.dto.response.masterpiece.Masterpiece
 import com.example.drawrun.data.dto.response.masterpiece.MasterpieceDetailResponse
@@ -61,6 +62,22 @@ class MasterpieceRepository (private val api: MasterpieceApi) {
                 Result.failure(Exception("Error fetching section info: ${response.code()}"))
             }
         } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun joinMasterpiece(request: MasterpieceJoinRequest): Result<Boolean> {
+        return try {
+            val response = api.joinMasterpiece(request)
+            Log.d("MasterpieceRepository", "Sending join request with segId: ${request.masterpieceSegId}")
+            Log.d("MasterpieceRepository", "Join API response: $response")
+            if (response == 1) {
+                Result.success(true)
+            } else {
+                Result.failure(Exception("Join failed: API returned $response"))
+            }
+        } catch (e: Exception) {
+            Log.e("MasterpieceRepository", "Error joining masterpiece: ${e.message}")
             Result.failure(e)
         }
     }

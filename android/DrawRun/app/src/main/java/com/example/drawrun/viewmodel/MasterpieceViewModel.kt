@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.drawrun.data.dto.request.masterpiece.MasterpieceJoinRequest
 import com.example.drawrun.data.dto.request.masterpiece.MasterpieceSaveRequest
 import com.example.drawrun.data.dto.response.masterpiece.Masterpiece
 import com.example.drawrun.data.dto.response.masterpiece.MasterpieceDetailResponse
@@ -25,6 +26,12 @@ class MasterpieceViewModel(private val repository: MasterpieceRepository) : View
     private val _sectionInfo = MutableLiveData<SectionInfoResponse>()
     val sectionInfo: LiveData<SectionInfoResponse> get() = _sectionInfo
 
+    private val _joinMasterpieceResult = MutableLiveData<Boolean>()
+    val joinMasterpieceResult: LiveData<Boolean> = _joinMasterpieceResult
+
+    private val _filteredMasterpieceList = MutableLiveData<List<Masterpiece>>()
+    val filteredMasterpieceList: LiveData<List<Masterpiece>> = _filteredMasterpieceList
+
     fun saveMasterpiece(request: MasterpieceSaveRequest) {
         viewModelScope.launch {
             try {
@@ -43,9 +50,9 @@ class MasterpieceViewModel(private val repository: MasterpieceRepository) : View
             try {
                 val result = repository.getMasterpieceList()
                 if (result.isSuccess) {
-                    // dday가 0 이상인 데이터만 필터링
-                    val filteredList = result.getOrNull()?.filter { it.dday >= 0 } ?: emptyList()
-                    _masterpieceList.value = filteredList
+                    _masterpieceList.value = result.getOrNull() ?: emptyList()
+                    // 초기 필터링 (그리는 중)
+                    filterMasterpieces(isInProgress = true)
                 } else {
                     Log.e("MasterpieceViewModel", "Error fetching masterpiece list")
                 }
@@ -91,7 +98,54 @@ class MasterpieceViewModel(private val repository: MasterpieceRepository) : View
         }
     }
 
+    fun joinMasterpiece(masterpieceSegId: Int, masterpieceBoardId: Int, position: Int) {
+        viewModelScope.launch {
+            try {
+                val request = MasterpieceJoinRequest(masterpieceSegId)
+                val result = repository.joinMasterpiece(request)
+                if (result.isSuccess) {
+                    Log.d("MasterpieceViewModel", "Join successful")
+                    // 성공 시 해당 섹션의 nickname을 "달리는 중"으로 업데이트
+                    _sectionInfo.value?.let { currentSections ->
+                        val updatedSections = currentSections.toMutableList()
+                        updatedSections[position] = updatedSections[position].copy(nickname = "달리는 중")
+                        _sectionInfo.postValue(updatedSections)
+                    }
+                } else {
+                    Log.e("MasterpieceViewModel", "Join failed. Error: ${result.exceptionOrNull()?.message}")
+                }
+                _joinMasterpieceResult.postValue(result.isSuccess)
+            } catch (e: Exception) {
+                Log.e("MasterpieceViewModel", "Exception during join: ${e.message}")
+                _joinMasterpieceResult.postValue(false)
+            }
+        }
+    }
 
+
+    fun filterMasterpieces(isInProgress: Boolean) {
+        val filteredList = _masterpieceList.value?.filter { masterpiece ->
+            val isCompleted = masterpiece.restrictCount == masterpiece.joinCount
+            when (isInProgress) {
+                true -> masterpiece.dday >= 0 && !isCompleted
+                false -> isCompleted
+            }
+        } ?: emptyList()
+        _filteredMasterpieceList.value = filteredList
+    }
+
+    fun searchMasterpieces(query: String, isInProgress: Boolean) {
+        viewModelScope.launch {
+            val filteredList = _masterpieceList.value?.filter {
+                it.gu.contains(query, ignoreCase = true) &&
+                        when (isInProgress) {
+                            true -> it.dday >= 0 && it.restrictCount != it.joinCount
+                            false -> it.restrictCount == it.joinCount
+                        }
+            } ?: emptyList()
+            _filteredMasterpieceList.value = filteredList
+        }
+    }
 
 
 }

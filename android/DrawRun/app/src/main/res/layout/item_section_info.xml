@@ -22,32 +22,36 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
 
-    <!-- 주소 정보 -->
-    <TextView
-        android:id="@+id/section_address"
+    <!-- 주소 및 거리 정보를 담는 LinearLayout -->
+    <LinearLayout
+        android:id="@+id/address_distance_layout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
+        android:orientation="vertical"
+        android:layout_marginStart="10dp"
         app:layout_constraintStart_toEndOf="@id/section_number"
         app:layout_constraintTop_toTopOf="@id/section_number"
         app:layout_constraintBottom_toBottomOf="@id/section_number"
-        app:layout_constraintEnd_toStartOf="@id/section_distance"
-        android:text="출발지 주소"
-        android:textColor="@color/white"
-        android:textSize="14sp" />
+        app:layout_constraintEnd_toStartOf="@id/section_status_button">
 
-    <!-- 거리 -->
-    <TextView
-        android:id="@+id/section_distance"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        app:layout_constraintEnd_toStartOf="@id/section_status_button"
-        app:layout_constraintTop_toTopOf="@id/section_address"
-        app:layout_constraintBottom_toBottomOf="@id/section_address"
-        android:text="0.00KM"
-        android:textColor="@color/gray"
-        android:textSize="14sp" />
+        <!-- 주소 정보 -->
+        <TextView
+            android:id="@+id/section_address"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="출발지 주소"
+            android:textColor="@color/white"
+            android:textSize="14sp" />
+
+        <!-- 거리 -->
+        <TextView
+            android:id="@+id/section_distance"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="0.00KM"
+            android:textColor="@color/gray"
+            android:textSize="14sp" />
+    </LinearLayout>
 
     <!-- 상태 버튼 -->
     <Button
@@ -55,8 +59,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/section_address"
-        app:layout_constraintBottom_toBottomOf="@id/section_address"
+        app:layout_constraintTop_toTopOf="@id/address_distance_layout"
+        app:layout_constraintBottom_toBottomOf="@id/address_distance_layout"
         android:text="달리기 시작"
         android:textSize="12sp"
         android:textColor="@color/white"
