@@ -14,6 +14,10 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import android.Manifest
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import com.example.drawrun.R
@@ -81,6 +85,8 @@ class NaviActivity : AppCompatActivity() {
     private var isTrackingStarted = false
 
     private var navigationStartTime: Long = 0L // 내비게이션 시작 시간
+    private lateinit var sensorManager: SensorManager
+    private var currentBearing: Float = 0f // ✅ 사용자의 현재 방향
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -190,6 +196,14 @@ class NaviActivity : AppCompatActivity() {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        val rotationVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+
+        rotationVectorSensor?.let {
+            sensorManager.registerListener(sensorEventListener, it, SensorManager.SENSOR_DELAY_UI)
+        }
+
+
         // ✅ startButton 클릭 시 내비게이션 시작
         binding.startButton.setOnClickListener {
             navigationStartTime = System.currentTimeMillis() // 시작 시간 기록
@@ -197,6 +211,22 @@ class NaviActivity : AppCompatActivity() {
 
         }
 
+    }
+
+    // ✅ 센서 값 받아오기
+    private val sensorEventListener = object : SensorEventListener {
+        override fun onSensorChanged(event: SensorEvent?) {
+            if (event?.sensor?.type == Sensor.TYPE_ROTATION_VECTOR) {
+                val rotationMatrix = FloatArray(9)
+                SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
+
+                val orientation = FloatArray(3)
+                SensorManager.getOrientation(rotationMatrix, orientation)
+
+                currentBearing = Math.toDegrees(orientation[0].toDouble()).toFloat()
+            }
+        }
+        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
     }
 
     // ✅ 실제 이동한 거리 계산
@@ -231,6 +261,15 @@ class NaviActivity : AppCompatActivity() {
             Toast.makeText(this, "최소 출발지와 도착지를 선택해주세요.", Toast.LENGTH_SHORT).show()
             return
         }
+
+        val startPoint = Point.fromLngLat(path.first().longitude, path.first().latitude)
+        binding.mapView.getMapboxMap().setCamera(
+            CameraOptions.Builder()
+                .center(startPoint)
+                .zoom(17.0)
+                .bearing(currentBearing.toDouble()) // ✅ 사용자의 현재 나침반 방향 반영
+                .build()
+        )
 
 
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
