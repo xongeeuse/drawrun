@@ -121,27 +121,27 @@ fun DrawRunMainScreen(viewModel: SensorViewModel, context: Context) {
                     )
                 }
 
-                // 러닝 시작 버튼
-                Button(
-                    onClick = {
-                        val runningIntent = Intent(context, RunningActivity::class.java)
-                        context.startActivity(runningIntent)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth(0.5f)
-                        .height(40.dp),
-//                        .padding(top = 5.dp),
-                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF01280E))
-                ) {
-                    Text(
-                        text = "러닝 시작",
-                        style = MaterialTheme.typography.body1.copy(
-                            fontFamily = pretendard,
-                            fontSize = 12.sp,
-                            color = Color.White
-                        )
-                    )
-                }
+//                // 러닝 시작 버튼
+//                Button(
+//                    onClick = {
+//                        val runningIntent = Intent(context, RunningActivity::class.java)
+//                        context.startActivity(runningIntent)
+//                    },
+//                    modifier = Modifier
+//                        .fillMaxWidth(0.5f)
+//                        .height(40.dp),
+////                        .padding(top = 5.dp),
+//                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF01280E))
+//                ) {
+//                    Text(
+//                        text = "러닝 시작",
+//                        style = MaterialTheme.typography.body1.copy(
+//                            fontFamily = pretendard,
+//                            fontSize = 12.sp,
+//                            color = Color.White
+//                        )
+//                    )
+//                }
 
             }
         }
