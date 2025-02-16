@@ -3,6 +3,7 @@ package com.example.drawrun.ui.map.fragment
 import android.app.DatePickerDialog
 import android.app.Dialog
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -18,6 +19,7 @@ import com.example.drawrun.data.dto.request.masterpiece.MasterpieceSaveRequest
 import com.example.drawrun.data.repository.CourseRepository
 import com.example.drawrun.data.repository.MasterpieceRepository
 import com.example.drawrun.databinding.BottomSheetGroupRunBinding
+import com.example.drawrun.ui.masterpiece.MasterpieceActivity
 import com.example.drawrun.utils.RetrofitInstance
 import com.example.drawrun.viewmodel.CourseViewModel
 import com.example.drawrun.viewmodel.CourseViewModelFactory
@@ -296,6 +298,22 @@ class GroupRunBottomSheet : BottomSheetDialogFragment() {
 
         // MasterpieceViewModel을 통해 마스터피스 저장 요청
         masterpieceViewModel.saveMasterpiece(request)
+        masterpieceViewModel.saveMasterpieceResult.observe(viewLifecycleOwner) { result ->
+            result.onSuccess { masterpieceBoardId ->
+                Toast.makeText(requireContext(), "걸작이 성공적으로 저장되었습니다. ID: $masterpieceBoardId", Toast.LENGTH_SHORT).show()
+                navigateToMasterpieceDetail(masterpieceBoardId)
+                dismiss()
+            }.onFailure { exception ->
+                Toast.makeText(requireContext(), "걸작 저장 실패: ${exception.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun navigateToMasterpieceDetail(masterpieceBoardId: Int) {
+        val intent = Intent(requireContext(), MasterpieceActivity::class.java).apply {
+            putExtra("masterpieceBoardId", masterpieceBoardId)
+        }
+        startActivity(intent)
     }
 
 
