@@ -7,11 +7,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
+import com.example.drawrun.R
 import com.example.drawrun.data.dto.response.masterpiece.Masterpiece
 import com.example.drawrun.data.dto.response.masterpiece.SectionInfo
 import com.example.drawrun.data.repository.MasterpieceRepository
@@ -113,8 +115,14 @@ class MasterpieceDetailFragment : Fragment() {
             }
         }
 
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                navigateToMasterpieceSearch()
+            }
+        })
 
-            // MapboxNavigation 초기화
+
+        // MapboxNavigation 초기화
         mapboxNavigation = MapboxNavigationProvider.create(
             NavigationOptions.Builder(requireContext()).build()
         )
@@ -149,6 +157,8 @@ class MasterpieceDetailFragment : Fragment() {
 
         // masterpieceBoardId를 사용하여 구간 정보 요청
         viewModel.fetchMasterpieceSectionInfo(masterpieceBoardId)
+
+
     }
 
     private fun observeJoinResult() {
@@ -192,11 +202,11 @@ class MasterpieceDetailFragment : Fragment() {
         val colors = generateColors(sections.size)
         sections.forEachIndexed { index, section ->
             val coordinates = section.path.map { Point.fromLngLat(it.longitude, it.latitude) }
-            requestWalkingRoute(coordinates, index, colors[index])
+            requestWalkingRoute(coordinates, index, colors[index], section.nickname)
         }
     }
 
-    private fun requestWalkingRoute(coordinates: List<Point>, sectionIndex: Int, color: String) {
+    private fun requestWalkingRoute(coordinates: List<Point>, sectionIndex: Int, color: String, nickname: String) {
         mapboxNavigation.requestRoutes(
             RouteOptions.builder()
                 .applyDefaultNavigationOptions()
@@ -210,7 +220,7 @@ class MasterpieceDetailFragment : Fragment() {
                         val distance = route.directionsRoute.distance()
                         sectionInfoAdapter.updateDistance(sectionIndex, distance)
                         sectionInfoAdapter.updateColor(sectionIndex, color)
-                        drawRouteOnMap(route, sectionIndex, color)
+                        drawRouteOnMap(route, sectionIndex, color, nickname)
                     }
                 }
 
@@ -226,10 +236,25 @@ class MasterpieceDetailFragment : Fragment() {
     }
 
 
-    private fun drawRouteOnMap(route: NavigationRoute, sectionIndex: Int, color: String) {
+    private fun drawRouteOnMap(route: NavigationRoute, sectionIndex: Int, color: String, nickname: String) {
         val routeCoordinates = route.directionsRoute.geometry()?.let {
             LineString.fromPolyline(it, 6).coordinates()
         } ?: return
+
+        // nickname에 따라 투명도 결정
+        val alpha = when (nickname) {
+            "달리기 시작", "달리는 중" -> 0.2f  // 50% 투명도
+            else -> 1.0f  // 완전 불투명
+        }
+
+        // 색상에 투명도 적용
+        val colorWithAlpha = Color.parseColor(color)
+        val colorWithAppliedAlpha = Color.argb(
+            (alpha * 255).toInt(),
+            Color.red(colorWithAlpha),
+            Color.green(colorWithAlpha),
+            Color.blue(colorWithAlpha)
+        )
 
         val polylineOptions = PolylineAnnotationOptions()
             .withPoints(routeCoordinates)
@@ -260,6 +285,12 @@ class MasterpieceDetailFragment : Fragment() {
             null
         )
         binding.mapView.getMapboxMap().setCamera(cameraOptions)
+    }
+
+    private fun navigateToMasterpieceSearch() {
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.masterpiece_fragment_container, MasterpieceSearchFragment())
+            .commit()
     }
 
     override fun onDestroyView() {
