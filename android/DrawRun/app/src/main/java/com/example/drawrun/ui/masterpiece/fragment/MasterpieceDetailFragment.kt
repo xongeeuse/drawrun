@@ -99,6 +99,15 @@ class MasterpieceDetailFragment : Fragment() {
                 Log.d("masterpiecemasterpiece", "Received Detail: $detail")
                 // UI 업데이트 추가해야 함
 
+                // 지도 위에 오버레이 정보 업데이트
+                binding.courseNameOverlay.text = detail.courseName
+//                binding.ddayOverlay.text = if (detail.dday == 0) "D - day" else "D - ${detail.dday}"
+                binding.distanceOverlay.text = "${detail.distance} km"
+                binding.nicknameOverlay.text = detail.nickname
+
+                // 지도 카메라 위치 조정 및 경로 표시
+//                updateMap(detail)
+
             } else {
                 Log.e("masterpiecemasterpiece", "Failed to fetch detail")
             }
