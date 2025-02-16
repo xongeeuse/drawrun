@@ -97,7 +97,7 @@ class MainActivity : BaseActivity() {
         btnCustomCourse.setOnClickListener {
             val accessToken = SecureStorage.getAccessToken(this)
             if (accessToken != null) {
-                val intent = Intent(this, MasterpieceActivity::class.java)
+                val intent = Intent(this, MapActivity::class.java)
                 startActivity(intent)
             } else {
                 val intent = Intent(this, LoginActivity::class.java)
@@ -118,7 +118,7 @@ class MainActivity : BaseActivity() {
         updateLoginState()  // ✅ 액티비티가 다시 보일 때 로그인 상태 업데이트
     }
 
-    // ✅ 로그인 상태 업데이트 함수ㅅ
+    // ✅ 로그인 상태 업데이트 함수
     private fun updateLoginState() {
         val accessToken = SecureStorage.getAccessToken(this)
         val isLoggedIn = accessToken != null
