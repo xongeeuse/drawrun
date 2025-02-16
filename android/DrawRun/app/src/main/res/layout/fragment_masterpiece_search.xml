@@ -21,7 +21,8 @@
         app:tabTextColor="@color/white"
         app:tabSelectedTextColor="@color/white"
         app:tabIndicatorColor="@color/white"
-        android:background="@android:color/transparent"/>
+        android:background="@android:color/transparent"
+        android:contentDescription="마스터피스 카테고리 탭"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/search_result_recycler_view"
@@ -64,7 +65,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:layout_gravity="center_horizontal"
-            android:text="검색 결과가 없습니다.&#10;나만의 러닝 코스를 그려보세요!"
+            android:text="검색 결과가 없습니다.&#10;나만의 걸작을 완성해 보세요!"
             android:textSize="18sp"
             android:lineSpacingExtra="4dp"
             android:gravity="center"

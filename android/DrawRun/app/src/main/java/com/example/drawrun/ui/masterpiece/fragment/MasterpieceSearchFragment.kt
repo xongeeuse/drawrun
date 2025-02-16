@@ -123,6 +123,7 @@ class MasterpieceSearchFragment : Fragment() {
 
 
 
+
     private fun navigateToDetail(masterpieceBoardId: Int) {
         val fragment = MasterpieceDetailFragment().apply {
             arguments = Bundle().apply {
@@ -147,8 +148,7 @@ class MasterpieceSearchFragment : Fragment() {
                     0 -> viewModel.filterMasterpieces(isInProgress = true)
                     1 -> viewModel.filterMasterpieces(isInProgress = false)
                 }
-                // 탭 변경 시 검색어 초기화
-                binding.searchLayout.searchEditText.setText("")
+                // 탭 변경 시 현재 검색어로 다시 검색
                 performSearch()
             }
             override fun onTabUnselected(tab: TabLayout.Tab?) {}
@@ -158,6 +158,7 @@ class MasterpieceSearchFragment : Fragment() {
         // 초기 탭 선택
         binding.tabLayout.getTabAt(0)?.select()
     }
+
 
 
 }
