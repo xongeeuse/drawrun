@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.kapt)
 //    alias(libs.plugins.compose.compiler)
+    id("kotlin-parcelize")
 }
 
 android {
@@ -86,6 +87,7 @@ dependencies {
     implementation(libs.androidx.runtime.android)
     implementation(libs.androidx.lifecycle.livedata.core)
     implementation(libs.androidx.ui.graphics.android)
+    implementation(libs.play.services.maps)
     kapt(libs.room.compiler)
 
     // Hilt
@@ -104,6 +106,9 @@ dependencies {
 
     // Mapbox Navigation Core (모든 기능 포함)
     implementation(libs.mapbox.navigationcore.android)
+
+
+
 
     // Mapbox Maps SDK (필수)
     implementation(libs.mapbox.maps)
