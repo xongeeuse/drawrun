@@ -80,6 +80,8 @@ class NaviActivity : AppCompatActivity() {
     private val trackedPath = mutableListOf<Point>() // 사용자가 지나간 경로 저장
     private var isTrackingStarted = false
 
+    private var navigationStartTime: Long = 0L // 내비게이션 시작 시간
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityNaviBinding.inflate(layoutInflater)
@@ -190,10 +192,27 @@ class NaviActivity : AppCompatActivity() {
 
         // ✅ startButton 클릭 시 내비게이션 시작
         binding.startButton.setOnClickListener {
+            navigationStartTime = System.currentTimeMillis() // 시작 시간 기록
             startNavigation(path)
 
         }
 
+    }
+
+    // ✅ 실제 이동한 거리 계산
+    private fun calculateTotalDistance(): Double {
+        var totalDistance = 0.0
+        for (i in 0 until trackedPath.size - 1) {
+            totalDistance += TurfMeasurement.distance(trackedPath[i], trackedPath[i + 1], "meters")
+        }
+        return totalDistance
+    }
+
+    // ✅ 실제 이동한 시간 계산
+    private fun calculateElapsedTime(): Pair<Int, Int> {
+        val elapsedMillis = System.currentTimeMillis() - navigationStartTime
+        val elapsedSeconds = (elapsedMillis / 1000).toInt()
+        return Pair(elapsedSeconds / 60, elapsedSeconds % 60)
     }
 
     // ✅ 사용자의 현재 위치 마커를 활성화하는 함수 (추가된 부분)
@@ -395,11 +414,11 @@ class NaviActivity : AppCompatActivity() {
         if (distanceRemaining < 1) {
             routeProgress.route.legs()?.let { legs ->
                 if (routeProgress.currentLegProgress?.legIndex == legs.size - 1) {
-                    val totalDuration = routeProgress.route.duration().toInt()  // 총 소요 시간 (초)
-                    val totalDistanceInKm = totalDistance / 1000 // 미터 -> 킬로미터 변환
+//                    val totalDuration = routeProgress.route.duration().toInt()  // 총 소요 시간 (초)
+//                    val totalDistanceInKm = totalDistance / 1000 // 미터 -> 킬로미터 변환
 
                     stopNavigation() // 내비게이션 종료
-                    showArrivalDialog(totalDistanceInKm, totalDuration) // ✅ 도착 모달 표시
+
                 }
             }
         }
@@ -510,36 +529,25 @@ class NaviActivity : AppCompatActivity() {
 
 
 
-    // 최종 목적지 도착 시 내비게이션과 트래킹 종료
-    private fun stopNavigation() {
-        // 위치 업데이트 중지
-        fusedLocationClient.removeLocationUpdates(locationCallback)
-
-        // 🚫 내비게이션 종료 및 경로 초기화
-        mapboxNavigation.stopTripSession()
-        mapboxNavigation.setNavigationRoutes(emptyList()) // ❌ Mapbox 도보 경로 제거
-
-        isTrackingStarted = false // 트래킹 중지 (하지만 지나간 경로는 유지됨)
-
-        Toast.makeText(this, "🎉 목적지에 도착했습니다! 내비게이션 종료.", Toast.LENGTH_LONG).show()
-
-
-    }
 
 
 
-    private fun showArrivalDialog(distance: Double, duration: Int) {
-        val timeInMinutes = duration / 60 // 초 → 분 변환
 
-        val message = "🏁 목적지 도착!\n총 이동 거리: ${String.format("%.2f", distance)}km\n소요 시간: ${timeInMinutes}분"
+    // ✅ 도착 시 모달 표시 (실제 거리 + 시간 적용)
+    private fun showArrivalDialog() {
+        val totalDistance = calculateTotalDistance() / 1000.0 // 미터 → 킬로미터 변환
+        val (minutes, seconds) = calculateElapsedTime()
 
-        val dialog = AlertDialog.Builder(this)
-            .setTitle("🎉 도착 완료")
-            .setMessage(message)
-            .setPositiveButton("확인") { dialog, _ -> dialog.dismiss() }
-            .create()
+        val message = "🏁 목적지 도착!\n총 이동 거리: ${String.format("%.2f", totalDistance)} km\n소요 시간: ${minutes}분 ${seconds}초"
 
-        dialog.show()
+        runOnUiThread {
+            val dialog = AlertDialog.Builder(this)
+                .setTitle("🎉 도착 완료")
+                .setMessage(message)
+                .setPositiveButton("확인") { dialog, _ -> dialog.dismiss() }
+                .create()
+            dialog.show()
+        }
     }
 
     private fun updateTrackingLine() {
@@ -557,6 +565,22 @@ class NaviActivity : AppCompatActivity() {
             .withLineWidth(7.0) // 선 두께
 
         trackingLineManager?.create(polyline)
+    }
+
+    // 최종 목적지 도착 시 내비게이션과 트래킹 종료
+    private fun stopNavigation() {
+        // 위치 업데이트 중지
+        fusedLocationClient.removeLocationUpdates(locationCallback)
+
+        // 🚫 내비게이션 종료 및 경로 초기화
+        mapboxNavigation.stopTripSession()
+        mapboxNavigation.setNavigationRoutes(emptyList()) // ❌ Mapbox 도보 경로 제거
+
+        isTrackingStarted = false // 트래킹 중지 (하지만 지나간 경로는 유지됨)
+        showArrivalDialog() // ✅ 도착 모달 호출 추가
+        Toast.makeText(this, "🎉 목적지에 도착했습니다! 내비게이션 종료.", Toast.LENGTH_LONG).show()
+
+
     }
 
 
