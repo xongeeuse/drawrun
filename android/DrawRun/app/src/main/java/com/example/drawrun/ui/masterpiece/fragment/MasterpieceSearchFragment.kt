@@ -1,5 +1,6 @@
 package com.example.drawrun.ui.masterpiece.fragment
 
+import android.content.Context
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -8,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -68,15 +70,13 @@ class MasterpieceSearchFragment : Fragment() {
 
         // 검색 버튼 클릭 리스너 추가
         binding.searchLayout.searchBtn.setOnClickListener {
-            val query = binding.searchLayout.searchEditText.text.toString()
-            viewModel.searchMasterpieces(query)
+            performSearch()
         }
 
         // 키보드의 검색 버튼 클릭 리스너 추가
         binding.searchLayout.searchEditText.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                val query = binding.searchLayout.searchEditText.text.toString()
-                viewModel.searchMasterpieces(query)
+                performSearch()
                 true
             } else {
                 false
@@ -108,6 +108,16 @@ class MasterpieceSearchFragment : Fragment() {
         // 데이터 가져오기 호출
         viewModel.getMasterpieceList()
     }
+
+    private fun performSearch() {
+        val query = binding.searchLayout.searchEditText.text.toString()
+        viewModel.searchMasterpieces(query)
+
+        // 키보드 숨기기
+        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(view?.windowToken, 0)
+    }
+
 
     private fun navigateToDetail(masterpieceBoardId: Int) {
         val fragment = MasterpieceDetailFragment().apply {
