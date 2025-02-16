@@ -1,10 +1,13 @@
 package com.example.drawrun.ui.masterpiece.fragment
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -53,6 +56,45 @@ class MasterpieceSearchFragment : Fragment() {
 
         // 데이터 관찰 및 업데이트
         viewModel.masterpieceList.observe(viewLifecycleOwner) { masterpieces ->
+            if (masterpieces.isEmpty()) {
+                binding.emptyStateLayout.visibility = View.VISIBLE
+                binding.searchResultRecyclerView.visibility = View.GONE
+            } else {
+                binding.emptyStateLayout.visibility = View.GONE
+                binding.searchResultRecyclerView.visibility = View.VISIBLE
+                adapter.updateData(masterpieces)
+            }
+        }
+
+        // 검색 버튼 클릭 리스너 추가
+        binding.searchLayout.searchBtn.setOnClickListener {
+            val query = binding.searchLayout.searchEditText.text.toString()
+            viewModel.searchMasterpieces(query)
+        }
+
+        // 키보드의 검색 버튼 클릭 리스너 추가
+        binding.searchLayout.searchEditText.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                val query = binding.searchLayout.searchEditText.text.toString()
+                viewModel.searchMasterpieces(query)
+                true
+            } else {
+                false
+            }
+        }
+
+        /*// 검색 기능 구현
+        binding.searchLayout.searchEditText.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                viewModel.searchMasterpieces(s.toString())
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })*/
+
+        // 필터링된 결과 관찰
+        viewModel.filteredMasterpieceList.observe(viewLifecycleOwner) { masterpieces ->
             if (masterpieces.isEmpty()) {
                 binding.emptyStateLayout.visibility = View.VISIBLE
                 binding.searchResultRecyclerView.visibility = View.GONE

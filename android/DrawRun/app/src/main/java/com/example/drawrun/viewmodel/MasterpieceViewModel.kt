@@ -119,6 +119,16 @@ class MasterpieceViewModel(private val repository: MasterpieceRepository) : View
         }
     }
 
+    private val _filteredMasterpieceList = MutableLiveData<List<Masterpiece>>()
+    val filteredMasterpieceList: LiveData<List<Masterpiece>> = _filteredMasterpieceList
 
-
+    // 검색 함수 추가
+    fun searchMasterpieces(query: String) {
+        viewModelScope.launch {
+            val filteredList = _masterpieceList.value?.filter {
+                it.gu.contains(query, ignoreCase = true)
+            } ?: emptyList()
+            _filteredMasterpieceList.value = filteredList
+        }
+    }
 }

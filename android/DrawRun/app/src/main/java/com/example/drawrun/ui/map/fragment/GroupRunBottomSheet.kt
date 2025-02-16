@@ -340,10 +340,6 @@ class GroupRunBottomSheet : BottomSheetDialogFragment() {
         return result
     }
 
-
-
-
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
