@@ -58,7 +58,7 @@ class SectionInfoAdapter(private val onJoinClick: (SectionInfo, Int, Int) -> Uni
             binding.sectionStatusButton.alpha = if (isJoinable) 1f else 0.5f
 
 
-            // 클릭 리스너 설정
+            // 클릭 리스너 설정(조인 요청 시점 변경해야함)
             binding.sectionStatusButton.setOnClickListener {
                 if (isJoinable) {
                     onJoinClick(sectionInfo, masterpieceBoardId, position)
