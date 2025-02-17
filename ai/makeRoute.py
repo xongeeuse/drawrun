@@ -92,7 +92,8 @@ def makeRouteNodeList(lon: float, lat: float, mapDataUrl: str, imgUrl: str):
     }
     
     os.remove(osm_file_name)
-    os.remove(user_image_name)
+    if imgUrl:
+        os.remove(user_image_name)
 
     return geojson
 
@@ -193,3 +194,13 @@ def snap_path_to_roads(abs_path, G_proj, original_start_coord):
         snapped_coords.append((lat_snap, lon_snap))
     return snapped_coords
 
+def convert_geojson_to_path(geojson: dict) -> dict:
+    # GeoJSON 데이터에서 좌표 배열 추출
+    coordinates = geojson.get("geometry", {}).get("coordinates", [])
+    
+    path = []
+    for coord in coordinates:
+        lon, lat = coord[0], coord[1]
+        path.append({"latitude": lat, "longitude": lon})
+    
+    return {"path": path}
