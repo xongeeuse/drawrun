@@ -1,8 +1,12 @@
 package com.example.drawrun
 
+import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.LinearGradient
 import android.graphics.Shader
+import android.location.Geocoder
+import android.location.Location
 import android.media.Image
 import android.os.Bundle
 import android.util.Log
@@ -18,11 +22,17 @@ import com.example.drawrun.utils.SecureStorage
 import org.json.JSONObject
 import android.util.Base64
 import android.widget.ImageView
+import androidx.core.app.ActivityCompat
+import androidx.core.location.LocationManagerCompat.getCurrentLocation
 import com.example.drawrun.ui.common.BaseActivity
 import com.example.drawrun.ui.map.MapActivity
 import com.example.drawrun.ui.masterpiece.MasterpieceActivity
 import com.example.drawrun.ui.mypage.UserActivity
 import com.example.drawrun.ui.search.SearchActivity
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import java.util.Locale
+import android.Manifest
 
 class MainActivity : BaseActivity() {
 
@@ -32,6 +42,9 @@ class MainActivity : BaseActivity() {
     private lateinit var tvLocation: TextView
     private lateinit var tvRunNear: TextView
     override fun getLayoutId(): Int = R.layout.activity_main  // ✅ 레이아웃 리소스 지정
+
+    // 위치 ..
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,7 +67,10 @@ class MainActivity : BaseActivity() {
         // ✅ 초기 로그인 상태 확인
         updateLoginState()
 
-// ✅ UI 요소 초기화
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        checkAndRequestLocationPermission()
+
+        // ✅ UI 요소 초기화
         tvLocation = findViewById(R.id.tvLocation)
         btnLoginLogout = findViewById(R.id.btnLogin)
         btnAICourse = findViewById(R.id.btnAICourse) // 🔹 ImageView로 수정
@@ -116,6 +132,7 @@ class MainActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
         updateLoginState()  // ✅ 액티비티가 다시 보일 때 로그인 상태 업데이트
+        getCurrentLocation()
     }
 
     // ✅ 로그인 상태 업데이트 함수
@@ -160,6 +177,36 @@ class MainActivity : BaseActivity() {
         )
         textView.paint.shader = shader
     }
+
+    private fun checkAndRequestLocationPermission() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            getCurrentLocation()
+        } else {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            getCurrentLocation()
+        }
+    }
+    @SuppressLint("MissingPermission")
+    private fun getCurrentLocation() {
+        fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+            location?.let {
+                val geocoder = Geocoder(this, Locale.KOREAN)
+                val address = geocoder.getFromLocation(it.latitude, it.longitude, 1)?.firstOrNull()
+                tvLocation.text = address?.subLocality ?: "알 수 없음"
+            }
+        }
+    }
+
+    companion object {
+        private const val LOCATION_PERMISSION_REQUEST_CODE = 1001
+    }
+
 }
 
 
