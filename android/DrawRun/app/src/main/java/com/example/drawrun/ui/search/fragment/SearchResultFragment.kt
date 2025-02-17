@@ -1,7 +1,6 @@
 package com.example.drawrun.ui.search.fragment
 
 import android.app.AlertDialog
-import android.app.appsearch.SearchResult
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -14,7 +13,6 @@ import android.widget.ArrayAdapter
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.drawrun.R
 import com.example.drawrun.data.dto.response.course.CourseDetailsResponse
 import com.example.drawrun.data.repository.CourseRepository
 import com.example.drawrun.data.repository.SearchRepository
@@ -146,17 +144,17 @@ class SearchResultFragment : Fragment() {
         }
     }
 
-    private fun showCourseDetailsDialog(details: CourseDetailsResponse) {
-        Log.d("내비", "Path Data: ${details.path}") // ✅ AlertDialog 실행 전에 로그 찍기!
 
-        AlertDialog.Builder(requireContext())
-            .setTitle("Course Details")
-            .setMessage("PathId: ${details.userPathId}\nLocation: ${details.location}\nDistance: ${details.distance} km")
-            .setPositiveButton("OK", null)
-            .show()
-
-    }
-
+//    private fun showCourseDetailsDialog(details: CourseDetailsResponse) {
+//        Log.d("내비", "Path Data: ${details.path}") // ✅ AlertDialog 실행 전에 로그 찍기!
+//
+//        AlertDialog.Builder(requireContext())
+//            .setTitle("Course Details")
+//            .setMessage("PathId: ${details.userPathId}\nLocation: ${details.location}\nDistance: ${details.distance} km")
+//            .setPositiveButton("OK", null)
+//            .show()
+//
+//    }
 
 
     private fun setupToolbar() {
