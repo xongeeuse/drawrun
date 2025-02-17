@@ -24,6 +24,7 @@
         <result column="bookmark_count" property="bookmarkCount"/>
     </resultMap>
 
+
     <select id="bookmark" parameterType="integer" resultMap="BookmarkResultMap">
         select
             b.user_id,

@@ -22,4 +22,6 @@ public interface MasterpieceMapper {
     MasterpieceParticipant searchparticipant(int masterpieceSegId);
     int join(MasterpieceParticipant masterpieceParticipant);
     int complete(int masterpieceSegId);
+    List<MasterpieceSeg> check(int masterpieceBoardId);
+    int updatestate(int masterpieceBoardId);
 }
