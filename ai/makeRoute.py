@@ -14,16 +14,18 @@ from shapely.geometry import Point
 
 
 def makeRouteNodeList(lon: float, lat: float, mapDataUrl: str, imgUrl: str):
+    print(mapDataUrl)
+    print(imgUrl)
     
     # ================================
     # 1. OSM 파일 불러오기 및 투영
     # ================================
 
     s3 = boto3.client('s3')
-    bucket_name = 'drawrunbucket'          # ARN이 아니라 버킷 이름만 사용
+    bucket_name = 'drawrunbucket'
 
     # S3 객체를 읽어 메모리 상의 BytesIO 스트림 생성
-    response = s3.get_object(Bucket=bucket_name, Key=mapDataUrl)
+    response = s3.get_object(Bucket=bucket_name, Key=extract_filename(mapDataUrl))
     osm_data = response['Body'].read()
 
     with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.osm') as tmp_file:
@@ -52,7 +54,7 @@ def makeRouteNodeList(lon: float, lat: float, mapDataUrl: str, imgUrl: str):
             [0.0, 0.0]
         ], dtype=np.float32)
     else:
-        response = s3.get_object(Bucket=bucket_name, Key=imgUrl)
+        response = s3.get_object(Bucket=bucket_name, Key=extract_filename(imgUrl))
         img_data = response['Body'].read()
         with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.jpg') as tmp_file:
             tmp_file.write(img_data.decode('utf-8', errors='ignore'))
@@ -204,3 +206,7 @@ def convert_geojson_to_path(geojson: dict) -> dict:
         path.append({"latitude": lat, "longitude": lon})
     
     return {"path": path}
+
+def extract_filename(url: str) -> str:
+    # URL을 "/"로 split하여 마지막 요소를 반환합니다.
+    return url.split("/")[-1]
