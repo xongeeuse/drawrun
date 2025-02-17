@@ -35,7 +35,7 @@ public class AiCourseController {
 
         // RestTemplate을 통해 FastAPI의 /api/v1/createMap 엔드포인트 호출
         RestTemplate restTemplate = new RestTemplate();
-        String fastApiUrl = "http://host.docker.internal:8000/api/v1/createMap";
+        String fastApiUrl = "http://fastapi_container:8000/api/v1/createMap";
 
         ResponseEntity<FastApiResponse> fastApiResponseEntity = restTemplate.postForEntity(
             fastApiUrl,
