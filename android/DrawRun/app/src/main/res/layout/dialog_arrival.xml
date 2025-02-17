@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:background="@color/black"
+    android:gravity="center">
+
+    <!-- 타이틀 -->
+    <TextView
+        android:id="@+id/arrivalTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="러닝 완료!"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        android:gravity="center"
+        android:layout_gravity="center"/>
+
+    <!-- 트래킹 스냅샷 -->
+    <ImageView
+        android:id="@+id/trackingSnapshotImageView"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:scaleType="fitCenter"
+        android:layout_marginTop="10dp"
+        android:background="@android:color/darker_gray" />
+<!--        tools:src="@drawable/sample_tracking_snapshot"-->
+
+
+    <!-- 러닝 완료 버튼 -->
+    <Button
+        android:id="@+id/finishRunButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="러닝 완료하기"
+        android:layout_marginTop="20dp"
+        android:backgroundTint="@android:color/holo_green_light"
+        android:textColor="@android:color/white"/>
+</LinearLayout>

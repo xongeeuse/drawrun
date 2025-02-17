@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:background="#171515"
+    android:orientation="horizontal"
+    android:gravity="center"
+    android:paddingHorizontal="20dp"
+    android:clickable="true"
+    android:focusable="true">
+
+    <ImageView
+        android:id="@+id/navHome"
+        android:layout_width="29dp"
+        android:layout_height="29dp"
+        android:layout_marginHorizontal="25dp"
+        android:src="@drawable/home_icon"
+        android:contentDescription="Home"
+        android:layout_gravity="center" />
+
+    <ImageView
+        android:id="@+id/navDocu"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_marginHorizontal="25dp"
+        android:src="@drawable/docu_icon"
+        android:contentDescription="Document"
+        android:layout_gravity="center" />
+
+    <ImageView
+        android:id="@+id/navProfile"
+        android:layout_width="37dp"
+        android:layout_height="37dp"
+        android:layout_gravity="center"
+        android:layout_marginHorizontal="25dp"
+        android:contentDescription="Profile"
+        android:src="@drawable/user_icon" />
+
+    <ImageView
+        android:id="@+id/navLanking"
+        android:layout_width="33dp"
+        android:layout_height="33dp"
+        android:layout_marginHorizontal="25dp"
+        android:src="@drawable/crown_icon"
+        android:contentDescription="Lanking"
+        android:layout_gravity="center" />
+</LinearLayout>

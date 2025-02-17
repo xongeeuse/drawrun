@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dasima.drawrun.domain.masterpiece.mapper.MasterpieceMapper">
+    <resultMap id="MasterpieceBoardResultMap" type="com.dasima.drawrun.domain.masterpiece.entity.MasterpieceBoard">
+        <id column="masterpiece_board_id" property="masterpieceBoardId"/>
+        <result column="user_id" property="userId"/>
+        <result column="restrict_count" property="restrictCount"/>
+        <result column="state" property="state"/>
+        <result column="create_date" property="createDate"/>
+        <result column="update_date" property="updateDate"/>
+        <result column="expire_date" property="expireDate"/>
+        <result column="participant_count" property="participantCount"/>
+
+        <association property="userPath" resultMap="UserPathResultMap"/>
+        <association property="masterpieceSeg" resultMap="MasterpieceSegResultMap"/>
+        <association property="masterpieceParticipant" resultMap="MasterpieceParticipantResultMap"/>
+    </resultMap>
+
+    <resultMap id="UserPathResultMap" type="com.dasima.drawrun.domain.course.entity.UserPath">
+        <id column="user_path_id" property="userPathId"/>
+        <result column="user_id" property="userId"/>
+        <result column="path_id" property="pathId"/>
+        <result column="path_img_url" property="pathImgUrl"/>
+        <result column="name" property="name"/>
+        <result column="create_date" property="createDate"/>
+        <result column="address" property="address"/>
+        <result column="distance" property="distance"/>
+        <result column="bookmark_count" property="bookmarkCount"/>
+    </resultMap>
+    
+    <resultMap id="MasterpieceSegResultMap" type="com.dasima.drawrun.domain.masterpiece.entity.MasterpieceSeg">
+        <id column="masterpiece_seg_id" property="masterpieceSegId"/>
+        <result column="masterpiece_board_id" property="masterpieceBoardId"/>
+        <result column="mongo_id" property="mongoId"/>
+        <result column="path_num" property="pathNum"/>
+        <result column="address" property="address"/>
+    </resultMap>
+
+    <resultMap id="MasterpieceParticipantResultMap" type="com.dasima.drawrun.domain.masterpiece.entity.MasterpieceParticipant">
+        <id column="masterpiece_participant_id" property="masterpieceParticipantId"/>
+        <result column="user_id" property="userId"/>
+        <result column="state" property="state"/>
+        <result column="masterpiece_seg_id" property="masterpieceSegId"/>
+        <result column="create_date" property="createDate"/>
+    </resultMap>
+    <update id="complete" parameterType="int">
+        update masterpiece_participant
+        set state = 1
+        where masterpiece_seg_id = #{masterpieceSegId}
+    </update>
+
+    <insert id="join" parameterType="MasterpieceParticipant">
+        insert into masterpiece_participant
+        values (0, #{userId}, #{state}, #{masterpieceSegId}, now())
+    </insert>
+    <insert id="save" parameterType="MasterpieceBoard" useGeneratedKeys="true" keyProperty="masterpieceBoardId">
+        insert into masterpiece_board
+        values (0, #{userId}, #{restrictCount}, #{state}, #{userPathId}, now(), now(), #{expireDate})
+    </insert>
+
+    <insert id="seqsave" parameterType="MasterpieceSeg">
+        insert into masterpiece_seg
+        values (0, #{masterpieceBoardId}, #{mongoId}, #{pathNum}, #{address})
+    </insert>
+    <select id="search" resultMap="MasterpieceBoardResultMap">
+        SELECT
+            mb.masterpiece_board_id,
+            mb.user_id,
+            mb.restrict_count,
+            mb.user_path_id,
+            mb.state,
+            mb.create_date,
+            mb.update_date,
+            mb.expire_date,
+            up.path_img_url,
+            up.distance,
+            up.address,
+            up.name,
+            COUNT(mp.masterpiece_participant_id) AS participant_count  -- 참가자 수 계산
+        FROM
+            masterpiece_board mb
+                LEFT JOIN user_path up
+                          ON mb.user_path_id = up.user_path_id
+                LEFT JOIN masterpiece_seg ms
+                          ON mb.masterpiece_board_id = ms.masterpiece_board_id
+                LEFT JOIN masterpiece_participant mp
+                          ON ms.masterpiece_seg_id = mp.masterpiece_seg_id
+        where
+            mb.masterpiece_board_id=#{masterpieceBoardId}
+        GROUP BY
+            mb.masterpiece_board_id,  -- masterpiece_board 별로 그룹핑
+            mb.user_id,
+            mb.restrict_count,
+            mb.user_path_id,
+            mb.state,
+            mb.create_date,
+            mb.update_date,
+            mb.expire_date
+        ORDER BY
+            mb.expire_date asc;
+    </select>
+
+    <select id="list" resultMap="MasterpieceBoardResultMap">
+        SELECT
+            mb.masterpiece_board_id,
+            mb.user_id,
+            mb.restrict_count,
+            mb.user_path_id,
+            mb.state,
+            mb.create_date,
+            mb.update_date,
+            mb.expire_date,
+            up.path_img_url,
+            up.distance,
+            up.address,
+            up.name,
+            COUNT(mp.masterpiece_participant_id) AS participant_count  -- 참가자 수 계산
+        FROM
+            masterpiece_board mb
+                LEFT JOIN user_path up
+                          ON mb.user_path_id = up.user_path_id
+                LEFT JOIN masterpiece_seg ms
+                          ON mb.masterpiece_board_id = ms.masterpiece_board_id
+                LEFT JOIN masterpiece_participant mp
+                          ON ms.masterpiece_seg_id = mp.masterpiece_seg_id
+        GROUP BY
+            mb.masterpiece_board_id,  -- masterpiece_board 별로 그룹핑
+            mb.user_id,
+            mb.restrict_count,
+            mb.user_path_id,
+            mb.state,
+            mb.create_date,
+            mb.update_date,
+            mb.expire_date
+        ORDER BY
+            mb.expire_date asc;
+    </select>
+
+    <select id="pathlist" parameterType="integer" resultMap="MasterpieceSegResultMap">
+        select *
+        from masterpiece_seg
+        where masterpiece_board_id = #{masterpieceBoardId}
+    </select>
+
+    <select id="searchparticipant" parameterType="integer" resultMap="MasterpieceParticipantResultMap">
+        select *
+        from masterpiece_participant
+        where masterpiece_seg_id = #{masterpieceSegId}
+    </select>
+
+</mapper>
