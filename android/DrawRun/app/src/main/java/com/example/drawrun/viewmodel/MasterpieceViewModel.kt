@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.drawrun.data.dto.request.masterpiece.MasterpieceCompleteRequest
 import com.example.drawrun.data.dto.request.masterpiece.MasterpieceJoinRequest
 import com.example.drawrun.data.dto.request.masterpiece.MasterpieceSaveRequest
 import com.example.drawrun.data.dto.response.masterpiece.Masterpiece
@@ -31,6 +32,9 @@ class MasterpieceViewModel(private val repository: MasterpieceRepository) : View
 
     private val _filteredMasterpieceList = MutableLiveData<List<Masterpiece>>()
     val filteredMasterpieceList: LiveData<List<Masterpiece>> = _filteredMasterpieceList
+
+    private val _completeMasterpieceResult = MutableLiveData<Boolean>()
+    val completeMasterpieceResult: LiveData<Boolean> = _completeMasterpieceResult
 
     fun saveMasterpiece(request: MasterpieceSaveRequest) {
         viewModelScope.launch {
@@ -118,6 +122,25 @@ class MasterpieceViewModel(private val repository: MasterpieceRepository) : View
             } catch (e: Exception) {
                 Log.e("MasterpieceViewModel", "Exception during join: ${e.message}")
                 _joinMasterpieceResult.postValue(false)
+            }
+        }
+    }
+
+    fun completeMasterpiece(masterpieceSegId: Int) {
+        viewModelScope.launch {
+            try {
+                val request = MasterpieceCompleteRequest(masterpieceSegId)
+                val result = repository.completeMasterpiece(request)
+                if (result.isSuccess) {
+                    Log.d("MasterpieceViewModel", "Complete successful")
+                    // 성공 시 필요한 추가 로직 구현 (예: UI 업데이트) 아니 필요 없음
+                } else {
+                    Log.e("MasterpieceViewModel", "Complete failed. Error: ${result.exceptionOrNull()?.message}")
+                }
+                _completeMasterpieceResult.postValue(result.isSuccess)
+            } catch (e: Exception) {
+                Log.e("MasterpieceViewModel", "Exception during complete: ${e.message}")
+                _completeMasterpieceResult.postValue(false)
             }
         }
     }

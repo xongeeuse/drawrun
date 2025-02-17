@@ -1,5 +1,6 @@
 package com.example.drawrun.data.api
 
+import com.example.drawrun.data.dto.request.masterpiece.MasterpieceCompleteRequest
 import com.example.drawrun.data.dto.request.masterpiece.MasterpieceJoinRequest
 import com.example.drawrun.data.dto.request.masterpiece.MasterpieceSaveRequest
 import com.example.drawrun.data.dto.response.masterpiece.MasterpieceDetailResponse
@@ -35,4 +36,7 @@ interface MasterpieceApi {
 
     @POST("masterpiece/join")
     suspend fun joinMasterpiece(@Body request: MasterpieceJoinRequest): Int
+
+    @POST("masterpiece/complete")
+    suspend fun completeMasterpiece(@Body request: MasterpieceCompleteRequest): Int
 }

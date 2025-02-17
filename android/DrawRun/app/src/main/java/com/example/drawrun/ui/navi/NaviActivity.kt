@@ -23,14 +23,18 @@ import android.widget.Button
 import android.widget.ImageView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.drawrun.R
+import com.example.drawrun.data.repository.MasterpieceRepository
 import com.example.drawrun.databinding.ActivityNaviBinding
 import com.example.drawrun.dto.course.PathPoint
 import com.example.drawrun.ui.runrecord.RunRecordActivity
 import com.example.drawrun.utils.RetrofitInstance
+import com.example.drawrun.viewmodel.MasterpieceViewModel
+import com.example.drawrun.viewmodel.MasterpieceViewModelFactory
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -110,12 +114,20 @@ class NaviActivity : AppCompatActivity() {
     private var trackingSnapshotUrl : String? = null
     private lateinit var mapView: MapView
 
+    // Masterpiece 출신 요청인지 확인할 플래그 설정
+    private var isMasterpieceRequest = false
+    private var masterpieceSegId: Int = -1
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityNaviBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         binding.progressBar.visibility = View.VISIBLE
+
+        // Masterpiece 요청인지 체크
+        isMasterpieceRequest = intent.getBooleanExtra("isMasterpieceRequest", false)
+        masterpieceSegId = intent.getIntExtra("masterpieceSegId", -1)
 
         // Mapbox 내비게이션 초기화
         mapboxNavigation = MapboxNavigationProvider.create(
@@ -230,6 +242,25 @@ class NaviActivity : AppCompatActivity() {
         // ✅ startButton 클릭 시 내비게이션 시작
         binding.startButton.setOnClickListener {
             navigationStartTime = System.currentTimeMillis() // 시작 시간 기록
+
+            if (isMasterpieceRequest && masterpieceSegId != -1) {
+                // Masterpiece 요청일 경우 조인 API 호출
+                val repository = MasterpieceRepository(RetrofitInstance.MasterpieceApi(this))
+                val masterpieceViewModelFactory = MasterpieceViewModelFactory(repository)
+                val masterpieceViewModel: MasterpieceViewModel = ViewModelProvider(this, masterpieceViewModelFactory)[MasterpieceViewModel::class.java]
+
+                masterpieceViewModel.joinMasterpiece(masterpieceSegId, 0, 0) // 임시로 masterpieceBoardId 와 position 0 으로 설정
+                masterpieceViewModel.joinMasterpieceResult.observe(this) { isSuccess ->
+                    if (isSuccess) {
+                        Log.d("NaviActivity", "Masterpiece 조인 요청 성공")
+                        Toast.makeText(this, "마스터피스 조인 성공", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Log.e("NaviActivity", "Masterpiece 조인 요청 실패")
+                        Toast.makeText(this, "마스터피스 조인 실패", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+
             startNavigation(path)
 
         }
@@ -600,9 +631,10 @@ class NaviActivity : AppCompatActivity() {
 
 
     private fun showArrivalDialog(distanceInKm: Double, time: Int, totalDistance: Double, totalDuration: Int) {
-        val totalDistance = calculateTotalDistance() / 1000.0 // 미터 → 킬로미터 변환
-        val (minutes, seconds) = calculateElapsedTime()
-        val totalDuration = minutes * 60 + seconds // 전체 이동 시간 (초 단위)
+        // 이미 계산된 값을 사용하므로 재계산할 필요 X
+        // val totalDistance = calculateTotalDistance() / 1000.0
+        // val (minutes, seconds) = calculateElapsedTime()
+        // val totalDuration = minutes * 60 + seconds
 
         val dialogView = layoutInflater.inflate(R.layout.dialog_arrival, null)
         val dialog = AlertDialog.Builder(this).setView(dialogView).create()
@@ -616,14 +648,15 @@ class NaviActivity : AppCompatActivity() {
             Log.d("showArrivalDialog", "📌 로드할 스냅샷 경로: $trackingSnapshotUrl")
             Glide.with(this)
                 .load(trackingSnapshotUrl)
+                .placeholder(R.drawable.gps_art_run_done) // 로딩 중 표시할 이미지
+                .error(R.drawable.gps_art_run_done) // 로드 실패 시 표시할 이미지
                 .into(imageView)
         } else {
             Log.e("showArrivalDialog", "❌ trackingSnapshotUrl이 null이거나 비어 있음")
-            // ✅ 기본 GIF (`gps_art_run_done.gif`) 적용
             Glide.with(this)
-                .asGif() // GIF로 로드
-                .load(R.drawable.gps_art_run_done) // ✅ drawable에 있는 GIF
-                .diskCacheStrategy(DiskCacheStrategy.ALL) // 캐싱 전략
+                .asGif()
+                .load(R.drawable.gps_art_run_done)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(imageView)
         }
 
@@ -634,6 +667,7 @@ class NaviActivity : AppCompatActivity() {
 
         dialog.show()
     }
+
 
     // ✅ RunRecordActivity로 이동하는 함수
     private fun navigateToRunRecordActivity(
@@ -650,6 +684,10 @@ class NaviActivity : AppCompatActivity() {
             putExtra("time", time)
             putExtra("trackingSnapshotUrl", snapshotUrl)
             putExtra("pathId", 1)
+
+            // isMasterpieceRequest 및 masterpieceSegId도 함께 전달
+            putExtra("isMasterpieceRequest", isMasterpieceRequest)
+            putExtra("masterpieceSegId", masterpieceSegId)
         }
         startActivity(intent)
         finish() // 현재 액티비티 종료

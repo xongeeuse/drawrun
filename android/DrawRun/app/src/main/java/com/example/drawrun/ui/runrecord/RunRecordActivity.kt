@@ -10,13 +10,17 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.drawrun.MainActivity
 import com.example.drawrun.R
 import com.example.drawrun.data.dto.request.runrecord.RunRecordRequest
+import com.example.drawrun.data.repository.MasterpieceRepository
 import com.example.drawrun.utils.RetrofitInstance
+import com.example.drawrun.viewmodel.MasterpieceViewModel
+import com.example.drawrun.viewmodel.MasterpieceViewModelFactory
 import com.example.drawrun.viewmodel.RunRecordViewModel
 import com.example.drawrun.viewmodel.RunRecordViewModelFactory
 import com.google.android.gms.wearable.DataMapItem
@@ -61,6 +65,8 @@ class RunRecordActivity : ComponentActivity() {
         dateTextView = findViewById(R.id.textDate)
         paceTextView = findViewById(R.id.textAvgPace)
 
+
+
         // ✅ Intent 데이터 받기
         trackingSnapshotUrl = intent.getStringExtra("trackingSnapshotUrl")
         pathId = intent.getIntExtra("pathId", 1)
@@ -76,6 +82,28 @@ class RunRecordActivity : ComponentActivity() {
 
         // ✅ UI 업데이트
         updateUI(distanceInKm, totalDuration, averageHeartRate)
+
+        // NaviActivity에서 전달된 데이터 받기
+        val isMasterpieceRequest = intent.getBooleanExtra("isMasterpieceRequest", false)
+        val masterpieceSegId = intent.getIntExtra("masterpieceSegId", -1)
+
+        // Masterpiece 요청일 경우 complete API 호출
+        if (isMasterpieceRequest && masterpieceSegId != -1) {
+            val repository = MasterpieceRepository(RetrofitInstance.MasterpieceApi(this))
+            val masterpieceViewModelFactory = MasterpieceViewModelFactory(repository)
+            val masterpieceViewModel: MasterpieceViewModel = ViewModelProvider(this, masterpieceViewModelFactory)[MasterpieceViewModel::class.java]
+
+            masterpieceViewModel.completeMasterpiece(masterpieceSegId)
+            masterpieceViewModel.completeMasterpieceResult.observe(this) { isSuccess ->
+                if (isSuccess) {
+                    Log.d("RunRecordActivity", "Masterpiece 완료 요청 성공")
+                    Toast.makeText(this, "마스터피스 완료 성공", Toast.LENGTH_SHORT).show()
+                } else {
+                    Log.e("RunRecordActivity", "Masterpiece 완료 요청 실패")
+                    Toast.makeText(this, "마스터피스 완료 실패", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
 
         // ✅ '러닝 기록 저장' 버튼 클릭 시 처리
         finishButton.setOnClickListener {
