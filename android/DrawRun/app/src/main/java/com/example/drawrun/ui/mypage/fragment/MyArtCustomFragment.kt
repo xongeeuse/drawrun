@@ -6,19 +6,29 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.drawrun.R
+import com.example.drawrun.data.dto.response.user.ArtData
 import com.example.drawrun.data.model.MyArtItem
+import com.example.drawrun.data.repository.UserRepository
 import com.example.drawrun.ui.mypage.adaptor.MyArtAdapter
+import com.example.drawrun.utils.RetrofitInstance
+import com.example.drawrun.viewmodel.user.ArtCustomViewModel
+import com.example.drawrun.viewmodel.user.ArtCustomViewModelFactory
 
 class MyArtCustomFragment : Fragment() {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var emptyMessageTextView: TextView
     private lateinit var adapter: MyArtAdapter
-    private val artList = mutableListOf<MyArtItem>()
+
+    private val artCustomViewModel: ArtCustomViewModel by viewModels {
+        ArtCustomViewModelFactory(UserRepository(RetrofitInstance.UserApi(requireContext())))
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -33,37 +43,34 @@ class MyArtCustomFragment : Fragment() {
         recyclerView = view.findViewById(R.id.myArtRecyclerView)
         emptyMessageTextView = view.findViewById(R.id.emptyMessageTextView)
 
-        adapter = MyArtAdapter(artList)
+        adapter = MyArtAdapter(emptyList())
         recyclerView.adapter = adapter
         recyclerView.layoutManager = GridLayoutManager(context, 2)
 
+        // API 데이터 가져오기
+        artCustomViewModel.fetchMyArtCustomInfo()
 
-        // 예시 데이터
-        loadInitialData()
-
-        // 데이터가 없으면 emptyMessage 표시
-        updateUI()
-
-    }
-
-    private fun loadInitialData() {
-        artList.clear()  // ✅ 기존 리스트 초기화
-
-        // ✅ 같은 이미지를 7번 추가
-        repeat(7) {
-            Log.d("ImageTest", "Adding image: ${R.drawable.course_img_example}") // ✅ 로그 추가
-            artList.add(MyArtItem(R.drawable.course_img_example, "코스 이미지 $it", "총 5km, 2시간대"))
+        // ✅ 데이터가 변경되면 RecyclerView 업데이트
+        artCustomViewModel.artCollection.observe(viewLifecycleOwner) { artList ->
+            updateUI(artList)
         }
-        adapter.notifyDataSetChanged()
+
+        // ✅ 에러 메시지 처리
+        artCustomViewModel.errorState.observe(viewLifecycleOwner) { errorMessage ->
+            Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
+        }
+
     }
 
-    private fun updateUI() {
+    // ✅ UI 업데이트 (데이터가 없을 경우 메시지 표시)
+    private fun updateUI(artList: List<ArtData>) {
         if (artList.isEmpty()) {
             emptyMessageTextView.visibility = View.VISIBLE
             recyclerView.visibility = View.GONE
         } else {
             emptyMessageTextView.visibility = View.GONE
             recyclerView.visibility = View.VISIBLE
+            adapter.submitList(artList) // ✅ Adapter에 새로운 데이터 적용
         }
     }
 }

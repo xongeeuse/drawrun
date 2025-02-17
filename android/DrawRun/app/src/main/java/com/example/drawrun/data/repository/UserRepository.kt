@@ -2,6 +2,7 @@ package com.example.drawrun.data.repository
 
 import android.util.Log
 import com.example.drawrun.data.api.UserApi
+import com.example.drawrun.data.dto.response.user.GetMyArtCustomResponse
 import com.example.drawrun.data.dto.response.user.GetMyInfoResponse
 import com.example.drawrun.data.model.MypageResponse
 import retrofit2.HttpException
@@ -40,4 +41,16 @@ class UserRepository(private val api: UserApi) {
             Result.failure(RuntimeException("알 수 없는 오류 발생: ${e.message}"))
         }
     }
+
+    suspend fun getMyArtCustomInfo(): GetMyArtCustomResponse {
+        val response = api.getMyArtCustom()
+        if (response.isSuccessful) {
+            return response.body() ?: throw IllegalStateException("Response body is null")
+        } else {
+            throw HttpException(response)
+        }
+    }
+
+
+
 }
