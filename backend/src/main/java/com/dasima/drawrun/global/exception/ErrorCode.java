@@ -25,7 +25,9 @@ public enum ErrorCode {
   INVALID_STORAGE_URL(3002, "파일이 존재하지 않습니다."),
 
   RESULT_SAVE_ERROR(4001, "기록 저장에 실패했습니다."),
-  
+
+  OVERPASS_API_ERROR(5001, "Overpass API 처리에서 에러가 발생했습니다."),
+
   COMMON_ERROR(1001, "서버 에러가 발생했습니다.");
 
   private final int code;
