@@ -1,5 +1,6 @@
 package com.example.drawrun.ui.masterpiece.fragment
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -18,7 +19,9 @@ import com.example.drawrun.data.dto.response.masterpiece.Masterpiece
 import com.example.drawrun.data.dto.response.masterpiece.SectionInfo
 import com.example.drawrun.data.repository.MasterpieceRepository
 import com.example.drawrun.databinding.FragmentMasterpieceDetailBinding
+import com.example.drawrun.dto.course.PathPoint
 import com.example.drawrun.ui.masterpiece.adapter.SectionInfoAdapter
+import com.example.drawrun.ui.navi.NaviActivity
 import com.example.drawrun.utils.RetrofitInstance
 import com.example.drawrun.viewmodel.MasterpieceViewModel
 import com.example.drawrun.viewmodel.MasterpieceViewModelFactory
@@ -173,8 +176,11 @@ class MasterpieceDetailFragment : Fragment() {
 
 
     private fun setupRecyclerView() {
-        sectionInfoAdapter = SectionInfoAdapter { masterpieceSegId, masterpieceBoardId, position ->
-            viewModel.joinMasterpiece(masterpieceSegId, masterpieceBoardId, position)
+        sectionInfoAdapter = SectionInfoAdapter { sectionInfo, masterpieceBoardId, position ->
+            // NaviActivity로 이동하는 로직 추가
+            navigateToNaviActivity(sectionInfo, position)
+            // 기존의 joinMasterpiece 호출은 유지
+            viewModel.joinMasterpiece(sectionInfo.masterpieceSegId, masterpieceBoardId, position)
         }
 
         sectionInfoAdapter.setMasterpieceBoardId(viewModel.masterpieceDetail.value?.masterpieceBoardId ?: 0)
@@ -184,6 +190,23 @@ class MasterpieceDetailFragment : Fragment() {
             adapter = sectionInfoAdapter
         }
     }
+
+    private fun navigateToNaviActivity(sectionInfo: SectionInfo, position: Int) {
+        // Point 객체로 변환
+        val pathPoints = sectionInfo.path.map { PathPoint(it.latitude, it.longitude) }
+        val distanceInMeters = sectionInfoAdapter.getDistance(position) ?: 0.0
+        val distanceInKm = String.format("%.2f", distanceInMeters / 1000.0).toDouble()
+
+        // NaviActivity로 이동
+        val intent = Intent(requireContext(), NaviActivity::class.java).apply {
+            putParcelableArrayListExtra("path", ArrayList(pathPoints))
+            putExtra("startLocation", sectionInfo.address)
+            putExtra("distance", distanceInKm)
+            // 필요한 경우 추가 데이터를 여기에 넣습니다
+        }
+        startActivity(intent)
+    }
+
 
 
 
