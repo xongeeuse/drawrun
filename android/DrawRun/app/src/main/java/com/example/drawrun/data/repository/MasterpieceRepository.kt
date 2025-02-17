@@ -2,6 +2,7 @@ package com.example.drawrun.data.repository
 
 import android.util.Log
 import com.example.drawrun.data.api.MasterpieceApi
+import com.example.drawrun.data.dto.request.masterpiece.MasterpieceCompleteRequest
 import com.example.drawrun.data.dto.request.masterpiece.MasterpieceJoinRequest
 import com.example.drawrun.data.dto.request.masterpiece.MasterpieceSaveRequest
 import com.example.drawrun.data.dto.response.masterpiece.Masterpiece
@@ -78,6 +79,22 @@ class MasterpieceRepository (private val api: MasterpieceApi) {
             }
         } catch (e: Exception) {
             Log.e("MasterpieceRepository", "Error joining masterpiece: ${e.message}")
+            Result.failure(e)
+        }
+    }
+
+    suspend fun completeMasterpiece(request: MasterpieceCompleteRequest): Result<Boolean> {
+        return try {
+            val response = api.completeMasterpiece(request)
+            Log.d("MasterpieceRepository", "Sending complete request with segId: ${request.masterpieceSegId}")
+            Log.d("MasterpieceRepository", "Complete API response: $response")
+            if (response == 1) {
+                Result.success(true)
+            } else {
+                Result.failure(Exception("Complete failed: API returned $response"))
+            }
+        } catch (e: Exception) {
+            Log.e("MasterpieceRepository", "Error completing masterpiece: ${e.message}")
             Result.failure(e)
         }
     }

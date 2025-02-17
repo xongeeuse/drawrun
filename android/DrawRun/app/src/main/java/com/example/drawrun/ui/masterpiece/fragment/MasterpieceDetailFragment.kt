@@ -156,7 +156,7 @@ class MasterpieceDetailFragment : Fragment() {
 
         setupRecyclerView()
         observeSectionInfo()
-        observeJoinResult() // 새로운 함수 추가
+        observeJoinResult()
 
         // masterpieceBoardId를 사용하여 구간 정보 요청
         viewModel.fetchMasterpieceSectionInfo(masterpieceBoardId)
@@ -179,8 +179,8 @@ class MasterpieceDetailFragment : Fragment() {
         sectionInfoAdapter = SectionInfoAdapter { sectionInfo, masterpieceBoardId, position ->
             // NaviActivity로 이동하는 로직 추가
             navigateToNaviActivity(sectionInfo, position)
-            // 기존의 joinMasterpiece 호출은 유지
-            viewModel.joinMasterpiece(sectionInfo.masterpieceSegId, masterpieceBoardId, position)
+            // 기존의 joinMasterpiece 호출은 유지 > 제거하고 내비액티에서 조인 요청으로 수정
+//            viewModel.joinMasterpiece(sectionInfo.masterpieceSegId, masterpieceBoardId, position)
         }
 
         sectionInfoAdapter.setMasterpieceBoardId(viewModel.masterpieceDetail.value?.masterpieceBoardId ?: 0)
@@ -202,6 +202,8 @@ class MasterpieceDetailFragment : Fragment() {
             putParcelableArrayListExtra("path", ArrayList(pathPoints))
             putExtra("startLocation", sectionInfo.address)
             putExtra("distance", distanceInKm)
+            putExtra("isMasterpieceRequest", true)
+            putExtra("masterpieceSegId", sectionInfo.masterpieceSegId)
             // 필요한 경우 추가 데이터를 여기에 넣습니다
         }
         startActivity(intent)
