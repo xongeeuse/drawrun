@@ -45,6 +45,7 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.3"  // 컴파일러 버전 명시
     }
+
 }
 
 kapt {
