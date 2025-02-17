@@ -84,9 +84,16 @@
 
     </delete>
 
-    <insert id="save" parameterType="UserPath">
+    <insert id="save" parameterType="UserPath" useGeneratedKeys="true" keyProperty="userPathId">
         insert into user_path
         values (0, #{userId}, #{pathId}, #{pathImgUrl}, #{name}, now(), #{distance}, #{address})
     </insert>
+
+    <select id="findByUserPK" parameterType="int" resultMap="UserPathResultMap">
+ select *
+ from user_path
+ where user_id = #{userPK}
+ order by create_date desc
+    </select>
 
 </mapper>

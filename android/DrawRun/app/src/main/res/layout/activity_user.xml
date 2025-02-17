@@ -148,6 +148,7 @@
             android:orientation="vertical">
 
             <ImageView
+                android:id="@+id/myartcustomIcon"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:contentDescription="Art Custom Icon"

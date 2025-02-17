@@ -1,8 +1,7 @@
 package com.example.drawrun.presentation
 
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -10,6 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class DataViewModel : ViewModel() {
+    // 🔥 StateFlow로 UI 상태 관리 (초기값 설정)
     private val _distanceToNextTurn = MutableStateFlow(0.0)
     val distanceToNextTurn: StateFlow<Double> get() = _distanceToNextTurn
 
@@ -22,39 +22,34 @@ class DataViewModel : ViewModel() {
     private val _distanceRemaining = MutableStateFlow(0.0)
     val distanceRemaining: StateFlow<Double> get() = _distanceRemaining
 
-    private val _isDestinationReached = MutableLiveData<Boolean>(false)
-    val isDestinationReached: LiveData<Boolean> = _isDestinationReached
+    private val _isDestinationReached = MutableStateFlow(false)
+    val isDestinationReached: StateFlow<Boolean> get() = _isDestinationReached
 
-    // 남은 거리 체크 로직
+    // ✅ 강제 UI 갱신을 위한 트리거 변수 추가
+    private val _updateTrigger = MutableStateFlow(false)
+    val updateTrigger: StateFlow<Boolean> get() = _updateTrigger
+
+    // ✅ 목적지 도착 여부 체크
     fun checkDestinationReached(distanceRemaining: Double) {
-        if (distanceRemaining <= 0.0) {
-            _isDestinationReached.value = true
-        } else {
-            _isDestinationReached.value = false
-        }
-    }
-    // 강제 UI 업데이트 함수
-    fun forceRefresh() {
-        _distanceToNextTurn.value = _distanceToNextTurn.value
-        _voiceInstruction.value = _voiceInstruction.value
-        _totalDistance.value = _totalDistance.value
-        _distanceRemaining.value = _distanceRemaining.value
+        _isDestinationReached.value = distanceRemaining <= 5
     }
 
-    // 데이터를 업데이트하는 함수
     fun updateData(
         distanceToNextTurn: Double,
         voiceInstruction: String,
         totalDistance: Double,
         distanceRemaining: Double
     ) {
-        Log.d("DataViewModel", "업데이트: distanceToNextTurn=$distanceToNextTurn, voiceInstruction=$voiceInstruction, totalDistance=$totalDistance, distanceRemaining=$distanceRemaining")
+        Log.d("DataViewModel", "🔥 updateData 호출됨: distanceToNextTurn=$distanceToNextTurn, voiceInstruction=$voiceInstruction, totalDistance=$totalDistance, distanceRemaining=$distanceRemaining")
+
         viewModelScope.launch {
             _distanceToNextTurn.value = distanceToNextTurn
             _voiceInstruction.value = voiceInstruction
             _totalDistance.value = totalDistance
             _distanceRemaining.value = distanceRemaining
+
+            Log.d("DataViewModel", "✅ 데이터 변경 완료: distanceToNextTurn=${_distanceToNextTurn.value}, voiceInstruction=${_voiceInstruction.value}")
         }
     }
-}
 
+}
