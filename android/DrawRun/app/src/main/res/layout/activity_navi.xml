@@ -39,10 +39,10 @@
         android:elevation="8dp"
         android:layout_margin="16dp"
         android:backgroundTint="@android:color/black"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/bottom_navigation_layout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="28dp">
+        android:layout_marginBottom="16dp">
 
         <!-- 타이틀 -->
         <TextView
@@ -138,5 +138,12 @@
                 android:minWidth="80dp"/> <!-- ⬅️ 버튼 크기 조정 -->
         </LinearLayout>
     </LinearLayout>
+
+    <include
+        android:id="@+id/bottom_navigation_layout"
+        layout="@layout/layout_bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
