@@ -1,6 +1,7 @@
 package com.dasima.drawrun.domain.masterpiece.controller;
 
 
+import com.dasima.drawrun.domain.masterpiece.dto.request.CheckRequest;
 import com.dasima.drawrun.domain.masterpiece.dto.request.MasterpieceCompleteRequest;
 import com.dasima.drawrun.domain.masterpiece.dto.request.MasterpieceJoinRequest;
 import com.dasima.drawrun.domain.masterpiece.dto.request.MasterpieceSaveRequest;
@@ -52,4 +53,11 @@ public class MasterpieceController {
     {
         return ResponseEntity.ok(masterpieceService.complete(masterpieceCompleteRequest.getMasterpieceSegId()));
     }
+
+    // master board 완료 체크
+    @PostMapping("/check")
+    public ResponseEntity<?> check(@RequestBody CheckRequest checkRequest){
+        return ResponseEntity.ok(masterpieceService.check(checkRequest.getMasterpieceBoardId()));
+    }
+
 }

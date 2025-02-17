@@ -121,6 +121,7 @@ public class MasterpieceServiceImpl implements MasterpieceService{
                             .masterpieceBoardId(masterpieceBoard.getMasterpieceBoardId())
                             .courseName(masterpieceBoard.getUserPath().getName())
                             .joinCount(masterpieceBoard.getParticipantCount())
+                            .state(masterpieceBoard.getState())
                             .build()
             );
         }
@@ -158,6 +159,7 @@ public class MasterpieceServiceImpl implements MasterpieceService{
                         .courseName(masterpieceBoard.getUserPath().getName())
                 .masterpieceBoardId(masterpieceBoard.getMasterpieceBoardId())
                         .joinCount(masterpieceBoard.getParticipantCount())
+                        .state(masterpieceBoard.getState())
                 .build();
     }
 
@@ -216,5 +218,23 @@ public class MasterpieceServiceImpl implements MasterpieceService{
 
     public int complete(int masterpieceSegId){
         return masterpieceMapper.complete(masterpieceSegId);
+    }
+
+
+    public int check(int masterpieceBoardId){
+        List<MasterpieceSeg> masterpieceSegs =  masterpieceMapper.check(masterpieceBoardId);
+        int result = 1;
+        for(MasterpieceSeg masterpieceSeg : masterpieceSegs){
+            // state 가 하나라도 0 이라면 result는 0이다.
+            result &= masterpieceSeg.getMasterpieceParticipant().getState();
+        }
+
+        // 모든 참가자가 완주했다면
+        //masterpiece board에 state를 1을 올려준다.
+        if(result == 1)
+            return masterpieceMapper.updatestate(masterpieceBoardId);
+        // 아직 완주 못했다면
+        else
+            return 0;
     }
 }

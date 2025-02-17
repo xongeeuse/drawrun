@@ -36,6 +36,8 @@
         <result column="mongo_id" property="mongoId"/>
         <result column="path_num" property="pathNum"/>
         <result column="address" property="address"/>
+
+        <association property="masterpieceParticipant" resultMap="MasterpieceParticipantResultMap"></association>
     </resultMap>
 
     <resultMap id="MasterpieceParticipantResultMap" type="com.dasima.drawrun.domain.masterpiece.entity.MasterpieceParticipant">
@@ -45,6 +47,20 @@
         <result column="masterpiece_seg_id" property="masterpieceSegId"/>
         <result column="create_date" property="createDate"/>
     </resultMap>
+    <update id="updatestate" parameterType="integer">
+        update masterpiece_board
+        set state = 1
+        where masterpieceboard_id = #{masterpieceBoardId}
+    </update>
+
+    <select id ="check" parameterType="integer" resultMap="MasterpieceSegResultMap">
+        select *
+        from masterpiece_seg ms
+        left outer join masterpiece_participant mp
+        on ms.masterpiece_seg_id = mp.masterpiece_seg_id
+        where masterpiece_board_id = #{masterpieceBoardId};
+    </select>
+
     <update id="complete" parameterType="int">
         update masterpiece_participant
         set state = 1
