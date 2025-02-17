@@ -121,6 +121,7 @@ public class MasterpieceServiceImpl implements MasterpieceService{
                             .masterpieceBoardId(masterpieceBoard.getMasterpieceBoardId())
                             .courseName(masterpieceBoard.getUserPath().getName())
                             .joinCount(masterpieceBoard.getParticipantCount())
+                            .state(masterpieceBoard.getState())
                             .build()
             );
         }
@@ -158,6 +159,7 @@ public class MasterpieceServiceImpl implements MasterpieceService{
                         .courseName(masterpieceBoard.getUserPath().getName())
                 .masterpieceBoardId(masterpieceBoard.getMasterpieceBoardId())
                         .joinCount(masterpieceBoard.getParticipantCount())
+                        .state(masterpieceBoard.getState())
                 .build();
     }
 
