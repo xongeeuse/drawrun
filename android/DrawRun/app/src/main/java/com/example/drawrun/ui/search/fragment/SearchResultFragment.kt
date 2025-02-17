@@ -161,7 +161,7 @@ class SearchResultFragment : Fragment() {
 
     private fun setupToolbar() {
         // 거리 필터 스피너 설정
-        val distances = arrayOf("전체", "3km 이하", "5km 이하", "10km 이하", "15km 이하", "20km 이하")
+        val distances = arrayOf("전체", "3km 이하", "5km 이하", "10km 이하", "15km 이하", "20km 이하", "30km 이하")
         val spinnerAdapter = ArrayAdapter(
             requireContext(),
             android.R.layout.simple_spinner_item,
@@ -172,8 +172,17 @@ class SearchResultFragment : Fragment() {
         binding.distanceSpinner.adapter = spinnerAdapter
         binding.distanceSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                // TODO: 거리 필터 적용
-                // viewModel.applyDistanceFilter(distances[position])
+                val maxDistance = when (position) {
+                    0 -> null // "전체" 선택 시
+                    1 -> 3
+                    2 -> 5
+                    3 -> 10
+                    4 -> 15
+                    5 -> 20
+                    6 -> 30
+                    else -> null
+                }
+                viewModel.applyDistanceFilter(maxDistance)
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
@@ -181,7 +190,7 @@ class SearchResultFragment : Fragment() {
 
     private fun setupObservers() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.searchResults.collectLatest { courses ->
+            viewModel.filteredSearchResults.collectLatest { courses ->
                 Log.d("SearchSearch", "Courses collected: ${courses.size}")
                 if (courses.isNullOrEmpty()) {
                     Log.d("SearchSearch", "Empty or null list received")
