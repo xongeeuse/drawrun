@@ -855,8 +855,20 @@ class NaviActivity : AppCompatActivity() {
 
             mapView.mapboxMap.setCamera(cameraOptions)
 
+            routeLineApi.clearRouteLine { value ->
+                binding.mapView.getMapboxMap().getStyle()?.apply {
+                    routeLineView.renderClearRouteLineValue(this, value)
+                }
+            }
+
+            // 현재 위치 마커(퍽) 숨기기
+            binding.mapView.location.updateSettings {
+                enabled = false
+            }
             // 5️⃣ 스냅샷 캡처 실행
             mapView.postDelayed({
+
+
                 mapView.snapshot { bitmap ->
                     if (bitmap != null) {
                         Log.d("TrackingSnapshot", "✅ 스냅샷 캡처 성공: 비트맵 크기 ${bitmap.width}x${bitmap.height}")
@@ -884,6 +896,11 @@ class NaviActivity : AppCompatActivity() {
                     }
                 }
             }, 1400) // ✅ 카메라 이동 후 1.4초 대기 (안정적 캡처)
+
+            // 스냅샷 캡처 후 현재 위치 마커 다시 표시
+//            binding.mapView.location.updateSettings {
+//                enabled = true
+//            }
         }
     }
 
