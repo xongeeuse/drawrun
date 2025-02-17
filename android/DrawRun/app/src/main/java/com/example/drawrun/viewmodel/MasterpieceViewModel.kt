@@ -160,7 +160,7 @@ class MasterpieceViewModel(private val repository: MasterpieceRepository) : View
     fun searchMasterpieces(query: String, isInProgress: Boolean) {
         viewModelScope.launch {
             val filteredList = _masterpieceList.value?.filter {
-                it.gu.contains(query, ignoreCase = true) &&
+                (it.gu?.contains(query, ignoreCase = true) ?: false) &&
                         when (isInProgress) {
                             true -> it.dday >= 0 && it.restrictCount != it.joinCount
                             false -> it.restrictCount == it.joinCount
@@ -169,6 +169,7 @@ class MasterpieceViewModel(private val repository: MasterpieceRepository) : View
             _filteredMasterpieceList.value = filteredList
         }
     }
+
 
 
 }
