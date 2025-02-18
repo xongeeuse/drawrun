@@ -20,7 +20,7 @@
         <!-- ✅ 코스 이미지 (비율 유지 + 크기 키움) -->
         <ImageView
             android:id="@+id/artImageView"
-            android:layout_width="220dp"
+            android:layout_width="210dp"
             android:layout_height="220dp"
             android:scaleType="centerCrop"
             android:adjustViewBounds="true"
@@ -32,7 +32,7 @@
         <!-- ✅ 황금 액자 (크기 키움) -->
         <ImageView
             android:id="@+id/goldFrameImageView"
-            android:layout_width="170dp"
+            android:layout_width="173dp"
             android:layout_height="230dp"
             android:scaleType="fitXY"
             android:src="@drawable/gold_frame"
