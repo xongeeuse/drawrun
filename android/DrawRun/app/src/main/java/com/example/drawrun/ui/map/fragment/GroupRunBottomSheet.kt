@@ -42,9 +42,10 @@ class GroupRunBottomSheet : BottomSheetDialogFragment() {
     private lateinit var masterpieceViewModel: MasterpieceViewModel
     private lateinit var courseViewModel: CourseViewModel
 
-
     // 포인트 리스트를 저장할 변수 추가
     private var points: List<Point> = listOf()
+
+    private var isSaveButtonEnabled = true
 
     companion object {
         fun newInstance(distance: Double, imagePath: String, points:List<Point>): GroupRunBottomSheet {
@@ -168,8 +169,14 @@ class GroupRunBottomSheet : BottomSheetDialogFragment() {
 
         // 등록 버튼 클릭 리스너 추가
         binding.btnSave.setOnClickListener {
+            if (!isSaveButtonEnabled) return@setOnClickListener
+
+            isSaveButtonEnabled = false
+            binding.btnSave.isEnabled = false
+
             saveMasterpiece()
         }
+
 
         // 인원 조절 버튼 리스너 추가
         val maxMemberCount = points.size - 1
@@ -306,7 +313,11 @@ class GroupRunBottomSheet : BottomSheetDialogFragment() {
             }.onFailure { exception ->
                 Toast.makeText(requireContext(), "걸작 저장 실패: ${exception.message}", Toast.LENGTH_SHORT).show()
             }
+
+            isSaveButtonEnabled = true
+            binding.btnSave.isEnabled = true
         }
+
     }
 
     private fun navigateToMasterpieceDetail(masterpieceBoardId: Int) {
