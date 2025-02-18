@@ -39,6 +39,7 @@ class SearchViewModel(
                         _searchState.value = SearchState.Empty
                     } else {
                         _searchResults.value = response
+                        _filteredSearchResults.value = _searchResults.value  // 여기에 추가
                         _searchState.value = SearchState.Success
                     }
                 },
@@ -114,6 +115,20 @@ class SearchViewModel(
 
         _searchResults.value = updateList(_searchResults.value)
         _topCourses.value = updateList(_topCourses.value)
+    }
+
+    private val _filteredSearchResults = MutableStateFlow<List<CourseData>>(emptyList())
+    val filteredSearchResults: StateFlow<List<CourseData>> = _filteredSearchResults
+
+    fun applyDistanceFilter(maxDistance: Int?) {
+        viewModelScope.launch {
+            val filtered = if (maxDistance == null) {
+                _searchResults.value
+            } else {
+                _searchResults.value.filter { it.distance <= maxDistance }
+            }
+            _filteredSearchResults.value = filtered
+        }
     }
 }
 

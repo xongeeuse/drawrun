@@ -1,7 +1,6 @@
 package com.example.drawrun.ui.search.fragment
 
 import android.app.AlertDialog
-import android.app.appsearch.SearchResult
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -14,7 +13,6 @@ import android.widget.ArrayAdapter
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.drawrun.R
 import com.example.drawrun.data.dto.response.course.CourseDetailsResponse
 import com.example.drawrun.data.repository.CourseRepository
 import com.example.drawrun.data.repository.SearchRepository
@@ -146,22 +144,22 @@ class SearchResultFragment : Fragment() {
         }
     }
 
-    private fun showCourseDetailsDialog(details: CourseDetailsResponse) {
-        Log.d("내비", "Path Data: ${details.path}") // ✅ AlertDialog 실행 전에 로그 찍기!
 
-        AlertDialog.Builder(requireContext())
-            .setTitle("Course Details")
-            .setMessage("PathId: ${details.userPathId}\nLocation: ${details.location}\nDistance: ${details.distance} km")
-            .setPositiveButton("OK", null)
-            .show()
-
-    }
-
+//    private fun showCourseDetailsDialog(details: CourseDetailsResponse) {
+//        Log.d("내비", "Path Data: ${details.path}") // ✅ AlertDialog 실행 전에 로그 찍기!
+//
+//        AlertDialog.Builder(requireContext())
+//            .setTitle("Course Details")
+//            .setMessage("PathId: ${details.userPathId}\nLocation: ${details.location}\nDistance: ${details.distance} km")
+//            .setPositiveButton("OK", null)
+//            .show()
+//
+//    }
 
 
     private fun setupToolbar() {
         // 거리 필터 스피너 설정
-        val distances = arrayOf("전체", "3km 이하", "5km 이하", "10km 이하", "15km 이하", "20km 이하")
+        val distances = arrayOf("전체", "3km 이하", "5km 이하", "10km 이하", "15km 이하", "20km 이하", "30km 이하")
         val spinnerAdapter = ArrayAdapter(
             requireContext(),
             android.R.layout.simple_spinner_item,
@@ -172,8 +170,17 @@ class SearchResultFragment : Fragment() {
         binding.distanceSpinner.adapter = spinnerAdapter
         binding.distanceSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                // TODO: 거리 필터 적용
-                // viewModel.applyDistanceFilter(distances[position])
+                val maxDistance = when (position) {
+                    0 -> null // "전체" 선택 시
+                    1 -> 3
+                    2 -> 5
+                    3 -> 10
+                    4 -> 15
+                    5 -> 20
+                    6 -> 30
+                    else -> null
+                }
+                viewModel.applyDistanceFilter(maxDistance)
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
@@ -181,7 +188,7 @@ class SearchResultFragment : Fragment() {
 
     private fun setupObservers() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.searchResults.collectLatest { courses ->
+            viewModel.filteredSearchResults.collectLatest { courses ->
                 Log.d("SearchSearch", "Courses collected: ${courses.size}")
                 if (courses.isNullOrEmpty()) {
                     Log.d("SearchSearch", "Empty or null list received")
