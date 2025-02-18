@@ -26,6 +26,7 @@
         <result column="name" property="name"/>
         <result column="create_date" property="createDate"/>
         <result column="address" property="address"/>
+        <result column="address2" property="address2"/>
         <result column="distance" property="distance"/>
         <result column="bookmark_count" property="bookmarkCount"/>
     </resultMap>
@@ -36,6 +37,7 @@
         <result column="mongo_id" property="mongoId"/>
         <result column="path_num" property="pathNum"/>
         <result column="address" property="address"/>
+        <result column="address2" property="address2"/>
 
         <association property="masterpieceParticipant" resultMap="MasterpieceParticipantResultMap"></association>
     </resultMap>
@@ -85,7 +87,7 @@
 
     <insert id="seqsave" parameterType="MasterpieceSeg">
         insert into masterpiece_seg
-        values (0, #{masterpieceBoardId}, #{mongoId}, #{pathNum}, #{address})
+        values (0, #{masterpieceBoardId}, #{mongoId}, #{pathNum}, #{address}, #{address2})
     </insert>
     <select id="search" resultMap="MasterpieceBoardResultMap">
         SELECT

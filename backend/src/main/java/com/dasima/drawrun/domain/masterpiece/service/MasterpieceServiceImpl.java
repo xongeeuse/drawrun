@@ -3,6 +3,7 @@ package com.dasima.drawrun.domain.masterpiece.service;
 import com.dasima.drawrun.domain.course.repository.CourseRepository;
 import com.dasima.drawrun.domain.course.vo.GeoPoint;
 import com.dasima.drawrun.domain.course.vo.KakaoRegionResponse;
+import com.dasima.drawrun.domain.course.vo.KakaoRoadAddressResponse;
 import com.dasima.drawrun.domain.masterpiece.dto.request.MasterpieceJoinRequest;
 import com.dasima.drawrun.domain.masterpiece.dto.request.MasterpieceSaveRequest;
 import com.dasima.drawrun.domain.masterpiece.dto.response.MasterpieceListResponse;
@@ -68,6 +69,7 @@ public class MasterpieceServiceImpl implements MasterpieceService{
             // 주소를 구해줘야 함
             Point point = tmp.get(0);
             KakaoRegionResponse kakaoRegionResponse = kakaoAddressGenerator.getRegionByCoordinates(point.getY(), point.getX());
+            KakaoRoadAddressResponse kakaoRoadAddressResponse = kakaoAddressGenerator.getRoadAddressByCoordinates(point.getY(), point.getX());
 
             // MongoDB에 저장
             Path path = courseRepository.save(new Path(tmp));
@@ -79,6 +81,7 @@ public class MasterpieceServiceImpl implements MasterpieceService{
                             .mongoId(path.getId())
                             .pathNum(++pathNum)
                             .address(kakaoRegionResponse.getDocuments().get(0).getAddress_name())
+                            .address2(kakaoRoadAddressResponse.getDocuments().get(0).getRoadAddress().getAddressName())
                             .build()
             );
         }
