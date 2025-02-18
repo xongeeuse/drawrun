@@ -15,4 +15,5 @@ public interface MasterpieceService {
     List<PathListResponse> pathlist(int masterpieceBoardId);
     int join(MasterpieceJoinRequest masterpieceJoinRequest, int userId);
     int complete(int masterpieceSegId);
+    List<MasterpieceListResponse> completelist(int userId);
 }

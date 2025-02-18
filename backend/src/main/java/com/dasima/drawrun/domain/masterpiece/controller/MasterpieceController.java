@@ -6,6 +6,7 @@ import com.dasima.drawrun.domain.masterpiece.dto.request.MasterpieceCompleteRequ
 import com.dasima.drawrun.domain.masterpiece.dto.request.MasterpieceJoinRequest;
 import com.dasima.drawrun.domain.masterpiece.dto.request.MasterpieceSaveRequest;
 import com.dasima.drawrun.domain.masterpiece.service.MasterpieceService;
+import com.dasima.drawrun.domain.user.entity.User;
 import com.dasima.drawrun.global.security.UserPrinciple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +39,11 @@ public class MasterpieceController {
     @GetMapping("/pathlist/{masterpieceBoardId}")
     public ResponseEntity<?> pathlist(@PathVariable int masterpieceBoardId){
         return ResponseEntity.ok(masterpieceService.pathlist(masterpieceBoardId));
+    }
+
+    @GetMapping("/completelist")
+    public ResponseEntity<?> completelist(@AuthenticationPrincipal UserPrinciple userPrinciple){
+        return ResponseEntity.ok(masterpieceService.completelist(userPrinciple.getUserId()));
     }
 
     // 참여 하기

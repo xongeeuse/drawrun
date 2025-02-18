@@ -24,6 +24,8 @@ public interface MasterpieceMapper {
     int complete(int masterpieceSegId);
     List<MasterpieceSeg> check(int masterpieceBoardId);
     int updatestate(int masterpieceBoardId);
-
     MasterpieceSeg returnpk(int masterpieceSegId);
+
+    // 자기가 완료한 걸작 return
+    List<MasterpieceBoard> completelist(int userId);
 }

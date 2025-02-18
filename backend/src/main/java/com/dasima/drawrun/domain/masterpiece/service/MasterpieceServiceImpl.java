@@ -238,5 +238,47 @@ public class MasterpieceServiceImpl implements MasterpieceService{
             return 0;
     }
 
+    public List<MasterpieceListResponse> completelist(int userId){
+        List<MasterpieceListResponse> masterpieceListResponses = new ArrayList<MasterpieceListResponse>();
+        List<MasterpieceBoard> masterpieceBoards = masterpieceMapper.completelist(userId);
+
+        for(MasterpieceBoard masterpieceBoard : masterpieceBoards){
+            LocalDateTime createDate = masterpieceBoard.getExpireDate();
+            LocalDateTime expireDate = masterpieceBoard.getCreateDate();
+
+            // 구정보 추출
+            String address = masterpieceBoard.getUserPath().getAddress();
+            int guIndex = address.indexOf("구");
+            String gu = null;
+
+            if (guIndex != -1) {
+                int start = address.lastIndexOf(" ", guIndex) + 1;
+                gu = address.substring(start, guIndex + 1);
+            }
+
+            User user = userRepository.findById(masterpieceBoard.getUserId()).orElse(null);
+
+            // list 저장
+            masterpieceListResponses.add(
+                    MasterpieceListResponse.builder()
+                            .dDay((int) ChronoUnit.DAYS.between(expireDate.toLocalDate(), createDate.toLocalDate()))
+                            .gu(gu)
+                            .distance(masterpieceBoard.getUserPath().getDistance())
+                            .pathImgUrl(masterpieceBoard.getUserPath().getPathImgUrl())
+                            .profileImgUrl(user.getProfileImgUrl())
+                            .nickname(user.getUserNickname())
+                            .userPathId(masterpieceBoard.getUserPath().getUserPathId())
+                            .restrictCount(masterpieceBoard.getRestrictCount())
+                            .userId(masterpieceBoard.getUserId())
+                            .masterpieceBoardId(masterpieceBoard.getMasterpieceBoardId())
+                            .courseName(masterpieceBoard.getUserPath().getName())
+                            .joinCount(masterpieceBoard.getParticipantCount())
+                            .state(masterpieceBoard.getState())
+                            .build()
+            );
+        }
+        return masterpieceListResponses;
+    }
+
 
 }
