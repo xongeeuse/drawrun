@@ -8,6 +8,7 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.viewModels
+import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -43,6 +44,16 @@ class UserActivity : BaseActivity() {
         val badgeIcon: ImageView = findViewById(R.id.badgeIcon)
         val myArtCustomIcon: ImageView = findViewById(R.id.myartcustomIcon)
         val emptyMessageTextView: TextView = findViewById(R.id.emptyMessageTextView)
+
+        val pageTitleTextView = findViewById<TextView>(R.id.pageTitleTextView)
+
+        val customFont = ResourcesCompat.getFont(this, R.font.praise_regular)
+        pageTitleTextView.apply {
+            typeface = customFont
+            text = "Draw Run"
+            setTextColor(Color.WHITE)
+            textSize = 50f
+        }
 
         // RecyclerView 설정
         recyclerView.layoutManager = LinearLayoutManager(this)

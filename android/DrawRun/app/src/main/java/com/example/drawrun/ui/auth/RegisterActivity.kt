@@ -3,8 +3,10 @@ package com.example.drawrun.ui.auth
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.example.drawrun.R
@@ -35,6 +37,10 @@ class RegisterActivity : AppCompatActivity() {
         val etUserName = findViewById<EditText>(R.id.etUserName)
         val etNickname = findViewById<EditText>(R.id.etNickname)
         val btnRegister = findViewById<Button>(R.id.btnRegister)
+
+        val tvTitle = findViewById<TextView>(R.id.tvTitle)
+        val customFont = ResourcesCompat.getFont(this, R.font.praise_regular)
+        tvTitle.typeface = customFont
 
         btnRegister.setOnClickListener {
             val userId = etUserId.text.toString()
