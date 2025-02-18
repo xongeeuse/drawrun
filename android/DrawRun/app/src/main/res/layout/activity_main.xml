@@ -52,24 +52,21 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/pretendard_regular"
-            android:text="신호동"
+            android:text="강서구"
             android:textColor="@color/gray"
             android:textSize="14sp"/>
     </LinearLayout>
 
-    <!-- 뷰페이저 (화면 크기에 맞춰 조정) -->
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginHorizontal="24dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintDimensionRatio="1:1"
+        android:layout_width="330dp"
+        android:layout_height="330dp"
         app:layout_constraintTop_toBottomOf="@id/tvRunNear"
+        android:layout_marginTop="16dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/btnLogin"
-        app:layout_constraintVertical_bias="0.3"/>
+        app:layout_constraintHorizontal_bias="0.5"/>
+
 
     <!-- 로그인 버튼 -->
     <Button
