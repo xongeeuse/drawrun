@@ -57,7 +57,7 @@ class UserActivity : BaseActivity() {
 
         bookmarkIcon.setOnClickListener{
             val userName = userViewModel.userData.value?.data?.nickname
-//            navigateToBookMark(userName)
+            navigateToBookMark(userName)
         }
 
         badgeIcon.setOnClickListener {
@@ -89,8 +89,8 @@ class UserActivity : BaseActivity() {
 
             userNameTextView.text = userData.nickname
             Glide.with(this)
-                .load(userData.profileImgUrl ?: R.drawable.ic_default_profile)
-                .placeholder(R.drawable.ic_default_profile)
+                .load(userData.profileImgUrl ?: R.drawable.user_icon)
+                .placeholder(R.drawable.user_icon)
                 .into(userProfileImageView)
         })
 
@@ -123,6 +123,12 @@ class UserActivity : BaseActivity() {
 
     private fun navigateToMyArtCustom(userName: String?) {
         val intent = Intent(this, MyArtCustomActivity::class.java)
+        intent.putExtra("USER_NAME", userName ?: "사용자")
+        startActivity(intent)
+    }
+
+    private fun navigateToBookMark(userName: String?) {
+        val intent = Intent(this, BookMarkActivity::class.java)
         intent.putExtra("USER_NAME", userName ?: "사용자")
         startActivity(intent)
     }
