@@ -5,9 +5,11 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.drawrun.MainActivity
 import com.example.drawrun.R
@@ -35,6 +37,10 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
+        val pageTitleTextView = findViewById<TextView>(R.id.pageTitleTextView)
+        val customFont = ResourcesCompat.getFont(this, R.font.praise_regular)
+        pageTitleTextView.typeface = customFont
+
         // UI 요소 초기화
         userIdEditText = findViewById(R.id.etUserId)
         passwordEditText = findViewById(R.id.etPassword)
@@ -51,6 +57,13 @@ class LoginActivity : AppCompatActivity() {
             } else {
                 Toast.makeText(this, "아이디와 비밀번호를 입력하세요.", Toast.LENGTH_SHORT).show()
             }
+        }
+
+        // 회원가입 버튼 초기화 및 클릭 이벤트 처리
+        val registerButton: Button = findViewById(R.id.btnRegister)
+        registerButton.setOnClickListener {
+            val intent = Intent(this@LoginActivity, RegisterActivity::class.java)
+            startActivity(intent)
         }
 
         // 로그인 상태 관찰
