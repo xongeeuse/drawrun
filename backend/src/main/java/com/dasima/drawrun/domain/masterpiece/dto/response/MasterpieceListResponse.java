@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 public class MasterpieceListResponse {
+    private String address2;
     private int masterpieceBoardId;
     private int userId;
     private int restrictCount;

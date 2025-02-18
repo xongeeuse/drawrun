@@ -16,6 +16,7 @@ import java.util.List;
 public class CourseResponse {
     private List<GeoPoint> path;
     private String location;
+    private String address2;
     private int userPathId;
     private double distance;
 }

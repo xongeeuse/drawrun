@@ -121,6 +121,7 @@ public class MasterpieceServiceImpl implements MasterpieceService{
                             .userPathId(masterpieceBoard.getUserPath().getUserPathId())
                             .restrictCount(masterpieceBoard.getRestrictCount())
                             .userId(masterpieceBoard.getUserId())
+                            .address2(masterpieceBoard.getUserPath().getAddress2())
                             .masterpieceBoardId(masterpieceBoard.getMasterpieceBoardId())
                             .courseName(masterpieceBoard.getUserPath().getName())
                             .joinCount(masterpieceBoard.getParticipantCount())
@@ -154,6 +155,7 @@ public class MasterpieceServiceImpl implements MasterpieceService{
                 .gu(gu)
                 .distance(masterpieceBoard.getUserPath().getDistance())
                 .pathImgUrl(masterpieceBoard.getUserPath().getPathImgUrl())
+                        .address2(masterpieceBoard.getUserPath().getAddress2())
                 .profileImgUrl(user.getProfileImgUrl())
                 .nickname(user.getUserNickname())
                 .userPathId(masterpieceBoard.getUserPath().getUserPathId())
@@ -203,6 +205,7 @@ public class MasterpieceServiceImpl implements MasterpieceService{
                             .masterpieceSegId(masterpieceSeg.getMasterpieceSegId())
                             .nickname(nicknameOrState)
                             .address(masterpieceSeg.getAddress())
+                            .address(masterpieceSeg.getAddress2())
                             .build()
             );
         }
@@ -273,6 +276,7 @@ public class MasterpieceServiceImpl implements MasterpieceService{
                             .userPathId(masterpieceBoard.getUserPath().getUserPathId())
                             .restrictCount(masterpieceBoard.getRestrictCount())
                             .userId(masterpieceBoard.getUserId())
+                            .address2(masterpieceBoard.getUserPath().getAddress2())
                             .masterpieceBoardId(masterpieceBoard.getMasterpieceBoardId())
                             .courseName(masterpieceBoard.getUserPath().getName())
                             .joinCount(masterpieceBoard.getParticipantCount())

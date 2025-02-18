@@ -18,6 +18,7 @@ public class CourseListResponse {
     private String profileImgUrl;
     private String courseName;
     private String location;
+    private String address2;
     private Boolean isBookmark;
     private LocalDateTime createdAt;
     private double distance;
