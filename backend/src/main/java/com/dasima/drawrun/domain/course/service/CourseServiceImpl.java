@@ -13,24 +13,18 @@ import com.dasima.drawrun.domain.course.repository.CourseRepository;
 import com.dasima.drawrun.domain.course.vo.KakaoRegionResponse;
 import com.dasima.drawrun.domain.course.vo.GeoPoint;
 
+import com.dasima.drawrun.domain.course.vo.KakaoRoadAddressResponse;
 import com.dasima.drawrun.domain.user.entity.User;
 import com.dasima.drawrun.domain.user.repository.UserRepository;
 import com.dasima.drawrun.global.util.KakaoAddressGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.geo.Point;
 import org.springframework.data.mongodb.core.geo.GeoJsonLineString;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
-import org.springframework.http.*;
 
-import javax.swing.text.html.Option;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -51,6 +45,7 @@ public class CourseServiceImpl implements CourseService{
         GeoPoint standard = dto.getPath().get(0);
         // 지역을 가지고 온다.
         KakaoRegionResponse tmp = kakaoAddressGenerator.getRegionByCoordinates(standard.getLongitude(), standard.getLatitude());
+        KakaoRoadAddressResponse tmp2 = kakaoAddressGenerator.getRoadAddressByCoordinates(standard.getLongitude(), standard.getLatitude());
         // 지역을 받아옴
         // 몽고디비 해쉬값 받아옴
         // MongoDB Geojson 저장
@@ -58,12 +53,14 @@ public class CourseServiceImpl implements CourseService{
         List<Point> entityList = dtoList.stream().map(geoPoint -> new Point(geoPoint.getLatitude(), geoPoint.getLongitude())).collect(Collectors.toList());
 
 
+
         Path path = courseRepository.save(new Path(entityList));
 
 
         // Dto를 Entity로 바꿔줘야함
         UserPath userPath = UserPath.builder()
-                        .address(tmp.getDocuments().get(0).getAddress_name())
+                .address(tmp.getDocuments().get(0).getAddress_name())
+                .address2(tmp2.getDocuments().get(0).getRoadAddress().getAddressName())
                 .distance(dto.getDistance())
                 .userId(userId)
                 .pathId(path.getId())

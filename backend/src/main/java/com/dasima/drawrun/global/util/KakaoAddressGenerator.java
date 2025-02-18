@@ -1,6 +1,7 @@
 package com.dasima.drawrun.global.util;
 
 import com.dasima.drawrun.domain.course.vo.KakaoRegionResponse;
+import com.dasima.drawrun.domain.course.vo.KakaoRoadAddressResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -22,6 +23,9 @@ public class KakaoAddressGenerator {
     @Value("${kakao.api.url}")
     private String kakaoApiUrl;
 
+    @Value("${kakao.api.url2}")
+    private String kakaoApiUrl2;
+
     private final RestTemplate restTemplate;
 
     public KakaoRegionResponse getRegionByCoordinates(double x, double y){
@@ -37,6 +41,23 @@ public class KakaoAddressGenerator {
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
         ResponseEntity<KakaoRegionResponse> response = restTemplate.exchange(uri, HttpMethod.GET, entity, KakaoRegionResponse.class);
+
+        return response.getBody();
+    }
+
+    public KakaoRoadAddressResponse getRoadAddressByCoordinates(double x, double y){
+        URI uri = UriComponentsBuilder.fromHttpUrl(kakaoApiUrl2)
+                .queryParam("x", x)
+                .queryParam("y", y)
+                .queryParam("input_coord=WGS84")
+                .build()
+                .toUri();
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "KakaoAK " + kakaoApiKey);
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<KakaoRoadAddressResponse> response = restTemplate.exchange(uri, HttpMethod.GET, entity, KakaoRoadAddressResponse.class);
 
         return response.getBody();
     }
