@@ -25,6 +25,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.drawrun.R
 import com.example.drawrun.data.model.ParcelablePoint
 import com.example.drawrun.services.NavigationForegroundService
+import com.example.drawrun.ui.common.BaseActivity
 import com.example.drawrun.ui.map.fragment.CourseCompleteBottomSheet
 import com.example.drawrun.ui.runrecord.RunRecordActivity
 import com.example.drawrun.utils.RetrofitInstance
@@ -85,7 +86,9 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
 import java.io.FileOutputStream
 
-class MapActivity : AppCompatActivity() {
+class MapActivity : BaseActivity() {
+
+    override fun getLayoutId(): Int = R.layout.activity_map
 
     // MapBox 관련 변수 초기화
     private lateinit var mapView: MapView
@@ -128,6 +131,8 @@ class MapActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
+        setupBottomNavigation()
+
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
