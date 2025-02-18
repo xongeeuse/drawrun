@@ -25,10 +25,10 @@ class MasterpieceAdapter(
             binding.restrictCountText.text = " \uD83D\uDC65 ${item.joinCount} / ${item.restrictCount}"
 
             // D-Day 조건 처리
-            binding.dDayText.text = if (item.dday == 0) {
-                "D - day"
-            } else {
-                "D - ${item.dday}"
+            binding.dDayText.text = when {
+                item.dday == 0 -> "D - day"
+                item.dday > 0 -> "D - ${item.dday}"
+                else -> "종료"
             }
 
             // 이미지 로딩 (Glide 사용)
