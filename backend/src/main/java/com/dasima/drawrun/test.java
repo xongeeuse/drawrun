@@ -15,6 +15,6 @@ public class test {
         System.out.println("이미지가 겹치는걸 해결하자ㅇㄴㅁㅇㄴㅁㅇㄹㅇㄹㅇㄴㄹㅇㄴㄴㅁㄴ");
         System.out.println("제발 되어주세요");
         System.out.println("dsadsa");
-        System.out.println("되어주셈ㅇㄹㅇdwㅇㄴㅁㅇㄴㅁㅇㄴㅁㅇㅁㄴqdqㅇㅈㅇㅈㅇㅈㅇㄴㅁㅇㄴㅁwgit chㄴㄹㄹfewfweㄷㅈㄹㄷㅈㅇㄴㅇㄴㅁㅇㄴㅁㄴㅁㅇㄹㄷㅈㄹㄷㅈㅇㄴㅁㅇㄴㅁㅇㄴㅇㅁㅇㄴㅁㅇㄴㅁㅇㄴㅁㅇㄴㅁㄹㄴㄹㅇㄴㄴㅁㅇㄴㅁㅇㄴㅁㄹㅇffdfdfdewfewfweㄴㄹㅇㄴㄹㄷㅈㄹㄷㅈgit sㄹㅈㄷㄹㄷㅈgitㅇㄴㅁㅇㅁㄴgi");
+        System.out.println("되어주셈ㅇㄹㅇdwㅇㄴㅁㅇㄴㅁㅇㄴㅁㅇㅁㄴㅇㄴㅁㅇㄴㅁqdqㅇㅈㅇㅈㅇㅈㅇㄴㅁㅇㄴㅁwgit chㄴㄹㄹfewfweㄷㅈㄹㄷㅈㅇㄴㅇㄴㅁㅇㄴㅁㄴㅁㅇㄹㄷㅈㄹㄷㅈㅇㄴㅁㅇㄴㅁㅇㄴㅇㅁㅇㄴㅁㅇㄴㅁㅇㄴㅁㅇㄴㅁㄹㄴㄹㅇㄴㄴㅁㅇㄴㅁㅇㄴㅁㄹㅇffdfdfdewfewfweㄴㄹㅇㄴㄹㄷㅈㄹㄷㅈgit sㄹㅈㄷㄹㄷㅈgitㅇㄴㅁㅇㅁㄴgi");
     }
 }
