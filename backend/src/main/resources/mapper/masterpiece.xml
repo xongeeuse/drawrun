@@ -172,5 +172,42 @@
         from masterpiece_participant
         where masterpiece_seg_id = #{masterpieceSegId}
     </select>
+    
+    <select id="completelist" parameterType="integer" resultMap="MasterpieceBoardResultMap">
+        SELECT
+            mb.masterpiece_board_id,
+            mb.user_id,
+            mb.restrict_count,
+            mb.user_path_id,
+            mb.state,
+            mb.create_date,
+            mb.update_date,
+            mb.expire_date,
+            mb.state,
+            up.path_img_url,
+            up.distance,
+            up.address,
+            COUNT(mp.masterpiece_participant_id) AS participant_count  -- 참가자 수 계산
+        FROM
+            masterpiece_board mb
+                LEFT JOIN user_path up
+                          ON mb.user_path_id = up.user_path_id
+                LEFT JOIN masterpiece_seg ms
+                          ON mb.masterpiece_board_id = ms.masterpiece_board_id
+                LEFT JOIN masterpiece_participant mp
+                          ON ms.masterpiece_seg_id = mp.masterpiece_seg_id
+        where mp.user_id = #{userId} and mb.state = 1
+        GROUP BY
+            mb.masterpiece_board_id,  -- masterpiece_board 별로 그룹핑
+            mb.user_id,
+            mb.restrict_count,
+            mb.user_path_id,
+            mb.state,
+            mb.create_date,
+            mb.update_date,
+            mb.expire_date
+        ORDER BY
+            mb.expire_date asc;
+    </select>
 
 </mapper>
