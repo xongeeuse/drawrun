@@ -47,6 +47,13 @@
         <result column="masterpiece_seg_id" property="masterpieceSegId"/>
         <result column="create_date" property="createDate"/>
     </resultMap>
+
+    <select id="returnpk" parameterType="integer" resultMap="MasterpieceSegResultMap">
+        select masterpiece_board_id
+        from masterpiece_seg
+        where masterpiece_seg_id = #{masterpieceSegId}
+    </select>
+
     <update id="updatestate" parameterType="integer">
         update masterpiece_board
         set state = 1
