@@ -651,9 +651,9 @@ class NaviActivity : AppCompatActivity() {
 
     private fun showArrivalDialog(distanceInKm: Double, time: Int, totalDistance: Double, totalDuration: Int) {
         // 이미 계산된 값을 사용하므로 재계산할 필요 X
-        // val totalDistance = calculateTotalDistance() / 1000.0
-        // val (minutes, seconds) = calculateElapsedTime()
-        // val totalDuration = minutes * 60 + seconds
+         val totalDistance = calculateTotalDistance() / 1000.0
+         val (minutes, seconds) = calculateElapsedTime()
+         val totalDuration = minutes * 60 + seconds
 
         val dialogView = layoutInflater.inflate(R.layout.dialog_arrival, null)
         val dialog = AlertDialog.Builder(this).setView(dialogView).create()
