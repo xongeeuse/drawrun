@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:text="Draw Run"
         android:textSize="50sp"
-        android:textColor="#33E998"
+        android:textColor="@color/logo_color"
         android:fontFamily="@font/praise_regular"
         android:includeFontPadding="true"
         android:paddingTop="40dp"
