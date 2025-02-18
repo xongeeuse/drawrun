@@ -49,6 +49,7 @@ public class MasterpieceController {
 
     // 완료
     // 완료하면서 전체 완료도 확인한다.
+    // 전체 완료 시 1 전체 완료 가 아닐 시 0
     @PostMapping("/complete")
     public ResponseEntity<?> complete(@AuthenticationPrincipal UserPrinciple userPrinciple, @RequestBody MasterpieceCompleteRequest masterpieceCompleteRequest)
     {

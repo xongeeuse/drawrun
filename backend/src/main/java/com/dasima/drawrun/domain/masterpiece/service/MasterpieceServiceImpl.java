@@ -217,7 +217,7 @@ public class MasterpieceServiceImpl implements MasterpieceService{
     }
 
     public int complete(int masterpieceSegId){
-        // 일단 무조건 갱신해야 participant 테이블의 state를 갱신해줘야 됨
+        // 일단 무조건 갱신해야됨 participant 테이블의 state를 갱신해줘야 됨
         masterpieceMapper.complete(masterpieceSegId);
         MasterpieceSeg masterpieceSegTmp = masterpieceMapper.returnpk(masterpieceSegId);
         int masterpieceBoardId = masterpieceSegTmp.getMasterpieceBoardId();
