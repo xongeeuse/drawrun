@@ -22,7 +22,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- 북마크 아이콘 -->
+
     <ImageView
         android:id="@+id/settingsIcon"
         android:layout_width="36dp"
@@ -65,6 +65,7 @@
         app:layout_constraintStart_toEndOf="@id/userProfileImageView"
         app:layout_constraintTop_toTopOf="@id/userProfileImageView" />
 
+    <!-- 북마크 아이콘 -->
     <ImageView
         android:id="@+id/bookmarkIcon"
         android:layout_width="40dp"

@@ -38,6 +38,7 @@ class UserActivity : BaseActivity() {
 
         val userNameTextView: TextView = findViewById(R.id.userNameTextView)
         val userProfileImageView: ImageView = findViewById(R.id.userProfileImageView)
+        val bookmarkIcon: ImageView = findViewById(R.id.bookmarkIcon)
         val recyclerView: RecyclerView = findViewById(R.id.runningHistoryRecyclerView)
         val settingsIcon: ImageView = findViewById(R.id.settingsIcon)
         val badgeIcon: ImageView = findViewById(R.id.badgeIcon)
@@ -53,6 +54,12 @@ class UserActivity : BaseActivity() {
 
         // 클릭 이벤트 설정
         settingsIcon.setOnClickListener { navigateToSettings() }
+
+        bookmarkIcon.setOnClickListener{
+            val userName = userViewModel.userData.value?.data?.nickname
+//            navigateToBookMark(userName)
+        }
+
         badgeIcon.setOnClickListener {
             val userName = userViewModel.userData.value?.data?.nickname
             navigateToBadge(userName)

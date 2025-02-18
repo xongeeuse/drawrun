@@ -1,5 +1,6 @@
 package com.example.drawrun.data.api
 
+import com.example.drawrun.data.dto.response.user.GetBookMarkResponse
 import com.example.drawrun.data.dto.response.user.GetMyArtCustomResponse
 import com.example.drawrun.data.dto.response.user.GetMyInfoResponse
 import com.example.drawrun.data.model.MypageResponse
@@ -18,4 +19,7 @@ interface UserApi {
 
     @GET("user/art") // 아트컬렉션 조회
     suspend fun getMyArtCustom(): Response<GetMyArtCustomResponse>
+
+    @GET("mypage/bookmark") // 북마크 조회
+    suspend fun getBookmarkInfo(): Response<GetBookMarkResponse>
 }
