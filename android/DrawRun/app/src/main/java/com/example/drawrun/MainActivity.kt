@@ -36,6 +36,7 @@ import com.example.drawrun.data.dto.response.search.CourseData
 import com.example.drawrun.data.repository.SearchRepository
 import com.example.drawrun.dto.course.PathPoint
 import com.example.drawrun.ui.main.fragment.CoursePagerAdapter
+import com.example.drawrun.ui.map.AiMapActivity
 import com.example.drawrun.ui.navi.NaviActivity
 import com.example.drawrun.utils.RetrofitInstance
 import kotlinx.coroutines.launch
@@ -126,7 +127,7 @@ class MainActivity : BaseActivity() {
         btnAICourse.setOnClickListener {
             val accessToken = SecureStorage.getAccessToken(this)
             if (accessToken != null) {
-                val intent = Intent(this, MapActivity::class.java)
+                val intent = Intent(this, AiMapActivity::class.java)
                 startActivity(intent)
             } else {
                 val intent = Intent(this, LoginActivity::class.java)
@@ -244,7 +245,7 @@ class MainActivity : BaseActivity() {
             location?.let {
                 val geocoder = Geocoder(this, Locale.KOREAN)
                 val address = geocoder.getFromLocation(it.latitude, it.longitude, 1)?.firstOrNull()
-                val areaName = address?.subLocality ?: "알 수 없음"
+                val areaName = address?.subLocality ?: "강서구"
                 tvLocation.text = areaName
 
                 // ✅ 위치 기반 API 요청 실행

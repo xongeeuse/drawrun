@@ -1,6 +1,7 @@
 package com.example.drawrun.utils
 
 import android.content.Context
+import com.example.drawrun.data.api.AiCourseApi
 import com.example.drawrun.data.api.AuthApi
 import com.example.drawrun.data.api.CourseApi
 import com.example.drawrun.data.api.ImageUploadApi
@@ -45,5 +46,5 @@ object RetrofitInstance {
     fun ImageUploadApi(context: Context): ImageUploadApi = getRetrofit(context).create(ImageUploadApi::class.java)
     fun RunRecordApi(context: Context): RunRecordApi = getRetrofit(context).create(RunRecordApi::class.java)
     fun MasterpieceApi(context: Context): MasterpieceApi = getRetrofit(context).create(MasterpieceApi::class.java)
-
+    fun AiCourseApi(context: Context): AiCourseApi = getRetrofit(context).create(AiCourseApi::class.java)
 }
