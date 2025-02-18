@@ -121,6 +121,7 @@ public class CourseServiceImpl implements CourseService{
                     .profileImgUrl(user.getProfileImgUrl())
                     .courseName(userPath.getName())
                     .location(gu)
+                    .address2(userPath.getAddress2())
                     .isBookmark(courseMapper.isBookmark(userId, userPath.getUserPathId()))
                     .createdAt(userPath.getCreateDate())
                     .distance(userPath.getDistance())
@@ -153,6 +154,7 @@ public class CourseServiceImpl implements CourseService{
                 .userPathId(userPath.getUserPathId())
                 .distance(userPath.getDistance())
                 .location(userPath.getAddress())
+                .address2(userPath.getAddress2())
                 .path(geoPoints)
                 .build();
     }

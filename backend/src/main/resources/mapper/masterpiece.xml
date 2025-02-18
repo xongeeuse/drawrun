@@ -102,6 +102,7 @@
             up.path_img_url,
             up.distance,
             up.address,
+            up.address2,
             up.name,
             COUNT(mp.masterpiece_participant_id) AS participant_count  -- 참가자 수 계산
         FROM
@@ -140,6 +141,7 @@
             up.path_img_url,
             up.distance,
             up.address,
+            up.address2,
             up.name,
             COUNT(mp.masterpiece_participant_id) AS participant_count  -- 참가자 수 계산
         FROM
@@ -189,6 +191,7 @@
             up.path_img_url,
             up.distance,
             up.address,
+            up.address2,
             COUNT(mp.masterpiece_participant_id) AS participant_count  -- 참가자 수 계산
         FROM
             masterpiece_board mb

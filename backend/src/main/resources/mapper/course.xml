@@ -12,7 +12,7 @@
         <result column="name" property="name"/>
         <result column="create_date" property="createDate"/>
         <result column="address" property="address"/>
-        <result column="address" property="address2"/>
+        <result column="address2" property="address2"/>
         <result column="distance" property="distance"/>
         <result column="bookmark_count" property="bookmarkCount"/>
     </resultMap>

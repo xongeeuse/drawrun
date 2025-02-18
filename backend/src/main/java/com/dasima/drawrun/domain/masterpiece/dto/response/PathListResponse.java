@@ -16,5 +16,6 @@ public class PathListResponse {
     private List<GeoPoint> path;
     private int masterpieceSegId;
     private String address;
+    private String address2;
     private String nickname;
 }
