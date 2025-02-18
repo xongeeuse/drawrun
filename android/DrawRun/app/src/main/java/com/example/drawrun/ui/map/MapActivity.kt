@@ -105,6 +105,9 @@ class MapActivity : AppCompatActivity() {
     private lateinit var tts: TextToSpeech
     private var isNavigating = false
 
+    private var aiPath: List<ParcelablePoint>?=null
+    private var isAiRoute = false
+
     // 위치 권한 요청을 처리하기 위하 ActivityResultLanuncher
     private val locationPermissionRequest = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -125,6 +128,22 @@ class MapActivity : AppCompatActivity() {
         setContentView(R.layout.activity_map)
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+        // ✅ AI 추천 경로 데이터를 Intent에서 가져오기 (안전한 변환 처리)
+        aiPath = intent.getParcelableArrayListExtra("aiPath")
+
+        if (!aiPath.isNullOrEmpty()) {
+            val pathPoints = aiPath!!.map { it.point } // ParcelablePoint → Point 변환
+            points.clear()
+            points.addAll(pathPoints)
+            drawAiPath(pathPoints) // ✅ 폴리라인(빨간색) 그리기
+            isAiRoute = true
+            Log.d("MapActivity", "📌 받은 AI 경로 데이터: $aiPath")
+        } else {
+            isAiRoute = false
+        }
+
+        Log.d("MapActivity", "📌 받은 AI 경로 데이터: $aiPath") // ✅ 로그 추가
 
         // 백그라운드 tts
         tts = TextToSpeech(this){ status ->
@@ -150,6 +169,9 @@ class MapActivity : AppCompatActivity() {
         mapboxNavigation = MapboxNavigationProvider.create(
             NavigationOptions.Builder(this.applicationContext).build()
         )
+
+
+
     }
 
     // 위치 권한 확인 및 요청
@@ -161,6 +183,43 @@ class MapActivity : AppCompatActivity() {
         }
     }
 
+//    Ai 먀먀먀
+    // ✅ AI 경로를 지도에 폴리라인(빨간색)으로 표시
+    private fun drawAiPath(points: List<Point>) {
+        if (!::polylineAnnotationManager.isInitialized) {
+            Log.e("MapActivity", "❌ polylineAnnotationManager가 아직 초기화되지 않음!")
+            return
+        }
+
+        if (points.isEmpty()) {
+            Log.e("MapActivity", "❌ AI 경로 포인트가 비어 있음!")
+            return
+        }
+
+        Log.d("MapActivity", "📌 AI 경로 표시 시작 - 포인트 개수: ${points.size}")
+
+        polylineAnnotationManager.deleteAll() // 기존 경로 초기화
+
+        val polylineOptions = PolylineAnnotationOptions()
+            .withPoints(points)
+            .withLineColor("#FF0000") // AI 경로 색상 (빨간색)
+            .withLineWidth(5.0)
+
+        polylineAnnotationManager.create(polylineOptions)
+        Log.d("MapActivity", "✅ AI 경로 생성 완료")
+
+        // ✅ AI 경로의 첫 번째 지점으로 카메라 이동 (AI 경로가 있을 때만)
+        val firstPoint = points.firstOrNull()
+        if (firstPoint != null) {
+            Log.d("MapActivity", "📌 카메라 이동: ${firstPoint.latitude()}, ${firstPoint.longitude()}")
+
+            mapView.getMapboxMap().setCamera(CameraOptions.Builder()
+                .center(firstPoint) // 첫 번째 포인트로 이동
+                .zoom(14.0) // 적절한 줌 레벨 설정
+                .build()
+            )
+        }
+    }
     // 위치 권한 확인
     private fun checkLocationPermission(): Boolean {
         return ActivityCompat.checkSelfPermission(
@@ -236,7 +295,7 @@ class MapActivity : AppCompatActivity() {
 
             // 경로 생성 버튼 클릭 시 동작 추가
             generateRouteButton.setOnClickListener {
-                if (points.size >= 2) {
+                if (points.size >= 1) {
                     requestRoute(points, manualRequest = true)  // 사용자가 찍은 빨간색 좌표를 기반으로 도보 경로 요청
                     Log.d("NAVINAVI", "사용자 지정 경로 요청: ${points}")
                     Toast.makeText(this, "경로를 생성하고 스냅샷을 찍습니다.", Toast.LENGTH_SHORT).show()
@@ -261,7 +320,13 @@ class MapActivity : AppCompatActivity() {
                     startNavigationForegroundService()
                     return@setOnClickListener
                 }
-
+                // ✅ AI 경로가 있는 경우 처리
+                if (isAiRoute && !aiPath.isNullOrEmpty()) {
+                    val pathPoints = aiPath!!.map { it.point } // ParcelablePoint → Point 변환
+                    points.clear()  // 기존 사용자 입력 포인트 초기화
+                    points.addAll(pathPoints)  // AI 경로 추가
+                    drawAiPath(pathPoints) // ✅ AI 경로를 지도에 표시
+                }
                 // ✅ 현재 사용자 위치 가져오기
                 fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                     if (location != null) {
@@ -385,7 +450,7 @@ class MapActivity : AppCompatActivity() {
         val polylineOptions = PolylineAnnotationOptions()
             .withPoints(points)
             .withLineColor("#FF0000") // 경로 색상(빨간색)
-            .withLineWidth(4.0)  // 경로 두께
+            .withLineWidth(5.0)  // 경로 두께
 
 //        polylineAnnotationManager.deleteAll()  // 기존 경로 삭제
         polylineAnnotationManager.create(polylineOptions)  // 새로운 경로 추가
@@ -428,7 +493,7 @@ class MapActivity : AppCompatActivity() {
                             captureMapSnapshotAndShow(distanceInKm)
                             Toast.makeText(
                                 this@MapActivity,
-                                "경로가 생성되었습니다. 내비게이션을 시작하려면 버튼을 눌러주세요.",
+                                "경로가 생성되었습니다.",
                                 Toast.LENGTH_LONG
                             ).show()
                         }

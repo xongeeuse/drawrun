@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.map.AiMapActivity"
+    android:background="#171515">
+
+    <LinearLayout
+        android:id="@+id/layoutTitleBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="60dp">
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="@font/pretendard_regular"
+            android:text="나만의 코스 만들기 - AI"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:textAlignment="center"
+            android:gravity="center"
+
+            />
+
+    </LinearLayout>
+
+    <!-- 캔버스 뷰 -->
+    <FrameLayout
+        android:id="@+id/canvasContainer"
+        android:layout_width="330dp"
+        android:layout_height="330dp"
+        android:layout_marginTop="16dp"
+        android:background="@android:color/white"
+        android:clipToOutline="true"
+        app:layout_constraintBottom_toTopOf="@id/layoutControls"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/layoutTitleBar"
+        app:layout_constraintVertical_bias="0.295">
+
+        <!-- 캔버스 뷰 -->
+        <com.example.drawrun.ui.map.CanvasView
+            android:id="@+id/canvasView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/white"/>
+
+        <!-- 캔버스 위의 예시 텍스트 -->
+        <TextView
+            android:id="@+id/tvCanvasHint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal|bottom"
+            android:layout_marginBottom="16dp"
+            android:text="원하는 그림을 그려주세요."
+            android:textColor="@android:color/darker_gray"
+            android:fontFamily="@font/pretendard_regular"
+            android:textSize="14sp"
+            android:gravity="center"/>
+    </FrameLayout>
+
+
+    <LinearLayout
+        android:id="@+id/layoutControls"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="150dp"
+        android:orientation="vertical"
+        android:padding="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:layout_editor_absoluteX="0dp"
+        android:gravity="center">
+
+        <LinearLayout
+            android:id="@+id/layoutStartLocation"
+            android:layout_width="330dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:layout_marginTop="0dp">
+
+            <ImageView
+                android:id="@+id/ivStartLocationIcon"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginEnd="10dp"
+                android:src="@drawable/mark_icon" />
+
+            <TextView
+                android:id="@+id/tvStartLocation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/pretendard_regular"
+                android:text="출발점 : 현재 내 위치"
+                android:textColor="@android:color/white"
+                android:textSize="15sp" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnCreateCourse"
+            android:layout_width="330dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="@color/gray"
+            android:elevation="10dp"
+            android:fontFamily="@font/pretendard_regular"
+            android:text="만들기"
+            android:textColor="@color/white"
+            android:textSize="16sp" />
+
+    </LinearLayout>
+
+    <include
+        layout="@layout/layout_bottom_navigation"
+        android:id="@+id/bottomNavigationLayout"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
