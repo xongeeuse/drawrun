@@ -75,7 +75,7 @@ class RunRecordActivity : ComponentActivity() {
         totalDistance = intent.getDoubleExtra("totalDistance", 0.0)
         val distanceInKm = intent.getDoubleExtra("distanceInKm", 0.0)
         totalDuration = intent.getIntExtra("totalDuration", 0)
-        averageHeartRate = intent.getFloatExtra("averageHeartRate", -1f)
+        averageHeartRate = intent.getFloatExtra("averageHeartRate", 1F)
 
         Log.d("RunRecordActivity", "🟢 받은 pathId: $pathId")
         Log.d("RunRecordActivity", "🟢 받은 trackingSnapshotUrl: $trackingSnapshotUrl")
