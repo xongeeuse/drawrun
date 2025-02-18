@@ -161,13 +161,14 @@ class AiMapActivity : AppCompatActivity() {
 
     private fun mockAiPathAndNavigate() {
         // ✅ AI 경로 더미 데이터 (API 없이 테스트용)
+//       35.094724, 128.886179
         val mockAiPath = listOf(
             ParcelablePoint(Point.fromLngLat(128.854045, 35.09338)),
             ParcelablePoint(Point.fromLngLat(128.89472, 35.1220298)),
-            ParcelablePoint(Point.fromLngLat(128.89472, 35.1220298)),
-            ParcelablePoint(Point.fromLngLat(128.89472, 35.1220298)),
-            ParcelablePoint(Point.fromLngLat(128.89472, 35.1220298)),
-            ParcelablePoint(Point.fromLngLat(128.89472, 35.1220298))
+            ParcelablePoint(Point.fromLngLat(128.854747, 35.084098)),
+            ParcelablePoint(Point.fromLngLat(128.876327, 35.086857)),
+            ParcelablePoint(Point.fromLngLat(128.881048, 35.101677)),
+            ParcelablePoint(Point.fromLngLat(128.886179, 35.094724))
         )
 
 
