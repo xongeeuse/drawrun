@@ -48,16 +48,10 @@ public class MasterpieceController {
     }
 
     // 완료
+    // 완료하면서 전체 완료도 확인한다.
     @PostMapping("/complete")
     public ResponseEntity<?> complete(@AuthenticationPrincipal UserPrinciple userPrinciple, @RequestBody MasterpieceCompleteRequest masterpieceCompleteRequest)
     {
         return ResponseEntity.ok(masterpieceService.complete(masterpieceCompleteRequest.getMasterpieceSegId()));
     }
-
-    // master board 완료 체크
-    @PostMapping("/check")
-    public ResponseEntity<?> check(@RequestBody CheckRequest checkRequest){
-        return ResponseEntity.ok(masterpieceService.check(checkRequest.getMasterpieceBoardId()));
-    }
-
 }
