@@ -1,56 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="8dp">
+    android:padding="12dp"
+    android:gravity="center">
 
-    <!-- ✅ 이미지 크기 증가 (200dp) -->
-    <FrameLayout
-        android:layout_width="230dp"
-        android:layout_height="230dp"
-        android:layout_gravity="center">
+    <!-- ✅ 이미지와 액자 영역 (크기 키움) -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/imageContainer"
+        android:layout_width="240dp"
+        android:layout_height="240dp"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-    <!-- ✅ 코스 이미지 (액자에 맞게 꽉 채우기) -->
-    <ImageView
-        android:id="@+id/artImageView"
-        android:layout_width="185dp"
-        android:layout_height="185dp"
-        android:scaleType="fitXY"
-        android:adjustViewBounds="true"
-        android:layout_gravity="center"/>
+        <!-- ✅ 코스 이미지 (비율 유지 + 크기 키움) -->
+        <ImageView
+            android:id="@+id/artImageView"
+            android:layout_width="220dp"
+            android:layout_height="220dp"
+            android:scaleType="centerCrop"
+            android:adjustViewBounds="true"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
-    <!-- ✅ 황금 액자 -->
+        <!-- ✅ 황금 액자 (크기 키움) -->
         <ImageView
             android:id="@+id/goldFrameImageView"
-            android:layout_width="180dp"
-            android:layout_height="190dp"
-            android:layout_gravity="center"
+            android:layout_width="170dp"
+            android:layout_height="230dp"
             android:scaleType="fitXY"
-            android:src="@drawable/golde_frame" />
-    </FrameLayout>
+            android:src="@drawable/gold_frame"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <!-- ✅ 작품 제목 (이미지 아래 배치) -->
     <TextView
         android:id="@+id/artTitleTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@android:color/white"
-        android:textSize="18sp"
+        android:textSize="20sp"
         android:textStyle="bold"
         android:gravity="center"
+        android:paddingTop="10dp"
+        android:text="코스 이미지"
+        app:layout_constraintTop_toBottomOf="@id/imageContainer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-        android:text="코스 이미지"/>
-
+    <!-- ✅ 작품 정보 (거리, 북마크 수) -->
     <TextView
         android:id="@+id/artInfoTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@android:color/darker_gray"
-        android:textSize="14sp"
+        android:textSize="16sp"
         android:gravity="center"
-        android:text="총 5km, 2시간대"/>
-
-</LinearLayout>
-
+        android:paddingTop="4dp"
+        android:text="총 5km, 2시간대"
+        app:layout_constraintTop_toBottomOf="@id/artTitleTextView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+</androidx.constraintlayout.widget.ConstraintLayout>
