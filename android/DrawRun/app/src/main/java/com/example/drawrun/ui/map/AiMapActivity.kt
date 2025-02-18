@@ -20,6 +20,7 @@ import com.example.drawrun.R
 import com.example.drawrun.data.api.ImageUploadApi
 import com.example.drawrun.data.dto.request.course.AiCourseRequest
 import com.example.drawrun.data.model.ParcelablePoint
+import com.example.drawrun.ui.common.BaseActivity
 import com.example.drawrun.utils.RetrofitInstance
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -34,7 +35,9 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
 import java.io.FileOutputStream
 
-class AiMapActivity : AppCompatActivity() {
+class AiMapActivity : BaseActivity() {
+
+    override fun getLayoutId(): Int = R.layout.activity_ai_map
 
     private lateinit var canvasView: CanvasView
     private lateinit var btnCreateCourse: Button
@@ -46,6 +49,7 @@ class AiMapActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_ai_map)
+        setupBottomNavigation()
 
         canvasView = findViewById(R.id.canvasView)
         btnCreateCourse = findViewById(R.id.btnCreateCourse)
