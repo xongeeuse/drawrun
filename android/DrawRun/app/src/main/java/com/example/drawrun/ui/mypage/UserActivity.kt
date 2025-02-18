@@ -4,17 +4,22 @@ import android.content.Intent
 import android.graphics.Color
 import android.graphics.Shader
 import android.os.Bundle
+import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.drawrun.R
 import com.example.drawrun.data.repository.UserRepository
 import com.example.drawrun.ui.common.BaseActivity
+import com.example.drawrun.ui.mypage.adaptor.RunningHistoryAdapter
 import com.example.drawrun.viewmodel.user.UserViewModel
 import com.example.drawrun.viewmodel.user.UserViewModelFactory
 import com.example.drawrun.utils.RetrofitInstance
+
 
 class UserActivity : BaseActivity() {
 
@@ -33,51 +38,69 @@ class UserActivity : BaseActivity() {
 
         val userNameTextView: TextView = findViewById(R.id.userNameTextView)
         val userProfileImageView: ImageView = findViewById(R.id.userProfileImageView)
+        val recyclerView: RecyclerView = findViewById(R.id.runningHistoryRecyclerView)
         val settingsIcon: ImageView = findViewById(R.id.settingsIcon)
         val badgeIcon: ImageView = findViewById(R.id.badgeIcon)
         val myArtCustomIcon: ImageView = findViewById(R.id.myartcustomIcon)
+        val emptyMessageTextView: TextView = findViewById(R.id.emptyMessageTextView)
 
-        observeUserData(userNameTextView, userProfileImageView)
+        // RecyclerView 설정
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.setHasFixedSize(true)
 
+        // UI 데이터 관찰
+        observeUserData(userNameTextView, userProfileImageView, recyclerView, emptyMessageTextView)
+
+        // 클릭 이벤트 설정
         settingsIcon.setOnClickListener { navigateToSettings() }
         badgeIcon.setOnClickListener {
             val userName = userViewModel.userData.value?.data?.nickname
             navigateToBadge(userName)
         }
-
         myArtCustomIcon.setOnClickListener {
             val userName = userViewModel.userData.value?.data?.nickname
             navigateToMyArtCustom(userName)
         }
 
+        // 텍스트 그라데이션 적용
         applyTextGradient(findViewById(R.id.pageTitleTextView))
 
-        // ✅ 수정된 API 호출 메서드 실행
+        // ✅ API 호출 실행
         userViewModel.fetchUserInfo()
+        userViewModel.fetchRunningHistory()
     }
 
-
     // ✅ ViewModel 데이터 관찰 및 UI 업데이트
-    private fun observeUserData(userNameTextView: TextView, userProfileImageView: ImageView) {
+    private fun observeUserData(
+        userNameTextView: TextView,
+        userProfileImageView: ImageView,
+        recyclerView: RecyclerView,
+        emptyMessageTextView: TextView,
+    ) {
         userViewModel.userData.observe(this, Observer { response ->
-            val userData = response.data // ✅ 단일 객체이므로 바로 접근 가능
+            val userData = response.data
 
             userNameTextView.text = userData.nickname
-
             Glide.with(this)
                 .load(userData.profileImgUrl ?: R.drawable.ic_default_profile)
                 .placeholder(R.drawable.ic_default_profile)
                 .into(userProfileImageView)
         })
 
-
+        // ✅ RecyclerView 데이터 업데이트
+        userViewModel.runningHistory.observe(this, Observer { historyList ->
+            if (historyList.isEmpty()) {
+                recyclerView.visibility = View.GONE  // ✅ 리스트 숨기기
+                emptyMessageTextView.visibility = View.VISIBLE  // ✅ "기록이 없습니다" 메시지 표시
+            } else {
+                recyclerView.visibility = View.VISIBLE  // ✅ 리스트 보이기
+                emptyMessageTextView.visibility = View.GONE  // ✅ 메시지 숨기기
+                recyclerView.adapter = RunningHistoryAdapter(historyList)
+            }
+        })
 
         userViewModel.errorState.observe(this, Observer { errorMessage ->
             userNameTextView.text = errorMessage
-        })
-
-        userViewModel.loadingState.observe(this, Observer { isLoading ->
-            // 로딩 UI 처리
         })
     }
 
@@ -102,10 +125,7 @@ class UserActivity : BaseActivity() {
             val textWidth = textView.width.toFloat()
             val gradient = android.graphics.LinearGradient(
                 0f, 0f, textWidth, 0f,
-                intArrayOf(
-                    Color.parseColor("#56FF4A"),
-                    Color.parseColor("#50F348")
-                ),
+                intArrayOf(Color.parseColor("#56FF4A"), Color.parseColor("#50F348")),
                 null,
                 Shader.TileMode.CLAMP
             )

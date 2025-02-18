@@ -189,10 +189,36 @@
         </LinearLayout>
     </LinearLayout>
 
+    <!-- 기록이 없을 때 표시될 메시지 -->
+    <TextView
+        android:id="@+id/emptyMessageTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="기록이 없습니다"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/runningHistoryRecyclerView"
+        android:layout_marginTop="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:scrollbars="vertical"
+        android:nestedScrollingEnabled="true"
+        app:layout_constraintTop_toBottomOf="@id/userMenuContainer"
+        app:layout_constraintBottom_toTopOf="@id/layout_bottom_navigation"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
 
     <include
+        android:id="@+id/layout_bottom_navigation"
         layout="@layout/layout_bottom_navigation"
         android:layout_width="match_parent"
         android:layout_height="60dp"
