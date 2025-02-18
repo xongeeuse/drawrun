@@ -36,19 +36,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/myArtCustomTitleTextView" />
 
-    <TextView
-        android:id="@+id/emptyMessageTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="나만의 코스를 생성하여 컬렉션에 추가해보세요!"
-        android:textColor="@color/white"
-        android:visibility="gone"
-        android:textSize="18dp"
-        android:gravity="center"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+
 
 
     <!-- RecyclerView 추가   -->
@@ -58,6 +46,22 @@
         android:layout_height="0dp"
         app:layout_constraintTop_toBottomOf="@id/myArtCustomTextView"
         app:layout_constraintBottom_toTopOf="@id/bottomNavigationLayout"/>
+
+    <!-- ✅ emptyMessageTextView를 RecyclerView의 중앙에 배치 -->
+    <TextView
+        android:id="@+id/emptyMessageTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="나만의 코스를 생성하여 컬렉션에 추가해보세요!"
+        android:textColor="@android:color/white"
+        android:visibility="gone"
+        android:textSize="18dp"
+        android:gravity="center"
+        app:layout_constraintTop_toTopOf="@id/fragmentContainer"
+        app:layout_constraintBottom_toBottomOf="@id/fragmentContainer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.5"/> <!-- 🔥 중앙 정렬 -->
 
 
 
