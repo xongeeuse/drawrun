@@ -6,6 +6,8 @@ import android.app.Dialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.util.Log
@@ -1087,8 +1089,6 @@ class MapActivity : AppCompatActivity() {
             Log.d("Tracking", "✅ 트래킹 선을 네비 경로 위로 이동 완료")
         }
     }
-
-
 
 
 }
