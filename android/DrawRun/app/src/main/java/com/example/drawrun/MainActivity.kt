@@ -49,6 +49,7 @@ class MainActivity : BaseActivity() {
     private lateinit var btnCustomCourse: ImageView
     private lateinit var tvLocation: TextView
     private lateinit var tvRunNear: TextView
+    private lateinit var tvRunNow: TextView
     override fun getLayoutId(): Int = R.layout.activity_main  // ✅ 레이아웃 리소스 지정
 
     // 위치 ..
@@ -67,6 +68,12 @@ class MainActivity : BaseActivity() {
             window.statusBarColor = Color.TRANSPARENT // 상태바 투명하게 만들기
             insets
         }
+
+        // ✅ 토큰 검사 후 로그인 페이지 이동
+        checkLoginStatus()
+
+        // ✅ 기존 UI 초기화 및 이벤트 리스너 설정
+        initializeUI()
         // 상태바 배경을 투명하게 설정
         window.statusBarColor = Color.TRANSPARENT
         // 상태바 아이콘을 흰색으로 변경 (Android 11 이상)
@@ -77,13 +84,14 @@ class MainActivity : BaseActivity() {
             )
         }
 
-        val tvWelcomeMessage = findViewById<TextView>(R.id.tvWelcomeMessage)
+//        val tvWelcomeMessage = findViewById<TextView>(R.id.tvWelcomeMessage)
         val customFont = ResourcesCompat.getFont(this, R.font.praise_regular)
-        tvWelcomeMessage.typeface = customFont
+//        tvWelcomeMessage.typeface = customFont
 
         tvRunNear = findViewById(R.id.tvRunNear)
-        applyGradientToText(tvRunNear)
-
+        tvRunNow = findViewById(R.id.tvRunNow)
+        applyTextGradient(tvRunNear)
+        applyGradientToText(tvRunNow)
         tvLocation = findViewById(R.id.tvLocation)
 
         val btnRegister = findViewById<Button>(R.id.btnRegister)
@@ -159,12 +167,20 @@ class MainActivity : BaseActivity() {
             Log.d("DrawRun", "MainActivity 인텐트 데이터: ${it.toString()}")
         }
 
+        tvRunNear.apply {
+            typeface = customFont
+            text = "Draw Run"
+            setTextColor(Color.WHITE)
+            textSize = 50f
+        }
+
     }
 
     override fun onResume() {
         super.onResume()
         updateLoginState()  // ✅ 액티비티가 다시 보일 때 로그인 상태 업데이트
         getCurrentLocation()
+        checkLoginStatus()
     }
 
     // ✅ 로그인 상태 업데이트 함수
@@ -195,19 +211,6 @@ class MainActivity : BaseActivity() {
             e.printStackTrace()
             "사용자"
         }
-    }
-
-    private fun applyGradientToText(textView: TextView) {
-        val paint = textView.paint
-        val width = paint.measureText(textView.text.toString())
-
-        val shader = LinearGradient(
-            0f, 0f, width, textView.textSize,
-            intArrayOf(0xFF66FF99.toInt(), 0xFF228B22.toInt()), // 연두색 → 녹색
-            null,
-            Shader.TileMode.CLAMP
-        )
-        textView.paint.shader = shader
     }
 
     private fun checkAndRequestLocationPermission() {
@@ -312,8 +315,90 @@ class MainActivity : BaseActivity() {
         }
     }
 
+    private fun checkLoginStatus() {
+        val accessToken = SecureStorage.getAccessToken(this)
+        Log.d("MainACtivity" , "$accessToken")
+        if (accessToken == null) {
+            Log.d("MainActivity", "❌ 로그인 상태가 아님 → 로그인 페이지로 이동")
+            val intent = Intent(this, LoginActivity::class.java)
+            startActivity(intent)
+            finish() // ✅ 메인 화면을 종료하여 뒤로 가기 시 다시 로그인 화면으로 이동하지 않도록 함
+        }
+    }
 
+    private fun initializeUI() {
+        // ✅ UI 요소 초기화
+        tvLocation = findViewById(R.id.tvLocation)
+        btnLoginLogout = findViewById(R.id.btnLogin)
+        btnAICourse = findViewById(R.id.btnAICourse) // 🔹 ImageView로 수정
+        btnCustomCourse = findViewById(R.id.btnCustomCourse) // 🔹 ImageView로 수정
 
+        // ✅ 로그인/로그아웃 버튼 클릭 이벤트 처리
+        btnLoginLogout.setOnClickListener {
+            if (SecureStorage.getAccessToken(this) != null) {
+                SecureStorage.clearAccessToken(this)  // 로그아웃 처리
+                Log.d("MainActivity", "로그아웃 완료")
+                checkLoginStatus()  // ✅ 로그아웃 후 로그인 상태 다시 확인
+            } else {
+                val intent = Intent(this, LoginActivity::class.java)
+                startActivity(intent)
+            }
+        }
+
+        // ✅ AI 코스 버튼 클릭 이벤트
+        btnAICourse.setOnClickListener {
+            val accessToken = SecureStorage.getAccessToken(this)
+            if (accessToken != null) {
+                val intent = Intent(this, AiMapActivity::class.java)
+                startActivity(intent)
+            } else {
+                val intent = Intent(this, LoginActivity::class.java)
+                startActivity(intent)
+            }
+        }
+
+        // ✅ 나만의 코스 버튼 클릭 이벤트
+        btnCustomCourse.setOnClickListener {
+            val accessToken = SecureStorage.getAccessToken(this)
+            if (accessToken != null) {
+                val intent = Intent(this, MapActivity::class.java)
+                startActivity(intent)
+            } else {
+                val intent = Intent(this, LoginActivity::class.java)
+                startActivity(intent)
+            }
+        }
+
+        // ✅ 현재 로그인 상태 UI 업데이트
+        updateLoginState()
+    }
+
+    private fun applyTextGradient(textView: TextView) {
+        textView.post {
+            val textWidth = textView.width.toFloat()
+            val gradient = android.graphics.LinearGradient(
+                0f, 0f, textWidth, 0f,
+                intArrayOf(Color.parseColor("#56FF4A"), Color.parseColor("#50F348")),
+                null,
+                Shader.TileMode.CLAMP
+            )
+            textView.paint.shader = gradient
+            textView.invalidate()
+        }
+    }
+
+    private fun applyGradientToText(textView: TextView) {
+        val paint = textView.paint
+        val width = paint.measureText(textView.text.toString())
+
+        val shader = LinearGradient(
+            0f, 0f, width, textView.textSize,
+            intArrayOf(0xFF66FF99.toInt(), 0xFF228B22.toInt()), // 연두색 → 녹색
+            null,
+            Shader.TileMode.CLAMP
+        )
+        textView.paint.shader = shader
+    }
 }
 
 
