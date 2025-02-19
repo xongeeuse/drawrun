@@ -196,6 +196,7 @@ class NaviActivity : AppCompatActivity() {
             }
         } ?: Log.e("NaviActivity", "❌ `mapView`가 초기화되지 않았음!")
 
+
         // ✅ 내비게이션 음성 안내 등록
         mapboxNavigation.registerVoiceInstructionsObserver { voiceInstructions ->
             speechApi.generate(
@@ -612,6 +613,15 @@ class NaviActivity : AppCompatActivity() {
                     for (location in locationResult.locations) {
                         val userPoint = Point.fromLngLat(location.longitude, location.latitude)
 
+                        // 사용자 위치 따라가는 카메라
+                        mapView.getMapboxMap().setCamera(
+                            CameraOptions.Builder()
+                                .center(userPoint)
+                                .zoom(17.0)
+                                .bearing(location.bearing.toDouble())
+                                .build()
+                        )
+
                         // ✅ 목적지 좌표 가져오기
                         val destinationPoint = Point.fromLngLat(path.last().longitude, path.last().latitude)
 
@@ -916,10 +926,7 @@ class NaviActivity : AppCompatActivity() {
                 }
             }, 1400) // ✅ 카메라 이동 후 1.4초 대기 (안정적 캡처)
 
-            // 스냅샷 캡처 후 현재 위치 마커 다시 표시
-//            binding.mapView.location.updateSettings {
-//                enabled = true
-//            }
+
         }
     }
 
@@ -978,32 +985,5 @@ class NaviActivity : AppCompatActivity() {
         }
     }
 
-//    // 🚀 **도착 시 모달 다이얼로그 표시 (캡처된 이미지 사용)**
-//    private fun showArrivalDialog(context: Context, distanceInKm: Double, time: Int, onComplete: () -> Unit) {
-//        val dialogView = AlertDialog.Builder(context).setView(R.layout.dialog_arrival).create()
-//
-//        val imageView = dialogView.findViewById<ImageView>(R.id.trackingSnapshotImageView)
-//        val finishButton = dialogView.findViewById<Button>(R.id.finishRunButton)
-//
-//        if (trackingSnapshotUrl != null) {
-//            if (imageView != null) {
-//                Glide.with(context).load(trackingSnapshotUrl).into(imageView)
-//            }
-//        } else {
-//            if (imageView != null) {
-//                Glide.with(context)
-//                    .asGif()
-//                    .load(R.drawable.gps_art_run_done)
-//                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-//                    .into(imageView)
-//            }
-//        }
-//
-//        finishButton?.setOnClickListener {
-//            dialogView.dismiss()
-//            onComplete()
-//        }
-//
-//        dialogView.show()
-//    }
+
 }

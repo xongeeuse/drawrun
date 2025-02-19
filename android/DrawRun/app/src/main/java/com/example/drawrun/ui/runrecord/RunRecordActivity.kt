@@ -175,8 +175,8 @@ class RunRecordActivity : ComponentActivity() {
 
     private fun calculatePaceInSeconds(distanceKm: Double, runningTimeSeconds: Int): Int {
         return when {
-            distanceKm == 0.0 -> 0  // 예외처리
-            distanceKm < 0.5 -> (runningTimeSeconds / (distanceKm * 1000)).toInt().coerceAtLeast(5) // 500m 이하는 미터 단위 pace 보정
+            distanceKm == 0.0 -> 0  // 예외처리: 0km면 페이스 0초
+            distanceKm < 0.5 -> (runningTimeSeconds / (distanceKm * 1000)).toInt().coerceIn(10, 600) // 500m 이하는 초 단위로 조정
             else -> (runningTimeSeconds / distanceKm).toInt().coerceAtLeast(10)  // 정상적인 거리에서는 기존 km 단위 pace 적용
         }
     }
