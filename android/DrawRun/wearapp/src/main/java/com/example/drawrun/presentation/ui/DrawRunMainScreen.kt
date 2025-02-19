@@ -70,7 +70,7 @@ fun DrawRunMainScreen(viewModel: SensorViewModel, context: Context) {
 
                     // 심박수 텍스트
                     Text(
-                        text = heartRate?.let { "${it.toInt()} BPM" } ?: "...",
+                        text = heartRate?.let { "${it.toInt()} BPM" } ?: "0",
                         style = MaterialTheme.typography.body1.copy(
                             fontFamily = pretendard,
                             fontSize = 13.sp,
