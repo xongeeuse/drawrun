@@ -89,7 +89,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@id/userNameTextView"
-        app:layout_constraintTop_toTopOf="@id/userProfileImageView" />
+        app:layout_constraintTop_toTopOf="@id/userProfileImageView"
+        android:visibility="gone"/>
 
     <View
         android:id="@+id/underlineView"

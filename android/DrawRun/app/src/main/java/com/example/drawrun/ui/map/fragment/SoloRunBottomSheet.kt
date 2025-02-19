@@ -157,7 +157,7 @@ class SoloRunBottomSheet(private val courseRepository: CourseRepository) : Botto
     private fun observeViewModel() {
         courseViewModel.saveCourseResult.observe(viewLifecycleOwner) { result ->
             result.onSuccess { courseId ->
-                Toast.makeText(requireContext(), "코스가 저장되었습니다. CourseId: $courseId", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "코스가 저장되었습니다.", Toast.LENGTH_SHORT).show()
                 dismiss()
             }.onFailure { exception ->
                 Toast.makeText(

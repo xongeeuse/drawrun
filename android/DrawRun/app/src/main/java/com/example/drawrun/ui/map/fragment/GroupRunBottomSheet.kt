@@ -307,7 +307,7 @@ class GroupRunBottomSheet : BottomSheetDialogFragment() {
         masterpieceViewModel.saveMasterpiece(request)
         masterpieceViewModel.saveMasterpieceResult.observe(viewLifecycleOwner) { result ->
             result.onSuccess { masterpieceBoardId ->
-                Toast.makeText(requireContext(), "걸작이 성공적으로 저장되었습니다. ID: $masterpieceBoardId", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "걸작이 성공적으로 저장되었습니다.", Toast.LENGTH_SHORT).show()
                 navigateToMasterpieceDetail(masterpieceBoardId)
                 dismiss()
             }.onFailure { exception ->

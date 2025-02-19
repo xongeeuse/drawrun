@@ -137,8 +137,8 @@ class RunRecordActivity : ComponentActivity() {
         distanceTextView.text = String.format("%.2f km", distance)
         timeTextView.text = formatTime(timeSeconds)
         paceTextView.text = formatPaceToString(paceSeconds)
-        heartRateTextView.text = String.format("%d BPM", heartRate.toInt())
-
+//        heartRateTextView.text = String.format("%d BPM", heartRate.toInt())
+        heartRateTextView.text = if (heartRate == -1f) "-" else String.format("%d BPM", heartRate.toInt())
         // ✅ 트래킹 스냅샷 이미지 로드 (Glide) - `null` 체크 후 실행
         trackingSnapshotUrl?.let {
             Glide.with(this)
@@ -238,8 +238,8 @@ class RunRecordActivity : ComponentActivity() {
 
     private fun saveRunRecord() {
         if (averageHeartRate == -1f) {
-            Log.e("RunRecordActivity", "🚨 심박수 데이터가 아직 업데이트되지 않음! 저장 중단")
-            return
+            Log.e("RunRecordActivity", "🚨 심박수 데이터 없음 (스마트워치 미연결)")
+//            return
         }
         val runImgUrl = trackingSnapshotUrl
         val distanceKm = totalDistance

@@ -40,14 +40,15 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
             android:text="내비게이션 시작"
-            android:backgroundTint="@color/black"/>
+            android:backgroundTint="@color/black"
+            android:visibility="gone"/>
 
-        <Button
-            android:id="@+id/stopNavigationButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="중지"
-            android:backgroundTint="@color/black"/>
+<!--        <Button-->
+<!--            android:id="@+id/stopNavigationButton"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="중지"-->
+<!--            android:backgroundTint="@color/black"/>-->
 
     </LinearLayout>
 

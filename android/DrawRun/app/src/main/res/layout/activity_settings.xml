@@ -307,7 +307,8 @@
         android:fontFamily="@font/pretendard_regular"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/logoutTextView" />
+        app:layout_constraintTop_toBottomOf="@id/logoutTextView"
+        android:visibility="gone"/>
 
     <!-- 하단바 포함 -->
     <include
