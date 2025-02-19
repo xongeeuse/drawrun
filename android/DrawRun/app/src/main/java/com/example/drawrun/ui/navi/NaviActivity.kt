@@ -243,23 +243,23 @@ class NaviActivity : AppCompatActivity() {
         binding.startButton.setOnClickListener {
             navigationStartTime = System.currentTimeMillis() // 시작 시간 기록
 
-            if (isMasterpieceRequest && masterpieceSegId != -1) {
-                // Masterpiece 요청일 경우 조인 API 호출
-                val repository = MasterpieceRepository(RetrofitInstance.MasterpieceApi(this))
-                val masterpieceViewModelFactory = MasterpieceViewModelFactory(repository)
-                val masterpieceViewModel: MasterpieceViewModel = ViewModelProvider(this, masterpieceViewModelFactory)[MasterpieceViewModel::class.java]
-
-                masterpieceViewModel.joinMasterpiece(masterpieceSegId, 0, 0) // 임시로 masterpieceBoardId 와 position 0 으로 설정
-                masterpieceViewModel.joinMasterpieceResult.observe(this) { isSuccess ->
-                    if (isSuccess) {
-                        Log.d("NaviActivity", "Masterpiece 조인 요청 성공")
-                        Toast.makeText(this, "마스터피스 조인 성공", Toast.LENGTH_SHORT).show()
-                    } else {
-                        Log.e("NaviActivity", "Masterpiece 조인 요청 실패")
-                        Toast.makeText(this, "마스터피스 조인 실패", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
+//            if (isMasterpieceRequest && masterpieceSegId != -1) {
+//                // Masterpiece 요청일 경우 조인 API 호출
+//                val repository = MasterpieceRepository(RetrofitInstance.MasterpieceApi(this))
+//                val masterpieceViewModelFactory = MasterpieceViewModelFactory(repository)
+//                val masterpieceViewModel: MasterpieceViewModel = ViewModelProvider(this, masterpieceViewModelFactory)[MasterpieceViewModel::class.java]
+//
+//                masterpieceViewModel.joinMasterpiece(masterpieceSegId, 0, 0) // 임시로 masterpieceBoardId 와 position 0 으로 설정
+//                masterpieceViewModel.joinMasterpieceResult.observe(this) { isSuccess ->
+//                    if (isSuccess) {
+//                        Log.d("NaviActivity", "Masterpiece 조인 요청 성공")
+//                        Toast.makeText(this, "마스터피스 조인 성공", Toast.LENGTH_SHORT).show()
+//                    } else {
+//                        Log.e("NaviActivity", "Masterpiece 조인 요청 실패")
+//                        Toast.makeText(this, "마스터피스 조인 실패", Toast.LENGTH_SHORT).show()
+//                    }
+//                }
+//            }
 
             startNavigation(path)
 
@@ -379,6 +379,25 @@ class NaviActivity : AppCompatActivity() {
                             .bearing(currentBearing.toDouble()) // ✅ 사용자의 현재 나침반 방향 반영
                             .build()
                     )
+
+                    // Masterpiece 조인 요청 추가
+                    if (isMasterpieceRequest && masterpieceSegId != -1) {
+                        val repository = MasterpieceRepository(RetrofitInstance.MasterpieceApi(this))
+                        val masterpieceViewModelFactory = MasterpieceViewModelFactory(repository)
+                        val masterpieceViewModel: MasterpieceViewModel = ViewModelProvider(this, masterpieceViewModelFactory)[MasterpieceViewModel::class.java]
+
+                        masterpieceViewModel.joinMasterpiece(masterpieceSegId, 0, 0)
+                        masterpieceViewModel.joinMasterpieceResult.observe(this) { isSuccess ->
+                            if (isSuccess) {
+                                Log.d("NaviActivity", "Masterpiece 조인 요청 성공")
+                                Toast.makeText(this, "마스터피스 조인 성공", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Log.e("NaviActivity", "Masterpiece 조인 요청 실패")
+                                Toast.makeText(this, "마스터피스 조인 실패", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+
 
                     // ✅ 내비게이션 시작
                     val points = path.map { Point.fromLngLat(it.longitude, it.latitude) }
@@ -632,9 +651,9 @@ class NaviActivity : AppCompatActivity() {
 
     private fun showArrivalDialog(distanceInKm: Double, time: Int, totalDistance: Double, totalDuration: Int) {
         // 이미 계산된 값을 사용하므로 재계산할 필요 X
-        // val totalDistance = calculateTotalDistance() / 1000.0
-        // val (minutes, seconds) = calculateElapsedTime()
-        // val totalDuration = minutes * 60 + seconds
+         val totalDistance = calculateTotalDistance() / 1000.0
+         val (minutes, seconds) = calculateElapsedTime()
+         val totalDuration = minutes * 60 + seconds
 
         val dialogView = layoutInflater.inflate(R.layout.dialog_arrival, null)
         val dialog = AlertDialog.Builder(this).setView(dialogView).create()

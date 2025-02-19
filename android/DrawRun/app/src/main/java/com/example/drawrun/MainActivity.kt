@@ -30,6 +30,7 @@ import android.graphics.Color
 import android.os.Build
 import android.view.View
 import android.view.WindowInsetsController
+import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.example.drawrun.data.dto.response.search.CourseData
@@ -75,6 +76,10 @@ class MainActivity : BaseActivity() {
                 WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
             )
         }
+
+        val tvWelcomeMessage = findViewById<TextView>(R.id.tvWelcomeMessage)
+        val customFont = ResourcesCompat.getFont(this, R.font.praise_regular)
+        tvWelcomeMessage.typeface = customFont
 
         tvRunNear = findViewById(R.id.tvRunNear)
         applyGradientToText(tvRunNear)

@@ -4,6 +4,8 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
@@ -18,6 +20,7 @@ import com.example.drawrun.R
 import com.example.drawrun.data.api.ImageUploadApi
 import com.example.drawrun.data.dto.request.course.AiCourseRequest
 import com.example.drawrun.data.model.ParcelablePoint
+import com.example.drawrun.ui.common.BaseActivity
 import com.example.drawrun.utils.RetrofitInstance
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -32,7 +35,9 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
 import java.io.FileOutputStream
 
-class AiMapActivity : AppCompatActivity() {
+class AiMapActivity : BaseActivity() {
+
+    override fun getLayoutId(): Int = R.layout.activity_ai_map
 
     private lateinit var canvasView: CanvasView
     private lateinit var btnCreateCourse: Button
@@ -44,6 +49,7 @@ class AiMapActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_ai_map)
+        setupBottomNavigation()
 
         canvasView = findViewById(R.id.canvasView)
         btnCreateCourse = findViewById(R.id.btnCreateCourse)
@@ -52,29 +58,29 @@ class AiMapActivity : AppCompatActivity() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         getCurrentLocation() // ✅ GPS 현재 위치 가져오기 실행
 
-//        // "만들기" 버튼 클릭 시 이미지 업로드 실행
-//        btnCreateCourse.setOnClickListener {
-//            val bitmap = canvasView.getBitmap()
-//
-//            CoroutineScope(Dispatchers.Main).launch {
-//                val imageUrl = uploadImage(bitmap)
-//                if (imageUrl != null) {
-//                    Log.d("AiMapActivity", "✅ 이미지 업로드 성공: $imageUrl")
-//                    // 이후 경로 생성 로직 추가 (예: AI 추천 경로 받기)
-//                    if (currentLatitude != null && currentLongitude != null) {
-//                        requestAiRecommendedCourse(imageUrl, currentLatitude!!, currentLongitude!!)
-//                    } else {
-//                        Log.e("AiMapActivity", "❌ 현재 위치 정보가 없음")
-//                    }
-//                } else {
-//                    Log.e("AiMapActivity", "❌ 이미지 업로드 실패")
-//                }
-//            }
-//        }
-//
+        // "만들기" 버튼 클릭 시 이미지 업로드 실행
         btnCreateCourse.setOnClickListener {
-            mockAiPathAndNavigate() // ✅ 버튼 클릭 시 더미 데이터로 이동
+            val bitmap = canvasView.getBitmapWithWhiteBackground()
+
+            CoroutineScope(Dispatchers.Main).launch {
+                val imageUrl = uploadImage(bitmap)
+                if (imageUrl != null) {
+                    Log.d("AiMapActivity", "✅ 이미지 업로드 성공: $imageUrl")
+                    // 이후 경로 생성 로직 추가 (예: AI 추천 경로 받기)
+                    if (currentLatitude != null && currentLongitude != null) {
+                        requestAiRecommendedCourse(imageUrl, currentLatitude!!, currentLongitude!!)
+                    } else {
+                        Log.e("AiMapActivity", "❌ 현재 위치 정보가 없음")
+                    }
+                } else {
+                    Log.e("AiMapActivity", "❌ 이미지 업로드 실패")
+                }
+            }
         }
+
+//        btnCreateCourse.setOnClickListener {
+//            mockAiPathAndNavigate() // ✅ 버튼 클릭 시 더미 데이터로 이동
+//        }
     }
 
     private suspend fun uploadImage(bitmap: Bitmap): String? {
@@ -177,6 +183,19 @@ class AiMapActivity : AppCompatActivity() {
             putParcelableArrayListExtra("aiPath", ArrayList(mockAiPath)) // 리스트 전달
         }
         startActivity(intent) // `MapActivity` 실행
+    }
+
+    fun CanvasView.getBitmapWithWhiteBackground(): Bitmap {
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+
+        // 💡 배경을 흰색으로 먼저 채우기
+        canvas.drawColor(Color.WHITE)
+
+        // 기존 CanvasView의 내용 그리기
+        draw(canvas)
+
+        return bitmap
     }
 
 }

@@ -31,33 +31,33 @@ abstract class BaseActivity : AppCompatActivity() {
 
     // ✅ 네비게이션 바 설정 (하위 액티비티에서 직접 호출)
     fun setupBottomNavigation() {
-        val homeButton = findViewById<LinearLayout>(R.id.navHome)?.getChildAt(0) as? ImageView
-        val docuButton = findViewById<LinearLayout>(R.id.navDocu)?.getChildAt(0) as? ImageView
-        val searchButton = findViewById<LinearLayout>(R.id.navSearch)?.getChildAt(0) as? ImageView
-        val profileButton = findViewById<LinearLayout>(R.id.navProfile)?.getChildAt(0) as? ImageView
+        val homeTab = findViewById<LinearLayout>(R.id.navHome)
+        val docuTab = findViewById<LinearLayout>(R.id.navDocu)
+        val searchTab = findViewById<LinearLayout>(R.id.navSearch)
+        val profileTab = findViewById<LinearLayout>(R.id.navProfile)
 
-        if (homeButton == null) Log.e("BaseActivity", "⚠️ navHome is NULL!")
-        if (docuButton == null) Log.e("BaseActivity", "⚠️ navDocu is NULL!")
-        if (searchButton == null) Log.e("BaseActivity", "⚠️ navSearch is NULL!")
-        if (profileButton == null) Log.e("BaseActivity", "⚠️ navProfile is NULL!")
+        if (homeTab == null) Log.e("BaseActivity", "⚠️ navHome is NULL!")
+        if (docuTab == null) Log.e("BaseActivity", "⚠️ navDocu is NULL!")
+        if (searchTab == null) Log.e("BaseActivity", "⚠️ navSearch is NULL!")
+        if (profileTab == null) Log.e("BaseActivity", "⚠️ navProfile is NULL!")
 
-        homeButton?.setOnClickListener {
-            Log.d("BaseActivity", "🏠 Home 버튼 클릭됨")
+        homeTab?.setOnClickListener {
+            Log.d("BaseActivity", "🏠 Home 탭 클릭됨")
             startActivity(Intent(this, MainActivity::class.java))
         }
 
-        docuButton?.setOnClickListener {
-            Log.d("BaseActivity", "📄 Document 버튼 클릭됨")
+        docuTab?.setOnClickListener {
+            Log.d("BaseActivity", "📄 Document 탭 클릭됨")
             startActivity(Intent(this, MasterpieceActivity::class.java))
         }
 
-        searchButton?.setOnClickListener {
-            Log.d("BaseActivity", "🔍 Search 버튼 클릭됨")
+        searchTab?.setOnClickListener {
+            Log.d("BaseActivity", "🔍 Search 탭 클릭됨")
             startActivity(Intent(this, SearchActivity::class.java))
         }
 
-        profileButton?.setOnClickListener {
-            Log.d("BaseActivity", "👤 Profile 버튼 클릭됨")
+        profileTab?.setOnClickListener {
+            Log.d("BaseActivity", "👤 Profile 탭 클릭됨")
             startActivity(Intent(this, UserActivity::class.java))
         }
 

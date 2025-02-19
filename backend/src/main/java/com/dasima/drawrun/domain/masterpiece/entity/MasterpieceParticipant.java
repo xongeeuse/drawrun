@@ -17,4 +17,7 @@ public class MasterpieceParticipant {
     private int state;
     private int masterpieceSegId;
     private LocalDateTime createDate;
+
+    private MasterpieceSeg masterpieceSeg;
+    private MasterpieceBoard masterpieceBoard;
 }

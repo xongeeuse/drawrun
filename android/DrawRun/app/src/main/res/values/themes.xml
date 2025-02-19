@@ -1,10 +1,12 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.DrawRun" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <!-- 기존 커스터마이징 -->
         <item name="colorPrimary">#171515</item>
-<!--        <item name="android:windowBackground">#000000</item>-->
+
+        <!-- 폰트 추가 -->
+        <item name="android:fontFamily">@font/pretendard_regular</item>
+        <item name="fontFamily">@font/pretendard_regular</item>
     </style>
 
     <style name="Theme.DrawRun" parent="Base.Theme.DrawRun" />

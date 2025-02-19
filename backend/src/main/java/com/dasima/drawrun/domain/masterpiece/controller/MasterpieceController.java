@@ -6,6 +6,7 @@ import com.dasima.drawrun.domain.masterpiece.dto.request.MasterpieceCompleteRequ
 import com.dasima.drawrun.domain.masterpiece.dto.request.MasterpieceJoinRequest;
 import com.dasima.drawrun.domain.masterpiece.dto.request.MasterpieceSaveRequest;
 import com.dasima.drawrun.domain.masterpiece.service.MasterpieceService;
+import com.dasima.drawrun.domain.user.entity.User;
 import com.dasima.drawrun.global.security.UserPrinciple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +41,11 @@ public class MasterpieceController {
         return ResponseEntity.ok(masterpieceService.pathlist(masterpieceBoardId));
     }
 
+    @GetMapping("/completelist")
+    public ResponseEntity<?> completelist(@AuthenticationPrincipal UserPrinciple userPrinciple){
+        return ResponseEntity.ok(masterpieceService.completelist(userPrinciple.getUserId()));
+    }
+
     // 참여 하기
     @PostMapping("/join")
     public ResponseEntity<?> join(@AuthenticationPrincipal UserPrinciple userPrinciple,
@@ -48,16 +54,11 @@ public class MasterpieceController {
     }
 
     // 완료
+    // 완료하면서 전체 완료도 확인한다.
+    // 전체 완료 시 1 전체 완료 가 아닐 시 0
     @PostMapping("/complete")
     public ResponseEntity<?> complete(@AuthenticationPrincipal UserPrinciple userPrinciple, @RequestBody MasterpieceCompleteRequest masterpieceCompleteRequest)
     {
         return ResponseEntity.ok(masterpieceService.complete(masterpieceCompleteRequest.getMasterpieceSegId()));
     }
-
-    // master board 완료 체크
-    @PostMapping("/check")
-    public ResponseEntity<?> check(@RequestBody CheckRequest checkRequest){
-        return ResponseEntity.ok(masterpieceService.check(checkRequest.getMasterpieceBoardId()));
-    }
-
 }

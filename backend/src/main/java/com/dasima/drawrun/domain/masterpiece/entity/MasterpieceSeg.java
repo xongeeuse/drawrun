@@ -14,6 +14,7 @@ public class MasterpieceSeg {
     private int masterpieceBoardId;
     private String mongoId;
     private String address;
+    private String address2;
     private int pathNum;
 
     private MasterpieceParticipant masterpieceParticipant;
