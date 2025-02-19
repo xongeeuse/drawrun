@@ -10,6 +10,7 @@ import kotlinx.parcelize.Parcelize
 data class CourseDetailsResponse(
     val path: List<PathPoint>, // ✅ path 타입을 List<PathPoint>로 변경!
     val location: String,
+    val address2: String,
     val userPathId: Int,
     val distance: Double
 ) : Parcelable

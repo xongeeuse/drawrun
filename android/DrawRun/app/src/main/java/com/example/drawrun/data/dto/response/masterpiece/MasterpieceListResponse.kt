@@ -13,6 +13,7 @@ data class Masterpiece(
     val profileImgUrl: String?,   // 프로필 이미지 URL (nullable)
     val pathImgUrl: String?,      // 경로 이미지 URL (nullable)
     val gu: String,               // 구 정보
+    val address2: String,         // 지역 상세 정보
     val distance: Double,         // 거리 (km)
     val joinCount: Int,           // 현재 참여 인원 수
     val state: Int,             // 완성 여부

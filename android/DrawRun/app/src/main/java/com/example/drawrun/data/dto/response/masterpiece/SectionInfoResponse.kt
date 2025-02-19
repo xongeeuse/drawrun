@@ -6,6 +6,7 @@ data class SectionInfo(
     val path: List<Coordinate>,
     val masterpieceSegId: Int,
     val address: String,
+    val address2: String,
     val nickname: String
 )
 
