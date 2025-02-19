@@ -740,7 +740,7 @@ class NaviActivity : AppCompatActivity() {
         mapboxNavigation.setNavigationRoutes(emptyList()) // ❌ Mapbox 도보 경로 제거
 
         isTrackingStarted = false // 트래킹 중지 (하지만 지나간 경로는 유지됨)
-        Toast.makeText(this, "🎉 목적지에 도착했습니다! 내비게이션 종료.", Toast.LENGTH_LONG).show()
+        Toast.makeText(this, "🎉 목적지에 도착했습니다!", Toast.LENGTH_LONG).show()
 
         if (trackedPath.size < 2) {
             Log.e("NaviActivity", "❌ 트래킹 경로 부족! 캡처 생략")

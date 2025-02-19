@@ -145,7 +145,7 @@
         android:id="@+id/buttonFinish"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="러닝 기록 저장"
+        android:text="메인으로 돌아가기"
         android:textSize="16sp"
         android:padding="10dp"
         app:layout_constraintTop_toBottomOf="@id/layoutRunningInfo"

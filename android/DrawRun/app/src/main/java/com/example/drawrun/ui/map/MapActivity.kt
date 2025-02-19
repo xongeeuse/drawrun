@@ -275,7 +275,7 @@ class MapActivity : BaseActivity() {
         mapView = findViewById(R.id.mapView)
 
         val startButton = findViewById<Button>(R.id.startNavigationButton)
-        val stopButton = findViewById<Button>(R.id.stopNavigationButton)
+//        val stopButton = findViewById<Button>(R.id.stopNavigationButton)
 
         // 경로 생성 버튼 추가
         val generateRouteButton = findViewById<Button>(R.id.generateRouteButton)
@@ -406,10 +406,10 @@ class MapActivity : BaseActivity() {
 
 
 
-            stopButton.setOnClickListener {
-                stopNavigationForegroundService()
-                stopNavigation()
-            }
+//            stopButton.setOnClickListener {
+//                stopNavigationForegroundService()
+//                stopNavigation()
+//            }
 
 //            polylineAnnotationManager = mapView.annotations.createPolylineAnnotationManager()
 
@@ -442,8 +442,8 @@ class MapActivity : BaseActivity() {
         points.add(point)
         when (points.size) {
             1 -> Toast.makeText(this, "출발지 설정", Toast.LENGTH_SHORT).show()
-            2 -> Toast.makeText(this, "경유지 또는 도착지를 선택하세요", Toast.LENGTH_SHORT).show()
-            else -> Toast.makeText(this, "경유지 ${points.size - 1} 추가", Toast.LENGTH_SHORT).show()
+//            2 -> Toast.makeText(this, "경유지 또는 도착지를 선택하세요", Toast.LENGTH_SHORT).show()
+
         }
         if (points.size >= 1) {
             drawLine(points)  // 경로 그리기
