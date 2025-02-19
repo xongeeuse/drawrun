@@ -6,38 +6,27 @@
     android:layout_height="match_parent"
     android:background="#171515">
 
-
-
-    <!-- ✅ RecyclerView (아트 컬렉션 리스트) -->
+    <!-- 북마크 RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/myArtRecyclerView"
+        android:id="@+id/bookmarkRecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:padding="10dp"
-        android:clipToPadding="false"
+        android:layout_height="match_parent"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-        app:spanCount="2"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:spanCount="2"/>
 
-    <!-- ✅ emptyMessageTextView를 RecyclerView와 독립적으로 중앙 배치 -->
     <TextView
         android:id="@+id/emptyMessageTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="나만의 코스를 생성하여 컬렉션에 추가해보세요!"
+        android:text="마음에 드는 코스를 담아보세요!"
+        android:textSize="18sp"
         android:textColor="@android:color/white"
-        android:textSize="18dp"
-        android:visibility="gone"
+        android:textStyle="bold"
         android:gravity="center"
+        android:visibility="gone"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintVertical_bias="0.4"/>
-
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-

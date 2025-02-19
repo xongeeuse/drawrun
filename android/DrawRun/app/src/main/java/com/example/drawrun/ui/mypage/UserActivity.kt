@@ -39,6 +39,7 @@ class UserActivity : BaseActivity() {
 
         val userNameTextView: TextView = findViewById(R.id.userNameTextView)
         val userProfileImageView: ImageView = findViewById(R.id.userProfileImageView)
+        val bookmarkIcon: ImageView = findViewById(R.id.bookmarkIcon)
         val recyclerView: RecyclerView = findViewById(R.id.runningHistoryRecyclerView)
         val settingsIcon: ImageView = findViewById(R.id.settingsIcon)
         val badgeIcon: ImageView = findViewById(R.id.badgeIcon)
@@ -64,6 +65,12 @@ class UserActivity : BaseActivity() {
 
         // 클릭 이벤트 설정
         settingsIcon.setOnClickListener { navigateToSettings() }
+
+        bookmarkIcon.setOnClickListener{
+            val userName = userViewModel.userData.value?.data?.nickname
+            navigateToBookMark(userName)
+        }
+
         badgeIcon.setOnClickListener {
             val userName = userViewModel.userData.value?.data?.nickname
             navigateToBadge(userName)
@@ -93,8 +100,8 @@ class UserActivity : BaseActivity() {
 
             userNameTextView.text = userData.nickname
             Glide.with(this)
-                .load(userData.profileImgUrl ?: R.drawable.ic_default_profile)
-                .placeholder(R.drawable.ic_default_profile)
+                .load(userData.profileImgUrl ?: R.drawable.user_icon)
+                .placeholder(R.drawable.user_icon)
                 .into(userProfileImageView)
         })
 
@@ -127,6 +134,12 @@ class UserActivity : BaseActivity() {
 
     private fun navigateToMyArtCustom(userName: String?) {
         val intent = Intent(this, MyArtCustomActivity::class.java)
+        intent.putExtra("USER_NAME", userName ?: "사용자")
+        startActivity(intent)
+    }
+
+    private fun navigateToBookMark(userName: String?) {
+        val intent = Intent(this, BookMarkActivity::class.java)
         intent.putExtra("USER_NAME", userName ?: "사용자")
         startActivity(intent)
     }
