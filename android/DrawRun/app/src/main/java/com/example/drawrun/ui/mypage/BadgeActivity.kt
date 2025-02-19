@@ -8,17 +8,30 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
 import com.bumptech.glide.Glide
 import com.example.drawrun.R
 import com.example.drawrun.data.model.BadgeItem
+import com.example.drawrun.ui.common.BaseActivity
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
-class BadgeActivity : AppCompatActivity() {
+class BadgeActivity : BaseActivity() {
+
+    override fun getLayoutId(): Int = R.layout.activity_badge
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_badge)
+
+        setupBottomNavigation()
+
+        setActiveTab(R.id.navProfile)  // ✅ Profile 탭을 활성화
+
+        val tvWelcomeMessage = findViewById<TextView>(R.id.badgeTitleTextView)
+        val customFont = ResourcesCompat.getFont(this, R.font.praise_regular)
+        tvWelcomeMessage.typeface = customFont
+
         // 사용자 이름 가져오기
         val userName = intent.getStringExtra("USER_NAME") ?: "사용자"
 

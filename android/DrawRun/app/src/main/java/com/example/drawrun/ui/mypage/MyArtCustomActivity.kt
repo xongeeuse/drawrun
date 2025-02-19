@@ -7,18 +7,29 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.drawrun.R
+import com.example.drawrun.ui.common.BaseActivity
 import com.example.drawrun.ui.mypage.fragment.MyArtCustomFragment
 
-class MyArtCustomActivity : AppCompatActivity(){
+class MyArtCustomActivity : BaseActivity(){
+    override fun getLayoutId(): Int = R.layout.activity_myartcustom
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_myartcustom)
 
+        setupBottomNavigation()  // ✅ 하단바 설정
+        setActiveTab(R.id.navProfile)  // ✅ Profile 탭 활성화
+
         // DrawRun 로고 그라데이션 설정
         applyTextGradient(findViewById(R.id.myArtCustomTitleTextView))
+
+        val tvWelcomeMessage = findViewById<TextView>(R.id.myArtCustomTitleTextView)
+        val customFont = ResourcesCompat.getFont(this, R.font.praise_regular)
+        tvWelcomeMessage.typeface = customFont
 
 
         // Fragment 추가
