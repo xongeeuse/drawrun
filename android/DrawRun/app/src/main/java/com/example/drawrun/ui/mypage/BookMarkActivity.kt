@@ -13,6 +13,8 @@ class BookMarkActivity : BaseActivity() {
         setContentView(R.layout.activity_bookmark)
         setupBottomNavigation()
 
+        setActiveTab(R.id.navProfile)  // ✅ Profile 탭을 활성화
+
         // ✅ 만약 Fragment가 동적으로 추가되지 않았다면 수동으로 추가
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
