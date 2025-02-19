@@ -13,7 +13,6 @@ import androidx.activity.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.drawrun.MainActivity
 import com.example.drawrun.R
 import com.example.drawrun.data.dto.request.runrecord.RunRecordRequest
@@ -107,11 +106,11 @@ class RunRecordActivity : ComponentActivity() {
 
         // ✅ '러닝 기록 저장' 버튼 클릭 시 처리
         finishButton.setOnClickListener {
-            if (averageHeartRate == -1f) {
-                Log.e("RunRecordActivity", "🚨 심박수 데이터가 아직 업데이트되지 않음! 저장 중단")
-                Toast.makeText(this, "심박수 데이터를 가져오는 중입니다. 잠시만 기다려주세요.", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
+//            if (averageHeartRate == -1f) {
+//                Log.e("RunRecordActivity", "🚨 심박수 데이터가 아직 업데이트되지 않음! 저장 중단")
+//                Toast.makeText(this, "심박수 데이터를 가져오는 중입니다. 잠시만 기다려주세요.", Toast.LENGTH_SHORT).show()
+//                return@setOnClickListener
+//            }
             saveRunRecord()
             Log.d("RunRecordActivity", "🚀 러닝 기록 저장 버튼 클릭됨")
         }
