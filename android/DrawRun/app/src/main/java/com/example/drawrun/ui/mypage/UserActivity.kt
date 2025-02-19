@@ -3,6 +3,7 @@ package com.example.drawrun.ui.mypage
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.Shader
+import android.media.Image
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
@@ -44,6 +45,7 @@ class UserActivity : BaseActivity() {
         val settingsIcon: ImageView = findViewById(R.id.settingsIcon)
         val badgeIcon: ImageView = findViewById(R.id.badgeIcon)
         val myArtCustomIcon: ImageView = findViewById(R.id.myartcustomIcon)
+        val runningStatIcon: ImageView = findViewById(R.id.runningStatIcon)
         val emptyMessageTextView: TextView = findViewById(R.id.emptyMessageTextView)
 
         val pageTitleTextView = findViewById<TextView>(R.id.pageTitleTextView)
@@ -65,6 +67,11 @@ class UserActivity : BaseActivity() {
 
         // 클릭 이벤트 설정
         settingsIcon.setOnClickListener { navigateToSettings() }
+
+        runningStatIcon.setOnClickListener{
+            val userName = userViewModel.userData.value?.data?.nickname
+            navigateToRunningStat(userName)
+        }
 
         bookmarkIcon.setOnClickListener{
             val userName = userViewModel.userData.value?.data?.nickname
@@ -124,6 +131,13 @@ class UserActivity : BaseActivity() {
 
     private fun navigateToSettings() {
         startActivity(Intent(this, SettingsActivity::class.java))
+    }
+
+
+    private fun navigateToRunningStat(userName: String?) {
+        val intent = Intent(this, RunningStatActivity::class.java)
+        intent.putExtra("USER_NAME", userName ?: "사용자")
+        startActivity(intent)
     }
 
     private fun navigateToBadge(userName: String?) {

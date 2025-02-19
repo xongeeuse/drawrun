@@ -81,6 +81,7 @@
         <activity android:name=".ui.mypage.MyArtCustomActivity"/>
         <activity android:name=".ui.map.AiMapActivity"/>
         <activity android:name=".ui.mypage.BookMarkActivity" />
+        <activity android:name=".ui.mypage.RunningStatActivity" />
         <service
             android:name=".LaunchAppService"
             android:enabled="true"
