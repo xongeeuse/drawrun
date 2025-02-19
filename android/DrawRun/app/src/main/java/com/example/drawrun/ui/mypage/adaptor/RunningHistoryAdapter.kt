@@ -48,11 +48,11 @@ class RunningHistoryAdapter(private val historyList: List<UserHistory>) :
         val formattedTime = formatTime(historyItem.time)
         holder.timeTextView.text = "시간: ${formattedTime}"
 
-        holder.paceTextView.text = "페이스: ${historyItem.pace} 초/km"
+        holder.paceTextView.text = "페이스: ${formatPace(historyItem.pace)}"
 
         Glide.with(holder.itemView.context)
             .load(historyItem.pathImgUrl)
-            .placeholder(R.drawable.ic_default_profile)
+            .placeholder(R.drawable.course_img_example)
             .into(holder.pathImageView)
 
         Log.d("RunningHistoryAdapter", "날짜 데이터: ${historyItem.createDate}")
@@ -80,5 +80,12 @@ class RunningHistoryAdapter(private val historyList: List<UserHistory>) :
         val minutes = seconds / 60
         val remainingSeconds = seconds % 60
         return "${minutes}분 ${remainingSeconds}초"
+    }
+
+    // 페이스 변환 함수
+    private fun formatPace(seconds: Int): String {
+        val minutes = seconds / 60
+        val remainingsSeconds = seconds % 60
+        return "${minutes}' ${remainingsSeconds}''"
     }
 }
