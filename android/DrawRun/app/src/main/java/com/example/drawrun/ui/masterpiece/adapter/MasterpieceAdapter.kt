@@ -10,7 +10,7 @@ import com.example.drawrun.databinding.ItemMasterpieceBinding
 
 class MasterpieceAdapter(
     private var items: List<Masterpiece>,
-    private val onItemClick: (Masterpiece) -> Unit // 클릭 리스너 추가
+    private val onItemClick: (Int) -> Unit // masterpieceBoardId를 전달하도록 변경
 ) :
     RecyclerView.Adapter<MasterpieceAdapter.MasterpieceViewHolder>() {
 
@@ -18,6 +18,7 @@ class MasterpieceAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: Masterpiece) {
+            binding.titleText.text = "${ item.courseName }"
             binding.nicknameText.text = " \uD83D\uDC64 ${ item.nickname }"
             binding.distanceText.text = " \uD83C\uDFC3 ${item.distance} km"
             binding.guText.text = " \uD83D\uDCCD ${item.gu}"
@@ -37,9 +38,9 @@ class MasterpieceAdapter(
                 .error(R.drawable.course_img_example) // 로드 실패 시 표시할 이미지
                 .into(binding.pathImage) // binding.pathImage로 참조
 
-            // 아이템 클릭 리스너 연결
+            // 아이템 클릭 리스너 수정
             binding.root.setOnClickListener {
-                onItemClick(item) // 클릭 시 전달
+                onItemClick(item.masterpieceBoardId) // masterpieceBoardId만 전달
             }
         }
     }

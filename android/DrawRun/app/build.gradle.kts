@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.kapt)
 //    alias(libs.plugins.compose.compiler)
+    id("kotlin-parcelize")
 }
 
 android {
@@ -44,6 +45,7 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.3"  // 컴파일러 버전 명시
     }
+
 }
 
 kapt {
@@ -86,6 +88,7 @@ dependencies {
     implementation(libs.androidx.runtime.android)
     implementation(libs.androidx.lifecycle.livedata.core)
     implementation(libs.androidx.ui.graphics.android)
+    implementation(libs.play.services.maps)
     kapt(libs.room.compiler)
 
     // Hilt
@@ -104,6 +107,9 @@ dependencies {
 
     // Mapbox Navigation Core (모든 기능 포함)
     implementation(libs.mapbox.navigationcore.android)
+
+
+
 
     // Mapbox Maps SDK (필수)
     implementation(libs.mapbox.maps)
@@ -142,4 +148,7 @@ dependencies {
     kapt ("com.github.bumptech.glide:compiler:4.14.2")
     implementation("com.google.android.gms:play-services-wearable:18.0.0")
     implementation("androidx.wear:wear:1.2.0")
+
+    // slide
+    implementation("androidx.viewpager2:viewpager2:1.0.0")
 }

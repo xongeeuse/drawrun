@@ -1,15 +1,30 @@
 package com.example.drawrun.ui.masterpiece.fragment
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
+import com.example.drawrun.R
 import com.example.drawrun.data.dto.response.masterpiece.Masterpiece
+import com.example.drawrun.data.dto.response.masterpiece.SectionInfo
+import com.example.drawrun.data.repository.MasterpieceRepository
 import com.example.drawrun.databinding.FragmentMasterpieceDetailBinding
+import com.example.drawrun.dto.course.PathPoint
+import com.example.drawrun.ui.masterpiece.adapter.SectionInfoAdapter
+import com.example.drawrun.ui.navi.NaviActivity
+import com.example.drawrun.utils.RetrofitInstance
+import com.example.drawrun.viewmodel.MasterpieceViewModel
+import com.example.drawrun.viewmodel.MasterpieceViewModelFactory
 import com.mapbox.api.directions.v5.DirectionsCriteria
 import com.mapbox.api.directions.v5.models.RouteOptions
 import com.mapbox.geojson.LineString
@@ -37,6 +52,9 @@ class MasterpieceDetailFragment : Fragment() {
     private var _binding: FragmentMasterpieceDetailBinding? = null
     private val binding get() = _binding!!
 
+    private lateinit var viewModel: MasterpieceViewModel
+
+    private lateinit var sectionInfoAdapter: SectionInfoAdapter
     private lateinit var polylineAnnotationManager: PolylineAnnotationManager
     private lateinit var mapboxNavigation: MapboxNavigation // MapboxNavigation 객체 선언
 
@@ -53,8 +71,59 @@ class MasterpieceDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        Log.d("masterpiecemasterpiece  ", "onViewCreated started")
+
+        // MapboxNavigation 초기화
+        mapboxNavigation = MapboxNavigationProvider.create(
+            NavigationOptions.Builder(requireContext()).build()
+        )
+
+        val repository = MasterpieceRepository(RetrofitInstance.MasterpieceApi(requireContext()))
+        val viewModelFactory = MasterpieceViewModelFactory(repository)
+        viewModel = ViewModelProvider(this, viewModelFactory)[MasterpieceViewModel::class.java]
+
         // 전달받은 데이터 가져오기
-        val masterpiece = arguments?.getSerializable("masterpiece") as? Masterpiece
+
+//        val masterpiece = arguments?.getSerializable("masterpiece") as? Masterpiece
+//        Log.d("masterpiecemasterpiece  ", "받은 마스터피스 데이터: $masterpiece")
+
+        // 전달받은 masterpieceBoardId 가져오기
+        val masterpieceBoardId = arguments?.getInt("masterpieceBoardId")
+        if (masterpieceBoardId == null) {
+            Log.e("masterpiecemasterpiece", "masterpieceBoardId is null")
+            return
+        }
+
+        Log.d("masterpiecemasterpiece", "Fetching masterpiece detail for id: $masterpieceBoardId")
+
+
+        // 데이터 요청 및 관찰
+        viewModel.fetchMasterpieceDetail(masterpieceBoardId)
+        viewModel.masterpieceDetail.observe(viewLifecycleOwner) { detail ->
+            if (detail != null) {
+                Log.d("masterpiecemasterpiece", "Received Detail: $detail")
+                // UI 업데이트 추가해야 함
+
+                // 지도 위에 오버레이 정보 업데이트
+                binding.courseNameOverlay.text = detail.courseName
+//                binding.ddayOverlay.text = if (detail.dday == 0) "D - day" else "D - ${detail.dday}"
+                binding.distanceOverlay.text = "${detail.distance} km"
+                binding.nicknameOverlay.text = detail.nickname
+
+                // 지도 카메라 위치 조정 및 경로 표시
+//                updateMap(detail)
+
+            } else {
+                Log.e("masterpiecemasterpiece", "Failed to fetch detail")
+            }
+        }
+
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                navigateToMasterpieceSearch()
+            }
+        })
+
 
         // MapboxNavigation 초기화
         mapboxNavigation = MapboxNavigationProvider.create(
@@ -67,9 +136,6 @@ class MasterpieceDetailFragment : Fragment() {
             binding.mapView.scalebar.enabled = false
 
             polylineAnnotationManager = binding.mapView.annotations.createPolylineAnnotationManager()
-
-            val coordinates = extractCoordinatesFromJson() // JSON에서 좌표 추출
-            requestWalkingRoute(coordinates) // 경로 요청
 
             // 카메라 조정 (좌표 범위 설정)
             val bounds = CoordinateBounds(
@@ -87,69 +153,143 @@ class MasterpieceDetailFragment : Fragment() {
 
         // RecyclerView 초기화 (구간 정보 표시)
         binding.sectionInfoList.layoutManager = LinearLayoutManager(requireContext())
+
+        setupRecyclerView()
+        observeSectionInfo()
+        observeJoinResult()
+
+        // masterpieceBoardId를 사용하여 구간 정보 요청
+        viewModel.fetchMasterpieceSectionInfo(masterpieceBoardId)
+
+
     }
 
-    private fun requestWalkingRoute(coordinates: List<Point>) {
+    private fun observeJoinResult() {
+        viewModel.joinMasterpieceResult.observe(viewLifecycleOwner) { isSuccess ->
+            if (isSuccess) {
+                Toast.makeText(context, "마스터피스 참여 성공", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, "마스터피스 참여 실패", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+
+    private fun setupRecyclerView() {
+        sectionInfoAdapter = SectionInfoAdapter { sectionInfo, masterpieceBoardId, position ->
+            // NaviActivity로 이동하는 로직 추가
+            navigateToNaviActivity(sectionInfo, position)
+            // 기존의 joinMasterpiece 호출은 유지 > 제거하고 내비액티에서 조인 요청으로 수정
+//            viewModel.joinMasterpiece(sectionInfo.masterpieceSegId, masterpieceBoardId, position)
+        }
+
+        sectionInfoAdapter.setMasterpieceBoardId(viewModel.masterpieceDetail.value?.masterpieceBoardId ?: 0)
+
+        binding.sectionInfoList.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = sectionInfoAdapter
+        }
+    }
+
+    private fun navigateToNaviActivity(sectionInfo: SectionInfo, position: Int) {
+        // Point 객체로 변환
+        val pathPoints = sectionInfo.path.map { PathPoint(it.latitude, it.longitude) }
+        val distanceInMeters = sectionInfoAdapter.getDistance(position) ?: 0.0
+        val distanceInKm = String.format("%.2f", distanceInMeters / 1000.0).toDouble()
+
+        // NaviActivity로 이동
+        val intent = Intent(requireContext(), NaviActivity::class.java).apply {
+            putParcelableArrayListExtra("path", ArrayList(pathPoints))
+            putExtra("startLocation", sectionInfo.address)
+            putExtra("distance", distanceInKm)
+            putExtra("isMasterpieceRequest", true)
+            putExtra("masterpieceSegId", sectionInfo.masterpieceSegId)
+            // 필요한 경우 추가 데이터를 여기에 넣습니다
+        }
+        startActivity(intent)
+    }
+
+
+
+
+
+    private fun observeSectionInfo() {
+        viewModel.sectionInfo.observe(viewLifecycleOwner) { sectionInfoResponse ->
+            sectionInfoResponse?.let {
+                sectionInfoAdapter.updateSections(it)
+                requestWalkingRoutes(it)
+                adjustCamera(it)
+            }
+        }
+    }
+
+    private fun requestWalkingRoutes(sections: List<SectionInfo>) {
+        val colors = generateColors(sections.size)
+        sections.forEachIndexed { index, section ->
+            val coordinates = section.path.map { Point.fromLngLat(it.longitude, it.latitude) }
+            requestWalkingRoute(coordinates, index, colors[index], section.nickname)
+        }
+    }
+
+    private fun requestWalkingRoute(coordinates: List<Point>, sectionIndex: Int, color: String, nickname: String) {
         mapboxNavigation.requestRoutes(
             RouteOptions.builder()
                 .applyDefaultNavigationOptions()
-                .profile(DirectionsCriteria.PROFILE_WALKING) // 도보 프로필 설정
-                .language("ko") // 한국어 설정
-                .steps(true) // 상세 단계 요청
-                .voiceUnits(DirectionsCriteria.METRIC) // 거리 단위 설정 (미터)
-                .coordinatesList(coordinates) // 좌표 리스트 설정
-                .waypointIndicesList((0 until coordinates.size).toList()) // 모든 인덱스 설정 (출발지, 도착지 및 경유지)
-                .waypointNamesList(List(coordinates.size) { index ->
-                    when (index) {
-                        0 -> "출발지"
-                        coordinates.size - 1 -> "도착지"
-                        else -> "경유지 $index"
-                    }
-                })
+                .profile(DirectionsCriteria.PROFILE_WALKING)
+                .coordinatesList(coordinates)
                 .build(),
             object : NavigationRouterCallback {
                 override fun onRoutesReady(routes: List<NavigationRoute>, routerOrigin: String) {
                     val route = routes.firstOrNull()
                     if (route != null) {
-                        val routeCoordinates = route.directionsRoute.geometry()?.let {
-                            LineString.fromPolyline(it, 6).coordinates()
-                        } ?: emptyList()
-
-                        // 각 구간별 거리 정보 출력
-                        route.directionsRoute.legs()?.forEachIndexed { index, leg ->
-                            val legDistance = leg.distance() // 구간 전체 거리 (미터)
-                            Toast.makeText(
-                                context,
-                                "구간 $index 거리: ${legDistance} m",
-                                Toast.LENGTH_SHORT
-                            ).show()
-
-//                            // 각 단계별 거리 정보 출력
-//                            leg.steps()?.forEachIndexed { stepIndex, step ->
-//                                val stepDistance = step.distance() // 단계별 거리 (미터)
-//                                println("구간 $index, 단계 $stepIndex 거리: ${stepDistance} m")
-//                            }
-                        }
-
-                        // 4구간으로 나누어 그리기
-                        drawRouteInSections(routeCoordinates, 4)
-
-                        // 카메라 조정 (경로에 맞춰 조정)
-                        adjustCamera(routeCoordinates) // 경로에 맞춰 카메라 조정
+                        val distance = route.directionsRoute.distance()
+                        sectionInfoAdapter.updateDistance(sectionIndex, distance)
+                        sectionInfoAdapter.updateColor(sectionIndex, color)
+                        drawRouteOnMap(route, sectionIndex, color, nickname)
                     }
                 }
 
                 override fun onFailure(reasons: List<RouterFailure>, routeOptions: RouteOptions) {
-                    // 경로 요청 실패 처리
-                    Toast.makeText(context, "경로 요청 실패", Toast.LENGTH_SHORT).show()
+                    Log.e("MasterpieceDetail", "Failed to get route for section $sectionIndex")
                 }
 
                 override fun onCanceled(routeOptions: RouteOptions, routerOrigin: String) {
-                    // 경로 요청 취소 처리 (필요 시 구현)
+                    Log.d("MasterpieceDetail", "Route request canceled for section $sectionIndex")
                 }
             }
         )
     }
+
+
+    private fun drawRouteOnMap(route: NavigationRoute, sectionIndex: Int, color: String, nickname: String) {
+        val routeCoordinates = route.directionsRoute.geometry()?.let {
+            LineString.fromPolyline(it, 6).coordinates()
+        } ?: return
+
+        // nickname에 따라 투명도 결정
+        val alpha = when (nickname) {
+            "달리기 시작", "달리는 중" -> 0.2f  // 50% 투명도
+            else -> 1.0f  // 완전 불투명
+        }
+
+        // 색상에 투명도 적용
+        val colorWithAlpha = Color.parseColor(color)
+        val colorWithAppliedAlpha = Color.argb(
+            (alpha * 255).toInt(),
+            Color.red(colorWithAlpha),
+            Color.green(colorWithAlpha),
+            Color.blue(colorWithAlpha)
+        )
+
+        val polylineOptions = PolylineAnnotationOptions()
+            .withPoints(routeCoordinates)
+            .withLineColor(color)
+            .withLineWidth(5.0)
+
+        polylineAnnotationManager.create(polylineOptions)
+    }
+
+
 
     private fun generateColors(count: Int): List<String> {
         return (0 until count).map { i ->
@@ -161,29 +301,10 @@ class MasterpieceDetailFragment : Fragment() {
     }
 
 
-    private fun drawRouteInSections(routeCoordinates: List<Point>, sections: Int) {
-        polylineAnnotationManager.deleteAll() // 기존 경로 삭제
-
-        val sectionSize = routeCoordinates.size / sections
-        val colors = generateColors(sections) // 랜덤 색상 선택 사용
-
-        for (i in 0 until sections) {
-            val start = i * sectionSize
-            val end = if (i == sections - 1) routeCoordinates.size else (i + 1) * sectionSize
-            val sectionCoordinates = routeCoordinates.subList(start, end)
-
-            val polylineOptions = PolylineAnnotationOptions()
-                .withPoints(sectionCoordinates)
-                .withLineColor(colors[i])
-                .withLineWidth(5.0)
-
-            polylineAnnotationManager.create(polylineOptions)
-        }
-    }
-
-    private fun adjustCamera(routeCoordinates: List<Point>) {
+    private fun adjustCamera(sections: List<SectionInfo>) {
+        val allCoordinates = sections.flatMap { it.path.map { coord -> Point.fromLngLat(coord.longitude, coord.latitude) } }
         val cameraOptions = binding.mapView.getMapboxMap().cameraForCoordinates(
-            routeCoordinates,
+            allCoordinates,
             EdgeInsets(100.0, 100.0, 100.0, 100.0),
             null,
             null
@@ -191,28 +312,16 @@ class MasterpieceDetailFragment : Fragment() {
         binding.mapView.getMapboxMap().setCamera(cameraOptions)
     }
 
-    private fun extractCoordinatesFromJson(): List<Point> {
-        return listOf(
-            Point.fromLngLat(128.88189078375206, 35.08677284699564),
-            Point.fromLngLat(128.8819939469559, 35.08621769582258),
-            Point.fromLngLat(128.88189078375206, 35.08561506086515),
-            Point.fromLngLat(128.88118090232263, 35.08567181529165),
-            Point.fromLngLat(128.8799691627463, 35.08560045113647),
-            Point.fromLngLat(128.87998553227607, 35.08619415246808),
-            Point.fromLngLat(128.88117245103422, 35.08619414722901),
-            Point.fromLngLat(128.881173951037, 35.086657644114354),
-            Point.fromLngLat(128.87995654687, 35.086703796420196),
-            Point.fromLngLat(128.87994786146623, 35.08730019496652),
-            Point.fromLngLat(128.8788491628615, 35.08724513336804),
-            Point.fromLngLat(128.87906830382883, 35.08779816664506),
-            Point.fromLngLat(128.8787948694096, 35.08785261167259)
-        )
+    private fun navigateToMasterpieceSearch() {
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.masterpiece_fragment_container, MasterpieceSearchFragment())
+            .commit()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         polylineAnnotationManager.deleteAll() // 뷰가 파괴될 때 모든 주석 삭제
-//        mapboxNavigation.onDestroy() // MapboxNavigation 정리
+        MapboxNavigationProvider.destroy()
         _binding = null
     }
 }

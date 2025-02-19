@@ -3,6 +3,7 @@ package com.dasima.drawrun.domain.masterpiece.service;
 import com.dasima.drawrun.domain.course.repository.CourseRepository;
 import com.dasima.drawrun.domain.course.vo.GeoPoint;
 import com.dasima.drawrun.domain.course.vo.KakaoRegionResponse;
+import com.dasima.drawrun.domain.course.vo.KakaoRoadAddressResponse;
 import com.dasima.drawrun.domain.masterpiece.dto.request.MasterpieceJoinRequest;
 import com.dasima.drawrun.domain.masterpiece.dto.request.MasterpieceSaveRequest;
 import com.dasima.drawrun.domain.masterpiece.dto.response.MasterpieceListResponse;
@@ -68,9 +69,15 @@ public class MasterpieceServiceImpl implements MasterpieceService{
             // 주소를 구해줘야 함
             Point point = tmp.get(0);
             KakaoRegionResponse kakaoRegionResponse = kakaoAddressGenerator.getRegionByCoordinates(point.getY(), point.getX());
+            KakaoRoadAddressResponse kakaoRoadAddressResponse = kakaoAddressGenerator.getRoadAddressByCoordinates(point.getY(), point.getX());
 
             // MongoDB에 저장
             Path path = courseRepository.save(new Path(tmp));
+
+            String realAddress; //  주소가 들어갈 공간
+            if(kakaoRoadAddressResponse.getDocuments().get(0).getRoadAddress() != null) realAddress = kakaoRoadAddressResponse.getDocuments().get(0).getRoadAddress().getAddressName();
+            else if(kakaoRoadAddressResponse.getDocuments().get(0).getAddress() != null) realAddress = kakaoRoadAddressResponse.getDocuments().get(0).getAddress().getAddressName();
+            else realAddress = null; // 주소값이 존재 하지 않음
 
             // masterpiece seg에 저장한다.
             res &= masterpieceMapper.seqsave(
@@ -79,6 +86,7 @@ public class MasterpieceServiceImpl implements MasterpieceService{
                             .mongoId(path.getId())
                             .pathNum(++pathNum)
                             .address(kakaoRegionResponse.getDocuments().get(0).getAddress_name())
+                            .address2(realAddress)
                             .build()
             );
         }
@@ -118,9 +126,11 @@ public class MasterpieceServiceImpl implements MasterpieceService{
                             .userPathId(masterpieceBoard.getUserPath().getUserPathId())
                             .restrictCount(masterpieceBoard.getRestrictCount())
                             .userId(masterpieceBoard.getUserId())
+                            .address2(masterpieceBoard.getUserPath().getAddress2())
                             .masterpieceBoardId(masterpieceBoard.getMasterpieceBoardId())
                             .courseName(masterpieceBoard.getUserPath().getName())
                             .joinCount(masterpieceBoard.getParticipantCount())
+                            .state(masterpieceBoard.getState())
                             .build()
             );
         }
@@ -150,6 +160,7 @@ public class MasterpieceServiceImpl implements MasterpieceService{
                 .gu(gu)
                 .distance(masterpieceBoard.getUserPath().getDistance())
                 .pathImgUrl(masterpieceBoard.getUserPath().getPathImgUrl())
+                        .address2(masterpieceBoard.getUserPath().getAddress2())
                 .profileImgUrl(user.getProfileImgUrl())
                 .nickname(user.getUserNickname())
                 .userPathId(masterpieceBoard.getUserPath().getUserPathId())
@@ -158,6 +169,7 @@ public class MasterpieceServiceImpl implements MasterpieceService{
                         .courseName(masterpieceBoard.getUserPath().getName())
                 .masterpieceBoardId(masterpieceBoard.getMasterpieceBoardId())
                         .joinCount(masterpieceBoard.getParticipantCount())
+                        .state(masterpieceBoard.getState())
                 .build();
     }
 
@@ -198,6 +210,7 @@ public class MasterpieceServiceImpl implements MasterpieceService{
                             .masterpieceSegId(masterpieceSeg.getMasterpieceSegId())
                             .nickname(nicknameOrState)
                             .address(masterpieceSeg.getAddress())
+                            .address2(masterpieceSeg.getAddress2())
                             .build()
             );
         }
@@ -215,6 +228,68 @@ public class MasterpieceServiceImpl implements MasterpieceService{
     }
 
     public int complete(int masterpieceSegId){
-        return masterpieceMapper.complete(masterpieceSegId);
+        // 일단 무조건 갱신해야됨 participant 테이블의 state를 갱신해줘야 됨
+        int isSuccess = masterpieceMapper.complete(masterpieceSegId);
+        MasterpieceSeg masterpieceSegTmp = masterpieceMapper.returnpk(masterpieceSegId);
+        int masterpieceBoardId = masterpieceSegTmp.getMasterpieceBoardId();
+
+        List<MasterpieceSeg> masterpieceSegs =  masterpieceMapper.check(masterpieceBoardId);
+        int result = 1;
+        for(MasterpieceSeg masterpieceSeg : masterpieceSegs){
+            // state 가 하나라도 0 이라면 result는 0이다.
+            result &= masterpieceSeg.getMasterpieceParticipant().getState();
+        }
+
+        // 모든 참가자가 완주했다면
+        //masterpiece board에 state를 1을 올려준다.
+        if(result == 1)
+            masterpieceMapper.updatestate(masterpieceBoardId);
+            // 아직 완주 못했다면
+        return isSuccess;
     }
+
+    public List<MasterpieceListResponse> completelist(int userId){
+        List<MasterpieceListResponse> masterpieceListResponses = new ArrayList<MasterpieceListResponse>();
+        List<MasterpieceBoard> masterpieceBoards = masterpieceMapper.completelist(userId);
+
+        for(MasterpieceBoard masterpieceBoard : masterpieceBoards){
+            LocalDateTime createDate = masterpieceBoard.getExpireDate();
+            LocalDateTime expireDate = masterpieceBoard.getCreateDate();
+
+            // 구정보 추출
+            String address = masterpieceBoard.getUserPath().getAddress();
+            int guIndex = address.indexOf("구");
+            String gu = null;
+
+            if (guIndex != -1) {
+                int start = address.lastIndexOf(" ", guIndex) + 1;
+                gu = address.substring(start, guIndex + 1);
+            }
+
+            User user = userRepository.findById(masterpieceBoard.getUserId()).orElse(null);
+
+            // list 저장
+            masterpieceListResponses.add(
+                    MasterpieceListResponse.builder()
+                            .dDay((int) ChronoUnit.DAYS.between(expireDate.toLocalDate(), createDate.toLocalDate()))
+                            .gu(gu)
+                            .distance(masterpieceBoard.getUserPath().getDistance())
+                            .pathImgUrl(masterpieceBoard.getUserPath().getPathImgUrl())
+                            .profileImgUrl(user.getProfileImgUrl())
+                            .nickname(user.getUserNickname())
+                            .userPathId(masterpieceBoard.getUserPath().getUserPathId())
+                            .restrictCount(masterpieceBoard.getRestrictCount())
+                            .userId(masterpieceBoard.getUserId())
+                            .address2(masterpieceBoard.getUserPath().getAddress2())
+                            .masterpieceBoardId(masterpieceBoard.getMasterpieceBoardId())
+                            .courseName(masterpieceBoard.getUserPath().getName())
+                            .joinCount(masterpieceBoard.getParticipantCount())
+                            .state(masterpieceBoard.getState())
+                            .build()
+            );
+        }
+        return masterpieceListResponses;
+    }
+
+
 }

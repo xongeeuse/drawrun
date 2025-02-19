@@ -26,6 +26,7 @@
         <result column="name" property="name"/>
         <result column="create_date" property="createDate"/>
         <result column="address" property="address"/>
+        <result column="address2" property="address2"/>
         <result column="distance" property="distance"/>
         <result column="bookmark_count" property="bookmarkCount"/>
     </resultMap>
@@ -36,6 +37,9 @@
         <result column="mongo_id" property="mongoId"/>
         <result column="path_num" property="pathNum"/>
         <result column="address" property="address"/>
+        <result column="address2" property="address2"/>
+
+        <association property="masterpieceParticipant" resultMap="MasterpieceParticipantResultMap"></association>
     </resultMap>
 
     <resultMap id="MasterpieceParticipantResultMap" type="com.dasima.drawrun.domain.masterpiece.entity.MasterpieceParticipant">
@@ -45,6 +49,27 @@
         <result column="masterpiece_seg_id" property="masterpieceSegId"/>
         <result column="create_date" property="createDate"/>
     </resultMap>
+
+    <select id="returnpk" parameterType="integer" resultMap="MasterpieceSegResultMap">
+        select masterpiece_board_id
+        from masterpiece_seg
+        where masterpiece_seg_id = #{masterpieceSegId}
+    </select>
+
+    <update id="updatestate" parameterType="integer">
+        update masterpiece_board
+        set state = 1
+        where masterpieceboard_id = #{masterpieceBoardId}
+    </update>
+
+    <select id ="check" parameterType="integer" resultMap="MasterpieceSegResultMap">
+        select *
+        from masterpiece_seg ms
+        left outer join masterpiece_participant mp
+        on ms.masterpiece_seg_id = mp.masterpiece_seg_id
+        where masterpiece_board_id = #{masterpieceBoardId};
+    </select>
+
     <update id="complete" parameterType="int">
         update masterpiece_participant
         set state = 1
@@ -62,7 +87,7 @@
 
     <insert id="seqsave" parameterType="MasterpieceSeg">
         insert into masterpiece_seg
-        values (0, #{masterpieceBoardId}, #{mongoId}, #{pathNum}, #{address})
+        values (0, #{masterpieceBoardId}, #{mongoId}, #{pathNum}, #{address}, #{address2})
     </insert>
     <select id="search" resultMap="MasterpieceBoardResultMap">
         SELECT
@@ -77,6 +102,7 @@
             up.path_img_url,
             up.distance,
             up.address,
+            up.address2,
             up.name,
             COUNT(mp.masterpiece_participant_id) AS participant_count  -- 참가자 수 계산
         FROM
@@ -115,6 +141,7 @@
             up.path_img_url,
             up.distance,
             up.address,
+            up.address2,
             up.name,
             COUNT(mp.masterpiece_participant_id) AS participant_count  -- 참가자 수 계산
         FROM
@@ -148,6 +175,44 @@
         select *
         from masterpiece_participant
         where masterpiece_seg_id = #{masterpieceSegId}
+    </select>
+    
+    <select id="completelist" parameterType="integer" resultMap="MasterpieceBoardResultMap">
+        SELECT
+            mb.masterpiece_board_id,
+            mb.user_id,
+            mb.restrict_count,
+            mb.user_path_id,
+            mb.state,
+            mb.create_date,
+            mb.update_date,
+            mb.expire_date,
+            mb.state,
+            up.path_img_url,
+            up.distance,
+            up.address,
+            up.address2,
+            COUNT(mp.masterpiece_participant_id) AS participant_count  -- 참가자 수 계산
+        FROM
+            masterpiece_board mb
+                LEFT JOIN user_path up
+                          ON mb.user_path_id = up.user_path_id
+                LEFT JOIN masterpiece_seg ms
+                          ON mb.masterpiece_board_id = ms.masterpiece_board_id
+                LEFT JOIN masterpiece_participant mp
+                          ON ms.masterpiece_seg_id = mp.masterpiece_seg_id
+        where mp.user_id = #{userId} and mb.state = 1
+        GROUP BY
+            mb.masterpiece_board_id,  -- masterpiece_board 별로 그룹핑
+            mb.user_id,
+            mb.restrict_count,
+            mb.user_path_id,
+            mb.state,
+            mb.create_date,
+            mb.update_date,
+            mb.expire_date
+        ORDER BY
+            mb.expire_date asc;
     </select>
 
 </mapper>

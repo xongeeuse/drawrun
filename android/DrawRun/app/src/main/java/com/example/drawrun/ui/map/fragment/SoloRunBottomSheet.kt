@@ -106,10 +106,13 @@ class SoloRunBottomSheet(private val courseRepository: CourseRepository) : Botto
 
         // 버튼 클릭 리스너 설정
         binding.btnSave.setOnClickListener {
+            if (!binding.btnSave.isEnabled) return@setOnClickListener
+
             // 코스 저장 로직 구현
             val courseName = binding.etCourseName.text.toString()
             if (courseName.isBlank()) {
                 Toast.makeText(requireContext(), "코스 이름을 입력해주세요", Toast.LENGTH_SHORT).show()
+                binding.btnSave.isEnabled = true // 에러 시 버튼 다시 활성화
                 return@setOnClickListener
             }
 
@@ -138,6 +141,8 @@ class SoloRunBottomSheet(private val courseRepository: CourseRepository) : Botto
                     distance = formattedDistance,
 //                    isPublic = isPublic
                 )
+            } ?: run {
+                binding.btnSave.isEnabled = true // arguments가 null일 경우 버튼 다시 활성화
             }
         }
 
@@ -161,8 +166,10 @@ class SoloRunBottomSheet(private val courseRepository: CourseRepository) : Botto
                     Toast.LENGTH_SHORT
                 ).show()
             }
+            binding.btnSave.isEnabled = true // 성공이든 실패든 저장 프로세스가 끝나면 버튼 다시 활성화
         }
     }
+
 
     private fun loadImage() {
         arguments?.getString("image_path")?.let { imageUrl ->

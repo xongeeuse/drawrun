@@ -3,6 +3,7 @@ package com.example.drawrun.ui.map.fragment
 import android.app.DatePickerDialog
 import android.app.Dialog
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -18,6 +19,7 @@ import com.example.drawrun.data.dto.request.masterpiece.MasterpieceSaveRequest
 import com.example.drawrun.data.repository.CourseRepository
 import com.example.drawrun.data.repository.MasterpieceRepository
 import com.example.drawrun.databinding.BottomSheetGroupRunBinding
+import com.example.drawrun.ui.masterpiece.MasterpieceActivity
 import com.example.drawrun.utils.RetrofitInstance
 import com.example.drawrun.viewmodel.CourseViewModel
 import com.example.drawrun.viewmodel.CourseViewModelFactory
@@ -40,9 +42,10 @@ class GroupRunBottomSheet : BottomSheetDialogFragment() {
     private lateinit var masterpieceViewModel: MasterpieceViewModel
     private lateinit var courseViewModel: CourseViewModel
 
-
     // 포인트 리스트를 저장할 변수 추가
     private var points: List<Point> = listOf()
+
+    private var isSaveButtonEnabled = true
 
     companion object {
         fun newInstance(distance: Double, imagePath: String, points:List<Point>): GroupRunBottomSheet {
@@ -166,8 +169,14 @@ class GroupRunBottomSheet : BottomSheetDialogFragment() {
 
         // 등록 버튼 클릭 리스너 추가
         binding.btnSave.setOnClickListener {
+            if (!isSaveButtonEnabled) return@setOnClickListener
+
+            isSaveButtonEnabled = false
+            binding.btnSave.isEnabled = false
+
             saveMasterpiece()
         }
+
 
         // 인원 조절 버튼 리스너 추가
         val maxMemberCount = points.size - 1
@@ -261,14 +270,14 @@ class GroupRunBottomSheet : BottomSheetDialogFragment() {
         }
 
         // 마스터피스 저장 결과 관찰 (기존 코드)
-        masterpieceViewModel.saveMasterpieceResult.observe(viewLifecycleOwner) { result ->
-            result.onSuccess { masterpieceId ->
-                Toast.makeText(requireContext(), "걸작이 성공적으로 저장되었습니다. ID: $masterpieceId", Toast.LENGTH_SHORT).show()
-                dismiss()
-            }.onFailure { exception ->
-                Toast.makeText(requireContext(), "걸작 저장 실패: ${exception.message}", Toast.LENGTH_SHORT).show()
-            }
-        }
+//        masterpieceViewModel.saveMasterpieceResult.observe(viewLifecycleOwner) { result ->
+//            result.onSuccess { masterpieceId ->
+//                Toast.makeText(requireContext(), "걸작이 성공적으로 저장되었습니다. ID: $masterpieceId", Toast.LENGTH_SHORT).show()
+//                dismiss()
+//            }.onFailure { exception ->
+//                Toast.makeText(requireContext(), "걸작 저장 실패: ${exception.message}", Toast.LENGTH_SHORT).show()
+//            }
+//        }
     }
 
 
@@ -296,29 +305,51 @@ class GroupRunBottomSheet : BottomSheetDialogFragment() {
 
         // MasterpieceViewModel을 통해 마스터피스 저장 요청
         masterpieceViewModel.saveMasterpiece(request)
+        masterpieceViewModel.saveMasterpieceResult.observe(viewLifecycleOwner) { result ->
+            result.onSuccess { masterpieceBoardId ->
+                Toast.makeText(requireContext(), "걸작이 성공적으로 저장되었습니다. ID: $masterpieceBoardId", Toast.LENGTH_SHORT).show()
+                navigateToMasterpieceDetail(masterpieceBoardId)
+                dismiss()
+            }.onFailure { exception ->
+                Toast.makeText(requireContext(), "걸작 저장 실패: ${exception.message}", Toast.LENGTH_SHORT).show()
+            }
+
+            isSaveButtonEnabled = true
+            binding.btnSave.isEnabled = true
+        }
+
+    }
+
+    private fun navigateToMasterpieceDetail(masterpieceBoardId: Int) {
+        val intent = Intent(requireContext(), MasterpieceActivity::class.java).apply {
+            putExtra("masterpieceBoardId", masterpieceBoardId)
+        }
+        startActivity(intent)
     }
 
 
     // 포인트 리스트를 인원수에 맞게 나누는 함수
     private fun dividePath(points: List<Point>, memberCount: Int): List<List<Point>> {
         val result = mutableListOf<List<Point>>()
-        // 멤버 한 명당 할당될 기본 포인트 수 계산
-        val pointsPerMember = points.size / memberCount
-        // 나누고 남은 포인트 수
-        var remainingPoints = points.size % memberCount
+        val totalPoints = points.size
+        val basePointsPerMember = totalPoints / memberCount
+        val extraPoints = totalPoints % memberCount
 
         var startIndex = 0
         for (i in 0 until memberCount) {
-            val endIndex = startIndex + pointsPerMember + (if (remainingPoints > 0) 1 else 0)
-            result.add(points.subList(startIndex, endIndex.coerceAtMost(points.size)))
-            // 다음 구간의 시작점을 현재 구간의 마지막 포인트로 설정 (중복 포인트)
-            startIndex = endIndex - 1
-            remainingPoints--
+            val pointsForThisMember = basePointsPerMember + if (i < extraPoints) 1 else 0
+            val endIndex = (startIndex + pointsForThisMember).coerceAtMost(totalPoints)
+
+            if (i > 0) {
+                startIndex -= 1 // 이전 구간의 마지막 포인트를 포함
+            }
+
+            result.add(points.subList(startIndex, endIndex))
+            startIndex = endIndex
         }
 
         return result
     }
-
 
     override fun onDestroyView() {
         super.onDestroyView()

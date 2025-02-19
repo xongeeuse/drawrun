@@ -47,6 +47,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.example.drawrun.ui.mypage.SettingsActivity
+import com.example.drawrun.ui.search.SearchActivity
 import com.google.android.gms.wearable.MessageClient
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.Wearable
@@ -66,8 +67,8 @@ class LaunchAppMessageReceiver(context: Context) : MessageClient.OnMessageReceiv
         Log.d("DrawRun", "수신된 메시지 데이터: ${messageEvent.data?.toString(Charsets.UTF_8)}")
 
         if (messageEvent.path == "/launch_app") {
-            Log.d("DrawRun", "메시지 경로 일치: SettingsActivity 실행 시도")
-            val activityIntent = Intent(appContext, SettingsActivity::class.java).apply {
+            Log.d("DrawRun", "메시지 경로 일치: SearchActivity 실행 시도")
+            val activityIntent = Intent(appContext, SearchActivity::class.java).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
             }
             appContext.startActivity(activityIntent)

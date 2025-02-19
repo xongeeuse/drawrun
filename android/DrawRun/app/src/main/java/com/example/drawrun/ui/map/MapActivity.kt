@@ -19,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.drawrun.R
 import com.example.drawrun.data.model.ParcelablePoint
 import com.example.drawrun.services.NavigationForegroundService
@@ -104,6 +105,9 @@ class MapActivity : AppCompatActivity() {
     private lateinit var tts: TextToSpeech
     private var isNavigating = false
 
+    private var aiPath: List<ParcelablePoint>?=null
+    private var isAiRoute = false
+
     // 위치 권한 요청을 처리하기 위하 ActivityResultLanuncher
     private val locationPermissionRequest = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -124,6 +128,22 @@ class MapActivity : AppCompatActivity() {
         setContentView(R.layout.activity_map)
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+        // ✅ AI 추천 경로 데이터를 Intent에서 가져오기 (안전한 변환 처리)
+        aiPath = intent.getParcelableArrayListExtra("aiPath")
+
+        if (!aiPath.isNullOrEmpty()) {
+            val pathPoints = aiPath!!.map { it.point } // ParcelablePoint → Point 변환
+            points.clear()
+            points.addAll(pathPoints)
+            drawAiPath(pathPoints) // ✅ 폴리라인(빨간색) 그리기
+            isAiRoute = true
+            Log.d("MapActivity", "📌 받은 AI 경로 데이터: $aiPath")
+        } else {
+            isAiRoute = false
+        }
+
+        Log.d("MapActivity", "📌 받은 AI 경로 데이터: $aiPath") // ✅ 로그 추가
 
         // 백그라운드 tts
         tts = TextToSpeech(this){ status ->
@@ -149,6 +169,9 @@ class MapActivity : AppCompatActivity() {
         mapboxNavigation = MapboxNavigationProvider.create(
             NavigationOptions.Builder(this.applicationContext).build()
         )
+
+
+
     }
 
     // 위치 권한 확인 및 요청
@@ -160,6 +183,43 @@ class MapActivity : AppCompatActivity() {
         }
     }
 
+//    Ai 먀먀먀
+    // ✅ AI 경로를 지도에 폴리라인(빨간색)으로 표시
+    private fun drawAiPath(points: List<Point>) {
+        if (!::polylineAnnotationManager.isInitialized) {
+            Log.e("MapActivity", "❌ polylineAnnotationManager가 아직 초기화되지 않음!")
+            return
+        }
+
+        if (points.isEmpty()) {
+            Log.e("MapActivity", "❌ AI 경로 포인트가 비어 있음!")
+            return
+        }
+
+        Log.d("MapActivity", "📌 AI 경로 표시 시작 - 포인트 개수: ${points.size}")
+
+        polylineAnnotationManager.deleteAll() // 기존 경로 초기화
+
+        val polylineOptions = PolylineAnnotationOptions()
+            .withPoints(points)
+            .withLineColor("#FF0000") // AI 경로 색상 (빨간색)
+            .withLineWidth(5.0)
+
+        polylineAnnotationManager.create(polylineOptions)
+        Log.d("MapActivity", "✅ AI 경로 생성 완료")
+
+        // ✅ AI 경로의 첫 번째 지점으로 카메라 이동 (AI 경로가 있을 때만)
+        val firstPoint = points.firstOrNull()
+        if (firstPoint != null) {
+            Log.d("MapActivity", "📌 카메라 이동: ${firstPoint.latitude()}, ${firstPoint.longitude()}")
+
+            mapView.getMapboxMap().setCamera(CameraOptions.Builder()
+                .center(firstPoint) // 첫 번째 포인트로 이동
+                .zoom(14.0) // 적절한 줌 레벨 설정
+                .build()
+            )
+        }
+    }
     // 위치 권한 확인
     private fun checkLocationPermission(): Boolean {
         return ActivityCompat.checkSelfPermission(
@@ -235,7 +295,7 @@ class MapActivity : AppCompatActivity() {
 
             // 경로 생성 버튼 클릭 시 동작 추가
             generateRouteButton.setOnClickListener {
-                if (points.size >= 2) {
+                if (points.size >= 1) {
                     requestRoute(points, manualRequest = true)  // 사용자가 찍은 빨간색 좌표를 기반으로 도보 경로 요청
                     Log.d("NAVINAVI", "사용자 지정 경로 요청: ${points}")
                     Toast.makeText(this, "경로를 생성하고 스냅샷을 찍습니다.", Toast.LENGTH_SHORT).show()
@@ -248,7 +308,7 @@ class MapActivity : AppCompatActivity() {
 
             // 경로 라인 표시 옵션 설정
             val routeLineOptions = MapboxRouteLineViewOptions.Builder(this)
-                .routeLineBelowLayerId("road-label")
+                .routeLineBelowLayerId("waterway-label")
                 .build()
             routeLineApi = MapboxRouteLineApi(MapboxRouteLineApiOptions.Builder().build())
             routeLineView = MapboxRouteLineView(routeLineOptions)
@@ -260,7 +320,13 @@ class MapActivity : AppCompatActivity() {
                     startNavigationForegroundService()
                     return@setOnClickListener
                 }
-
+                // ✅ AI 경로가 있는 경우 처리
+                if (isAiRoute && !aiPath.isNullOrEmpty()) {
+                    val pathPoints = aiPath!!.map { it.point } // ParcelablePoint → Point 변환
+                    points.clear()  // 기존 사용자 입력 포인트 초기화
+                    points.addAll(pathPoints)  // AI 경로 추가
+                    drawAiPath(pathPoints) // ✅ AI 경로를 지도에 표시
+                }
                 // ✅ 현재 사용자 위치 가져오기
                 fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                     if (location != null) {
@@ -384,7 +450,7 @@ class MapActivity : AppCompatActivity() {
         val polylineOptions = PolylineAnnotationOptions()
             .withPoints(points)
             .withLineColor("#FF0000") // 경로 색상(빨간색)
-            .withLineWidth(4.0)  // 경로 두께
+            .withLineWidth(5.0)  // 경로 두께
 
 //        polylineAnnotationManager.deleteAll()  // 기존 경로 삭제
         polylineAnnotationManager.create(polylineOptions)  // 새로운 경로 추가
@@ -427,7 +493,7 @@ class MapActivity : AppCompatActivity() {
                             captureMapSnapshotAndShow(distanceInKm)
                             Toast.makeText(
                                 this@MapActivity,
-                                "경로가 생성되었습니다. 내비게이션을 시작하려면 버튼을 눌러주세요.",
+                                "경로가 생성되었습니다.",
                                 Toast.LENGTH_LONG
                             ).show()
                         }
@@ -563,7 +629,7 @@ class MapActivity : AppCompatActivity() {
         closeButton.setOnClickListener {
             dialog.dismiss() // 다이얼로그 닫기
 
-        // ✅ 닫기 버튼 누르면 위치 마커 다시 활성화
+        // ✅ 닫기 버튼 누르면 위치 마커 다시 활성
         mapView.location.updateSettings {
             enabled = true // 위치 마커 다시 활성화
             }
@@ -744,11 +810,15 @@ class MapActivity : AppCompatActivity() {
             Log.d("showArrivalDialog", "📌 로드할 스냅샷 경로: $trackingSnapshotUrl")
             Glide.with(this)
                 .load(trackingSnapshotUrl)
-                .placeholder(R.drawable.search_background) // 기본 이미지 설정
                 .into(imageView)
         } else {
             Log.e("showArrivalDialog", "❌ trackingSnapshotUrl이 null이거나 비어 있음")
-            imageView.setImageResource(R.drawable.search_background) // 기본 이미지 설정
+            // ✅ 기본 GIF (`gps_art_run_done.gif`) 적용
+            Glide.with(this)
+                .asGif() // GIF로 로드
+                .load(R.drawable.gps_art_run_done) // ✅ drawable에 있는 GIF
+                .diskCacheStrategy(DiskCacheStrategy.ALL) // 캐싱 전략
+                .into(imageView)
         }
 
         finishButton.setOnClickListener {
@@ -867,50 +937,101 @@ class MapActivity : AppCompatActivity() {
 
         if (trackingPoints.size < 2) {
             Log.e("TrackingSnapshot", "❌ 트래킹 포인트가 부족하여 스냅샷을 캡처할 수 없음")
-            Log.e("TrackingSnapshot", "❌ $trackingPoints")
             return
         }
 
-        val cameraOptions = mapView.mapboxMap.cameraForCoordinates(
-            trackingPoints,
-            EdgeInsets(300.0, 300.0, 300.0, 300.0)
-        )
-
-        mapView.mapboxMap.setCamera(cameraOptions)
-        Log.d("TrackingSnapshot", "📷 카메라 설정 완료")
-
-        mapView.postDelayed({
-            mapView.snapshot { bitmap ->
-                if (bitmap != null) {
-                    Log.d("TrackingSnapshot", "✅ 스냅샷 캡처 성공: 비트맵 크기 ${bitmap.width}x${bitmap.height}")
-
-                    // 📌 비트맵을 파일로 저장하는 함수 호출
-                    val filePath = saveBitmapToFile(bitmap)
-
-                    if (filePath != null) {
-                        trackingSnapshotUrl = filePath // ✅ trackingSnapshotUrl 업데이트
-                        Log.d("TrackingSnapshot", "📌 스냅샷 저장 성공 - 경로: $filePath")
-                    } else {
-                        Log.e("TrackingSnapshot", "❌ 스냅샷 저장 실패")
-                    }
-                    Log.d("TrackingSnapshot", "📌 trackingSnapshotUrl 값 확인: $trackingSnapshotUrl")
-                    // ✅ Firebase 업로드 대신, ImageView에 표시하여 확인
-                    runOnUiThread {
-                        val trackingImageView = findViewById<ImageView>(R.id.trackingImageView)
-
-                        if (trackingImageView != null) { // ✅ Null 체크 추가
-                            trackingImageView.setImageBitmap(bitmap)
-                            Log.d("TrackingSnapshot", "📌 캡처된 이미지가 ImageView에 표시됨")
-                        } else {
-                            Log.e("TrackingSnapshot", "❌ trackingImageView가 존재하지 않음!")
-                        }
-                    }
-                } else {
-                    Log.e("TrackingSnapshot", "❌ 스냅샷 캡처 실패")
-                }
+        // 1️⃣ 경로 바운딩 박스 계산 (최소/최대 좌표 찾기)
+        val routeBounds = trackingPoints.fold(null as Pair<Point, Point>?) { bounds, point ->
+            when (bounds) {
+                null -> Pair(point, point)
+                else -> Pair(
+                    Point.fromLngLat(
+                        minOf(bounds.first.longitude(), point.longitude()),
+                        minOf(bounds.first.latitude(), point.latitude())
+                    ),
+                    Point.fromLngLat(
+                        maxOf(bounds.second.longitude(), point.longitude()),
+                        maxOf(bounds.second.latitude(), point.latitude())
+                    )
+                )
             }
-        }, 1400)
+        }
+
+        routeBounds?.let { (southWest, northEast) ->
+            val width = TurfMeasurement.distance(
+                Point.fromLngLat(southWest.longitude(), southWest.latitude()),
+                Point.fromLngLat(northEast.longitude(), southWest.latitude()), "meters"
+            )
+
+            val height = TurfMeasurement.distance(
+                Point.fromLngLat(southWest.longitude(), southWest.latitude()),
+                Point.fromLngLat(southWest.longitude(), northEast.latitude()), "meters"
+            )
+
+            Log.d("TrackingSnapshot", "📐 경로 크기 계산 완료 - Width: ${width}m, Height: ${height}m")
+
+            // 2️⃣ 정사각형 크기 결정 (더 긴 쪽 기준)
+            val squareSize = maxOf(width, height) * 1.3  // ✅ 30% 추가해서 여백 확보
+
+            // 3️⃣ 자동 줌 설정 (적절한 여백을 추가한 상태에서 캡처)
+            val zoomLevel = when {
+                squareSize > 2000 -> 13.0
+                squareSize > 1000 -> 14.0
+                squareSize > 500 -> 15.0
+                squareSize > 200 -> 16.0
+                squareSize > 100 -> 17.0
+                squareSize > 50 -> 18.0
+                else -> 19.0
+            }
+
+            Log.d("TrackingSnapshot", "🔍 자동 줌 설정 - Zoom Level: $zoomLevel")
+
+            // 4️⃣ 캡처할 카메라 중앙 위치 계산
+            val centerPoint = Point.fromLngLat(
+                (southWest.longitude() + northEast.longitude()) / 2,
+                (southWest.latitude() + northEast.latitude()) / 2
+            )
+
+            val cameraOptions = CameraOptions.Builder()
+                .center(centerPoint)
+                .zoom(zoomLevel)
+                .build()
+
+            mapView.mapboxMap.setCamera(cameraOptions)
+
+            // 5️⃣ 스냅샷 캡처 실행
+            mapView.postDelayed({
+                mapView.snapshot { bitmap ->
+                    if (bitmap != null) {
+                        Log.d("TrackingSnapshot", "✅ 스냅샷 캡처 성공: 비트맵 크기 ${bitmap.width}x${bitmap.height}")
+
+                        // ✅ 정사각형 크롭 적용
+                        val squareBitmap = cropBitmapToSquare(bitmap)
+
+                        lifecycleScope.launch {
+                            val imageUrl = uploadImage(squareBitmap)  // ✅ 기존 uploadImage() 재사용
+                            if (imageUrl != null) {
+                                trackingSnapshotUrl = imageUrl
+                                Log.d("TrackingSnapshot", "📌 스냅샷 업로드 성공 - URL: $imageUrl")
+
+                            } else {
+                                Log.e("TrackingSnapshot", "❌ 스냅샷 업로드 실패")
+                            }
+                        }
+
+                        runOnUiThread {
+                            val trackingImageView = findViewById<ImageView>(R.id.trackingImageView)
+                            trackingImageView?.setImageBitmap(squareBitmap)
+                                ?: Log.e("TrackingSnapshot", "❌ trackingImageView가 존재하지 않음!")
+                        }
+                    } else {
+                        Log.e("TrackingSnapshot", "❌ 스냅샷 캡처 실패")
+                    }
+                }
+            }, 1400) // ✅ 카메라 이동 후 1.4초 대기 (안정적 캡처)
+        }
     }
+
 
     private fun saveBitmapToFile(bitmap: Bitmap): String? {
         return try {
@@ -926,29 +1047,6 @@ class MapActivity : AppCompatActivity() {
             null
         }
     }
-//    private suspend fun uploadTrackingImage(bitmap: Bitmap): String? {
-//        Log.d("UploadTrackingImage", "🟢 트래킹 스냅샷 업로드 시작")
-//
-//        // ✅ 스냅샷을 Firebase Storage `snapshots/tracking/` 경로에 저장
-//        val imageRef = storageReference.child("snapshots/tracking/${System.currentTimeMillis()}.jpg")
-//
-//        val baos = ByteArrayOutputStream()
-//        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
-//        val data = baos.toByteArray()
-//
-//        return try {
-//            val uploadTask = imageRef.putBytes(data).await()
-//            Log.d("UploadTrackingImage", "✅ 이미지 업로드 성공")
-//
-//            val downloadUrl = imageRef.downloadUrl.await().toString()
-//            Log.d("UploadTrackingImage", "✅ 다운로드 URL 생성: $downloadUrl")
-//
-//            return downloadUrl
-//        } catch (e: Exception) {
-//            Log.e("UploadTrackingImage", "❌ 트래킹 스냅샷 업로드 실패: ${e.message}")
-//            return null
-//        }
-//    }
 
     private fun startNavigationForegroundService() {
         val intent = Intent(this, NavigationForegroundService::class.java)

@@ -63,6 +63,7 @@
             android:exported="false" />
         <activity
             android:name=".ui.navi.NaviActivity"
+            android:launchMode="singleTop"
             android:exported="false" />
         <activity
             android:name=".ui.auth.RegisterActivity"
@@ -78,6 +79,7 @@
         <activity android:name=".ui.mypage.SettingsActivity" />
         <activity android:name=".ui.mypage.BadgeActivity" />
         <activity android:name=".ui.mypage.MyArtCustomActivity"/>
+        <activity android:name=".ui.map.AiMapActivity"/>
         <service
             android:name=".LaunchAppService"
             android:enabled="true"

@@ -15,5 +15,7 @@ data class Masterpiece(
     val gu: String,               // 구 정보
     val distance: Double,         // 거리 (km)
     val joinCount: Int,           // 현재 참여 인원 수
+    val state: Int,             // 완성 여부
+    val courseName: String,           // 코스 이름
     val dday: Int                 // D-Day 값
 ) : Serializable

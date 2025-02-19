@@ -39,6 +39,33 @@ class SearchViewModel(
                         _searchState.value = SearchState.Empty
                     } else {
                         _searchResults.value = response
+                        _filteredSearchResults.value = _searchResults.value  // 여기에 추가
+                        _searchState.value = SearchState.Success
+                    }
+                },
+                onFailure = {
+                    _searchState.value = SearchState.Error(it.message ?: "Unknown error occurred")
+                }
+            )
+        }
+    }
+
+    // 인기 코스를 저장할 StateFlow
+    private val _topCourses = MutableStateFlow<List<CourseData>>(emptyList())
+    val topCourses: StateFlow<List<CourseData>> = _topCourses
+
+    // 인기 코스 가져오기 함수
+    fun getTopCourses() {
+        viewModelScope.launch {
+            Log.d("SearchSearch", "Fetching top courses")
+            _searchState.value = SearchState.Loading
+            val result = searchRepository.getTopCourses()
+            result.fold(
+                onSuccess = { response ->
+                    if (response.isEmpty()) {
+                        _searchState.value = SearchState.Empty
+                    } else {
+                        _topCourses.value = response
                         _searchState.value = SearchState.Success
                     }
                 },
@@ -73,17 +100,35 @@ class SearchViewModel(
     }
 
     private fun updateCourseBookmarkStatus(courseId: Int, isBookmarked: Boolean) {
-        val updatedList = _searchResults.value.map { course ->
-            if (course.courseId == courseId) {
-                course.copy(
-                    isBookmark = isBookmarked,
-                    bookmarkCount = course.bookmarkCount + if (isBookmarked) 1 else -1
-                )
-            } else {
-                course
+        val updateList = { list: List<CourseData> ->
+            list.map { course ->
+                if (course.courseId == courseId) {
+                    course.copy(
+                        isBookmark = isBookmarked,
+                        bookmarkCount = course.bookmarkCount + if (isBookmarked) 1 else -1
+                    )
+                } else {
+                    course
+                }
             }
         }
-        _searchResults.value = updatedList
+
+        _searchResults.value = updateList(_searchResults.value)
+        _topCourses.value = updateList(_topCourses.value)
+    }
+
+    private val _filteredSearchResults = MutableStateFlow<List<CourseData>>(emptyList())
+    val filteredSearchResults: StateFlow<List<CourseData>> = _filteredSearchResults
+
+    fun applyDistanceFilter(maxDistance: Int?) {
+        viewModelScope.launch {
+            val filtered = if (maxDistance == null) {
+                _searchResults.value
+            } else {
+                _searchResults.value.filter { it.distance <= maxDistance }
+            }
+            _filteredSearchResults.value = filtered
+        }
     }
 }
 

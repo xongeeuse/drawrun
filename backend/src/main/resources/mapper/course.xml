@@ -12,6 +12,7 @@
         <result column="name" property="name"/>
         <result column="create_date" property="createDate"/>
         <result column="address" property="address"/>
+        <result column="address2" property="address2"/>
         <result column="distance" property="distance"/>
         <result column="bookmark_count" property="bookmarkCount"/>
     </resultMap>
@@ -86,7 +87,7 @@
 
     <insert id="save" parameterType="UserPath" useGeneratedKeys="true" keyProperty="userPathId">
         insert into user_path
-        values (0, #{userId}, #{pathId}, #{pathImgUrl}, #{name}, now(), #{distance}, #{address})
+        values (0, #{userId}, #{pathId}, #{pathImgUrl}, #{name}, now(), #{distance}, #{address}, #{address2})
     </insert>
 
     <select id="findByUserPK" parameterType="int" resultMap="UserPathResultMap">

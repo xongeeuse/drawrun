@@ -4,17 +4,22 @@ import android.content.Intent
 import android.graphics.Color
 import android.graphics.Shader
 import android.os.Bundle
+import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.drawrun.R
 import com.example.drawrun.data.repository.UserRepository
 import com.example.drawrun.ui.common.BaseActivity
+import com.example.drawrun.ui.mypage.adaptor.RunningHistoryAdapter
 import com.example.drawrun.viewmodel.user.UserViewModel
 import com.example.drawrun.viewmodel.user.UserViewModelFactory
 import com.example.drawrun.utils.RetrofitInstance
+
 
 class UserActivity : BaseActivity() {
 
@@ -31,91 +36,96 @@ class UserActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_user)
 
-        // View 요소 가져오기
         val userNameTextView: TextView = findViewById(R.id.userNameTextView)
         val userProfileImageView: ImageView = findViewById(R.id.userProfileImageView)
+        val recyclerView: RecyclerView = findViewById(R.id.runningHistoryRecyclerView)
         val settingsIcon: ImageView = findViewById(R.id.settingsIcon)
         val badgeIcon: ImageView = findViewById(R.id.badgeIcon)
         val myArtCustomIcon: ImageView = findViewById(R.id.myartcustomIcon)
-        // ViewModel을 통해 데이터 가져오기 및 관찰
-        observeUserData(userNameTextView, userProfileImageView)
+        val emptyMessageTextView: TextView = findViewById(R.id.emptyMessageTextView)
 
-        // 설정 페이지 이동 이벤트
-        settingsIcon.setOnClickListener {
-            navigateToSettings()
-        }
+        // RecyclerView 설정
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.setHasFixedSize(true)
 
-        // 배지 페이지 이동 이벤트
+        // UI 데이터 관찰
+        observeUserData(userNameTextView, userProfileImageView, recyclerView, emptyMessageTextView)
+
+        // 클릭 이벤트 설정
+        settingsIcon.setOnClickListener { navigateToSettings() }
         badgeIcon.setOnClickListener {
-            val userName = userViewModel.userData.value?.userNickname
+            val userName = userViewModel.userData.value?.data?.nickname
             navigateToBadge(userName)
         }
-
-        // 마이커스텀 페이지 이동 이벤트
         myArtCustomIcon.setOnClickListener {
-            val userName = userViewModel.userData.value?.userNickname
+            val userName = userViewModel.userData.value?.data?.nickname
             navigateToMyArtCustom(userName)
         }
 
-        // DrawRun 로고 그라데이션 설정
+        // 텍스트 그라데이션 적용
         applyTextGradient(findViewById(R.id.pageTitleTextView))
 
-        // 사용자 데이터 가져오기 요청
-        userViewModel.fetchUserData()
+        // ✅ API 호출 실행
+        userViewModel.fetchUserInfo()
+        userViewModel.fetchRunningHistory()
     }
 
     // ✅ ViewModel 데이터 관찰 및 UI 업데이트
-    private fun observeUserData(userNameTextView: TextView, userProfileImageView: ImageView) {
-        // 사용자 데이터 관찰
-        userViewModel.userData.observe(this, Observer { userData ->
-            userNameTextView.text = userData.userNickname
+    private fun observeUserData(
+        userNameTextView: TextView,
+        userProfileImageView: ImageView,
+        recyclerView: RecyclerView,
+        emptyMessageTextView: TextView,
+    ) {
+        userViewModel.userData.observe(this, Observer { response ->
+            val userData = response.data
+
+            userNameTextView.text = userData.nickname
             Glide.with(this)
-                .load(userData.profileImgUrl)
+                .load(userData.profileImgUrl ?: R.drawable.ic_default_profile)
                 .placeholder(R.drawable.ic_default_profile)
                 .into(userProfileImageView)
         })
 
-        // 에러 상태 관찰
+        // ✅ RecyclerView 데이터 업데이트
+        userViewModel.runningHistory.observe(this, Observer { historyList ->
+            if (historyList.isEmpty()) {
+                recyclerView.visibility = View.GONE  // ✅ 리스트 숨기기
+                emptyMessageTextView.visibility = View.VISIBLE  // ✅ "기록이 없습니다" 메시지 표시
+            } else {
+                recyclerView.visibility = View.VISIBLE  // ✅ 리스트 보이기
+                emptyMessageTextView.visibility = View.GONE  // ✅ 메시지 숨기기
+                recyclerView.adapter = RunningHistoryAdapter(historyList)
+            }
+        })
+
         userViewModel.errorState.observe(this, Observer { errorMessage ->
             userNameTextView.text = errorMessage
         })
-
-        // 로딩 상태 관찰 (필요 시 추가)
-        userViewModel.loadingState.observe(this, Observer { isLoading ->
-            // 로딩 상태 처리 (프로그래스바 표시 등)
-        })
     }
 
-    // ✅ 설정 페이지로 이동하는 함수
     private fun navigateToSettings() {
-        val intent = Intent(this, SettingsActivity::class.java)
-        startActivity(intent)
+        startActivity(Intent(this, SettingsActivity::class.java))
     }
 
-    // ✅ 배지 페이지로 이동하는 함수
     private fun navigateToBadge(userName: String?) {
         val intent = Intent(this, BadgeActivity::class.java)
         intent.putExtra("USER_NAME", userName ?: "사용자")
         startActivity(intent)
     }
 
-    // ✅ 마이커스텀으로 이동하는 함수
     private fun navigateToMyArtCustom(userName: String?) {
         val intent = Intent(this, MyArtCustomActivity::class.java)
         intent.putExtra("USER_NAME", userName ?: "사용자")
         startActivity(intent)
     }
 
-    // ✅ 텍스트 그라데이션 설정 함수
     private fun applyTextGradient(textView: TextView) {
         textView.post {
             val textWidth = textView.width.toFloat()
             val gradient = android.graphics.LinearGradient(
                 0f, 0f, textWidth, 0f,
-                intArrayOf(
-                    Color.parseColor("#56FF4A"), // 시작 색상
-                    Color.parseColor("#50F348")  // 끝 색상
-                ),
+                intArrayOf(Color.parseColor("#56FF4A"), Color.parseColor("#50F348")),
                 null,
                 Shader.TileMode.CLAMP
             )

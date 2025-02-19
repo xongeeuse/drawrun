@@ -54,4 +54,5 @@ public class CourseController {
     public ResponseEntity<?> bookmarkcancle(@AuthenticationPrincipal UserPrinciple userPrinciple, @RequestBody BookmarkCancleRequest dto){
         return ResponseEntity.ok(courseService.bookmarkcancle(dto, userPrinciple.getUserId()));
     }
+
 }
