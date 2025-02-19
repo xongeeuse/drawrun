@@ -52,6 +52,11 @@ public class CourseServiceImpl implements CourseService{
         List<GeoPoint> dtoList = dto.getPath();
         List<Point> entityList = dtoList.stream().map(geoPoint -> new Point(geoPoint.getLatitude(), geoPoint.getLongitude())).collect(Collectors.toList());
 
+        String realAddress; //  주소가 들어갈 공간
+        if(tmp2.getDocuments().get(0).getRoadAddress() != null) realAddress = tmp2.getDocuments().get(0).getRoadAddress().getAddressName();
+        else if(tmp2.getDocuments().get(0).getAddress() != null) realAddress = tmp2.getDocuments().get(0).getAddress().getAddressName();
+        else realAddress = null; // 주소값이 존재 하지 않음
+
 
 
         Path path = courseRepository.save(new Path(entityList));
@@ -60,7 +65,7 @@ public class CourseServiceImpl implements CourseService{
         // Dto를 Entity로 바꿔줘야함
         UserPath userPath = UserPath.builder()
                 .address(tmp.getDocuments().get(0).getAddress_name())
-                .address2(tmp2.getDocuments().get(0).getRoadAddress().getAddressName())
+                .address2(realAddress)
                 .distance(dto.getDistance())
                 .userId(userId)
                 .pathId(path.getId())
