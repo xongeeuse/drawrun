@@ -210,7 +210,7 @@ public class MasterpieceServiceImpl implements MasterpieceService{
                             .masterpieceSegId(masterpieceSeg.getMasterpieceSegId())
                             .nickname(nicknameOrState)
                             .address(masterpieceSeg.getAddress())
-                            .address(masterpieceSeg.getAddress2())
+                            .address2(masterpieceSeg.getAddress2())
                             .build()
             );
         }
