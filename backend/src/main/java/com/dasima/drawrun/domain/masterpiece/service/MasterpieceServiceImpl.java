@@ -74,6 +74,11 @@ public class MasterpieceServiceImpl implements MasterpieceService{
             // MongoDB에 저장
             Path path = courseRepository.save(new Path(tmp));
 
+            String realAddress; //  주소가 들어갈 공간
+            if(kakaoRoadAddressResponse.getDocuments().get(0).getRoadAddress() != null) realAddress = kakaoRoadAddressResponse.getDocuments().get(0).getRoadAddress().getAddressName();
+            else if(kakaoRoadAddressResponse.getDocuments().get(0).getAddress() != null) realAddress = kakaoRoadAddressResponse.getDocuments().get(0).getAddress().getAddressName();
+            else realAddress = null; // 주소값이 존재 하지 않음
+
             // masterpiece seg에 저장한다.
             res &= masterpieceMapper.seqsave(
                     MasterpieceSeg.builder()
@@ -81,7 +86,7 @@ public class MasterpieceServiceImpl implements MasterpieceService{
                             .mongoId(path.getId())
                             .pathNum(++pathNum)
                             .address(kakaoRegionResponse.getDocuments().get(0).getAddress_name())
-                            .address2(kakaoRoadAddressResponse.getDocuments().get(0).getRoadAddress().getAddressName())
+                            .address2(realAddress)
                             .build()
             );
         }
