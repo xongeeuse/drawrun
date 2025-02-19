@@ -144,7 +144,8 @@ fun NavigationScreen(
                 Spacer(modifier = Modifier.height(5.dp))
                 Text(text = "${distanceToNextTurn.toInt()}m", fontSize = 20.sp)
 //                Text(text = voiceInstruction, fontSize = 18.sp, textAlign = TextAlign.Center)  // ✅ 안내문구 표시
-                Text(text = "❤️: ${heartRate ?: "0"} BPM", fontSize = 12.sp)
+                Text(text = "❤️: ${heartRate?.toInt() ?: "0"} BPM", fontSize = 12.sp)
+
             }
         }
     }

@@ -75,7 +75,7 @@ class RunRecordActivity : ComponentActivity() {
         totalDistance = intent.getDoubleExtra("totalDistance", 0.0)
         val distanceInKm = intent.getDoubleExtra("distanceInKm", 0.0)
         totalDuration = intent.getIntExtra("totalDuration", 0)
-        averageHeartRate = intent.getFloatExtra("averageHeartRate", 1F)
+        averageHeartRate = intent.getFloatExtra("averageHeartRate", -1F)
 
         Log.d("RunRecordActivity", "🟢 받은 pathId: $pathId")
         Log.d("RunRecordActivity", "🟢 받은 trackingSnapshotUrl: $trackingSnapshotUrl")
@@ -208,7 +208,7 @@ class RunRecordActivity : ComponentActivity() {
                 for (dataItem in dataItemBuffer) {
                     if (dataItem.uri.path == "/navigation/average_heartbeat") {
                         val dataMap = DataMapItem.fromDataItem(dataItem).dataMap
-                        val receivedHeartRate = dataMap.getFloat("averageHeartRate", -1f)
+                        val receivedHeartRate = dataMap.getFloat("averageHeartRate", 1f)
                         Log.d("RunRecordActivity", "💓 Wearable에서 받은 평균 심박수: $receivedHeartRate BPM")
 
                         if (receivedHeartRate > 0) {
@@ -237,7 +237,7 @@ class RunRecordActivity : ComponentActivity() {
     }
 
     private fun saveRunRecord() {
-        if (averageHeartRate == -1f) {
+        if (averageHeartRate == 1F) {
             Log.e("RunRecordActivity", "🚨 심박수 데이터 없음 (스마트워치 미연결)")
 //            return
         }
