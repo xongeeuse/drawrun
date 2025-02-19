@@ -229,7 +229,7 @@ public class MasterpieceServiceImpl implements MasterpieceService{
 
     public int complete(int masterpieceSegId){
         // 일단 무조건 갱신해야됨 participant 테이블의 state를 갱신해줘야 됨
-        masterpieceMapper.complete(masterpieceSegId);
+        int isSuccess = masterpieceMapper.complete(masterpieceSegId);
         MasterpieceSeg masterpieceSegTmp = masterpieceMapper.returnpk(masterpieceSegId);
         int masterpieceBoardId = masterpieceSegTmp.getMasterpieceBoardId();
 
@@ -243,10 +243,9 @@ public class MasterpieceServiceImpl implements MasterpieceService{
         // 모든 참가자가 완주했다면
         //masterpiece board에 state를 1을 올려준다.
         if(result == 1)
-            return masterpieceMapper.updatestate(masterpieceBoardId);
+            masterpieceMapper.updatestate(masterpieceBoardId);
             // 아직 완주 못했다면
-        else
-            return 0;
+        return isSuccess;
     }
 
     public List<MasterpieceListResponse> completelist(int userId){
