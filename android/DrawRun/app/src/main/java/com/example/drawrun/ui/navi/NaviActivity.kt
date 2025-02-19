@@ -969,6 +969,8 @@ class NaviActivity : AppCompatActivity() {
         super.onDestroy()
         Log.d("NaviActivity", "🛑 onDestroy() 호출됨 - mapView 유지")
 
+        fusedLocationClient.removeLocationUpdates(locationCallback)
+
         // ❌ 직접 `onDestroy()` 호출 X → MapboxNavigationProvider 사용
         if (MapboxNavigationProvider.isCreated()) {
             MapboxNavigationProvider.destroy()
