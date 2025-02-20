@@ -108,15 +108,22 @@ public class CourseServiceImpl implements CourseService{
         for(UserPath userPath : userPaths){
             // username 추출
             User user = userRepository.findByUserId(userPath.getUserId()).orElse(null);
-            if(user == null) continue;
-             // 구 정보 추출
-             String address = userPath.getAddress();
-             int guIndex = address.indexOf("구");
+            String address = userPath.getAddress();
+            int guIndex = address.indexOf("구");
+            String lastInfo = null;
             String gu = null;
+            String dong = null;
+
 
             if (guIndex != -1) {
                 int start = address.lastIndexOf(" ", guIndex) + 1;
                 gu = address.substring(start, guIndex + 1);
+                lastInfo = gu;
+            } else{
+                int dongIndex = address.indexOf("동");
+                int start = address.lastIndexOf(" ",dongIndex) + 1;
+                dong = address.substring(start, dongIndex + 1);
+                lastInfo = dong;
             }
 
             CourseListResponse courseListResponse = CourseListResponse.builder()
@@ -125,7 +132,7 @@ public class CourseServiceImpl implements CourseService{
                     .userPK(user.getUserId())
                     .profileImgUrl(user.getProfileImgUrl())
                     .courseName(userPath.getName())
-                    .location(gu)
+                    .location(lastInfo)
                     .address2(userPath.getAddress2())
                     .isBookmark(courseMapper.isBookmark(userId, userPath.getUserPathId()))
                     .createdAt(userPath.getCreateDate())
