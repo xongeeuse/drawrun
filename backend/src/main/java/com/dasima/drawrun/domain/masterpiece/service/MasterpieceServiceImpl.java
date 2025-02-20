@@ -107,11 +107,20 @@ public class MasterpieceServiceImpl implements MasterpieceService{
             // 구정보 추출
             String address = masterpieceBoard.getUserPath().getAddress();
             int guIndex = address.indexOf("구");
+            String lastInfo = null;
             String gu = null;
+            String dong = null;
+
 
             if (guIndex != -1) {
                 int start = address.lastIndexOf(" ", guIndex) + 1;
                 gu = address.substring(start, guIndex + 1);
+                lastInfo = gu;
+            } else{
+                int dongIndex = address.indexOf("동");
+                int start = address.lastIndexOf(" ",dongIndex) + 1;
+                dong = address.substring(start, dongIndex + 1);
+                lastInfo = dong;
             }
 
             User user = userRepository.findById(masterpieceBoard.getUserId()).orElse(null);
@@ -120,7 +129,7 @@ public class MasterpieceServiceImpl implements MasterpieceService{
             masterpieceListResponses.add(
                     MasterpieceListResponse.builder()
                             .dDay((int) ChronoUnit.DAYS.between(expireDate.toLocalDate(), createDate.toLocalDate()))
-                            .gu(gu)
+                            .gu(lastInfo)
                             .distance(masterpieceBoard.getUserPath().getDistance())
                             .pathImgUrl(masterpieceBoard.getUserPath().getPathImgUrl())
                             .profileImgUrl(user.getProfileImgUrl())
