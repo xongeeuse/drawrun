@@ -27,23 +27,23 @@ public class AiCourseController {
 
     @PostMapping("/make")
     public ResponseEntity<ApiResponseJson> makeAiCourse(@RequestBody AiCourseMakeRequest dto) {
-        if(Math.abs(dto.getLat() - 35.194389) < THRESHOLD &&
-            Math.abs(dto.getLon() - 129.071548) < THRESHOLD) {
+        if(Math.abs(dto.getLat() - 35.19438852987807) < THRESHOLD &&
+            Math.abs(dto.getLon() - 129.07154837589184) < THRESHOLD) {
             // 연제구 하트
             List<Coordinate> path = Arrays.asList(
-                new Coordinate(35.194389, 129.071548),
-                new Coordinate(35.197044, 129.068001),
-                new Coordinate(35.200380, 129.063755),
-                new Coordinate(35.204960, 129.062675),
-                new Coordinate(35.207469, 129.065024),
-                new Coordinate(35.206440, 129.068226),
-                new Coordinate(35.202243, 129.069748),
-                new Coordinate(35.200135, 129.070230),
-                new Coordinate(35.205529, 129.071609),
-                new Coordinate(35.208135, 129.074218),
-                new Coordinate(35.205465, 129.078192),
-                new Coordinate(35.199144, 129.076007),
-                new Coordinate(35.194898, 129.071154)
+                new Coordinate(35.19438852987807, 129.07154837589184),
+                new Coordinate(35.197044097471476, 129.06800055528726),
+                new Coordinate(35.20038001457455, 129.0637547876296),
+                new Coordinate(35.20496047265884, 129.0626746469593),
+                new Coordinate(35.20746854982393, 129.0650237420018),
+                new Coordinate(35.20643966163979, 129.06822600474783),
+                new Coordinate(35.20224320923873, 129.06974759259373),
+                new Coordinate(35.20013548537035, 129.07022950402097),
+                new Coordinate(35.20552913920018, 129.07160875396937),
+                new Coordinate(35.208134545415334,129.07421761369199),
+                new Coordinate(35.20546499275328, 129.07819243687902),
+                new Coordinate(35.19914416165301, 129.0760072818889),
+                new Coordinate(35.19489756947081, 129.0711541113348)
             );
 
             return ResponseEntity.ok(
@@ -55,20 +55,20 @@ public class AiCourseController {
             Math.abs(dto.getLon() - 129.058243) < THRESHOLD) {
             // 진구 하트
             List<Coordinate> path = Arrays.asList(
-                new Coordinate(35.150751, 129.058243),
-                new Coordinate(35.153772, 129.054871),
-                new Coordinate(35.157635, 129.053346),
-                new Coordinate(35.161230, 129.053232),
-                new Coordinate(35.162112, 129.056088),
-                new Coordinate(35.158998, 129.057479),
-                new Coordinate(35.157060, 129.059372),
-                new Coordinate(35.159867, 129.060957),
-                new Coordinate(35.163061, 129.063271),
-                new Coordinate(35.161992, 129.065378),
-                new Coordinate(35.159212, 129.066637),
-                new Coordinate(35.153841, 129.064627),
-                new Coordinate(35.151931, 129.061457),
-                new Coordinate(35.150608, 129.058769)
+                new Coordinate(35.150750670076064, 129.05824345158317),
+                new Coordinate(35.153771725871565, 129.05487083409946),
+                new Coordinate(35.15763475996734, 129.05334579814587),
+                new Coordinate(35.161230280891786, 129.05323210102927),
+                new Coordinate(35.162112449775904, 129.05608796308275),
+                new Coordinate(35.15899817929947, 129.05747909768047),
+                new Coordinate(35.15706003406716, 129.05937187855346),
+                new Coordinate(35.159866972675374, 129.060956976353),
+                new Coordinate(35.16306142446527, 129.06327111265063),
+                new Coordinate(35.16199222043329, 129.0653779547073),
+                new Coordinate(35.159212265426035, 129.06663695489596),
+                new Coordinate(35.15384059364426, 129.06462654385945),
+                new Coordinate(35.15193098490542, 129.0614572058555),
+                new Coordinate(35.15060759740828, 129.05876852039535)
             );
 
             return ResponseEntity.ok(
@@ -80,26 +80,26 @@ public class AiCourseController {
             Math.abs(dto.getLon() - 128.850622) < THRESHOLD) {
             // 강서구 하트
             List<Coordinate> path = Arrays.asList(
-                new Coordinate(35.095513, 128.850622),
-                new Coordinate(35.097363, 128.849302),
-                new Coordinate(35.09791, 128.847365),
-                new Coordinate(35.096858, 128.844757),
-                new Coordinate(35.094889, 128.842666),
-                new Coordinate(35.092252, 128.842748),
-                new Coordinate(35.091919, 128.844525),
-                new Coordinate(35.09045, 128.846079),
-                new Coordinate(35.09003, 128.847107),
-                new Coordinate(35.089344, 128.849227),
-                new Coordinate(35.08778, 128.850999),
-                new Coordinate(35.088763, 128.853585),
-                new Coordinate(35.090184, 128.853705),
-                new Coordinate(35.091008, 128.856213),
-                new Coordinate(35.092306, 128.857161),
-                new Coordinate(35.094798, 128.859269),
-                new Coordinate(35.097928, 128.857955),
-                new Coordinate(35.097952, 128.854784),
-                new Coordinate(35.096234, 128.852691),
-                new Coordinate(35.095505, 128.851996)
+                new Coordinate(35.09551326629486, 128.85062202955822),
+                new Coordinate(35.09736321521453, 128.84930228228131),
+                new Coordinate(35.097910117140245, 128.84736481700173),
+                new Coordinate(35.09685788715545, 128.84475660792646),
+                new Coordinate(35.09488932210472, 128.84266636327885),
+                new Coordinate(35.09225187002801, 128.8427483649793),
+                new Coordinate(35.09191946346451, 128.8445248537775),
+                new Coordinate(35.09044989841779, 128.84607929783613),
+                new Coordinate(35.090029906462306, 128.84710667980738),
+                new Coordinate(35.08934373817753, 128.84922725206178),
+                new Coordinate(35.08778041136992, 128.85099977174337),
+                new Coordinate(35.088762600621024, 128.85358513860461),
+                new Coordinate(35.09018426767423, 128.85370524563677),
+                new Coordinate(35.09100834699325, 128.85621289903946),
+                new Coordinate(35.09230623943034, 128.85716050774226),
+                new Coordinate(35.09479812325873, 128.85926856631897),
+                new Coordinate(35.097928226391375, 128.85795527984374),
+                new Coordinate(35.09795238694056, 128.8547841886607),
+                new Coordinate(35.096233707894925, 128.8526910904775),
+                new Coordinate(35.09550484715416, 128.8519964763264)
             );
 
             return ResponseEntity.ok(
