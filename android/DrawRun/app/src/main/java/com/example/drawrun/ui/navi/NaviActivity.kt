@@ -622,7 +622,7 @@ class NaviActivity : BaseActivity() {
                         mapView.getMapboxMap().setCamera(
                             CameraOptions.Builder()
                                 .center(userPoint)
-                                .zoom(17.0)
+                                .zoom(16.0)
                                 .bearing(location.bearing.toDouble())
                                 .build()
                         )
