@@ -15,6 +15,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import android.Manifest
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -55,8 +59,10 @@ import com.mapbox.maps.MapboxMap
 import com.mapbox.maps.Style
 import com.mapbox.maps.extension.localization.localizeLabels
 import com.mapbox.maps.plugin.annotation.annotations
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
 import com.mapbox.maps.plugin.annotation.generated.PolylineAnnotationManager
 import com.mapbox.maps.plugin.annotation.generated.PolylineAnnotationOptions
+import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import com.mapbox.maps.plugin.annotation.generated.createPolylineAnnotationManager
 import com.mapbox.maps.plugin.locationcomponent.location
 import com.mapbox.navigation.base.extensions.applyDefaultNavigationOptions
@@ -570,6 +576,36 @@ class NaviActivity : BaseActivity() {
             return
         }
 
+        val annotations = binding.mapView.annotations
+        val pointAnnotationManager = annotations.createPointAnnotationManager() // ✅ 마커 매니저 생성
+
+
+
+        binding.mapView.getMapboxMap().loadStyleUri(Style.DARK) { style ->
+            // ✅ Mapbox 기본 아이콘 사용 (Maki 아이콘)
+            style.addImage("start-marker", getColoredMarkerBitmap(Color.BLUE))  // 출발지 (파란색)
+            style.addImage("end-marker", getColoredMarkerBitmap(Color.RED))  // 도착지 (빨간색)
+
+            // 🚀 출발지 마커 추가 (파란색)
+            val startPoint = path.first()
+            pointAnnotationManager.create(
+                PointAnnotationOptions()
+                    .withPoint(startPoint)
+                    .withIconImage("start-marker") // ✅ 파란색 마커 적용
+                    .withIconSize(1.5)
+            )
+
+            // 🏁 도착지 마커 추가 (빨간색)
+            val destinationPoint = path.last()
+            pointAnnotationManager.create(
+                PointAnnotationOptions()
+                    .withPoint(destinationPoint)
+                    .withIconImage("end-marker") // ✅ 빨간색 마커 적용
+                    .withIconSize(1.5)
+            )
+        }
+
+
         mapboxNavigation.requestRoutes(
             RouteOptions.builder()
                 .applyDefaultNavigationOptions()
@@ -976,6 +1012,17 @@ class NaviActivity : BaseActivity() {
             }
         }
     }
+
+    private fun getColoredMarkerBitmap(color: Int): Bitmap {
+        val bitmap = Bitmap.createBitmap(60, 60, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        val paint = Paint()
+        paint.color = color
+        paint.style = Paint.Style.FILL
+        canvas.drawCircle(30f, 30f, 25f, paint)
+        return bitmap
+    }
+
 
     override fun onDestroy() {
         super.onDestroy()
