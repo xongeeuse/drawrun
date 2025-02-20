@@ -1,5 +1,6 @@
 package com.dasima.drawrun.domain.masterpiece.service;
 
+import com.dasima.drawrun.domain.course.entity.Path;
 import com.dasima.drawrun.domain.course.repository.CourseRepository;
 import com.dasima.drawrun.domain.course.vo.GeoPoint;
 import com.dasima.drawrun.domain.course.vo.KakaoRegionResponse;
@@ -12,7 +13,6 @@ import com.dasima.drawrun.domain.masterpiece.entity.MasterpieceBoard;
 import com.dasima.drawrun.domain.masterpiece.entity.MasterpieceParticipant;
 import com.dasima.drawrun.domain.masterpiece.entity.MasterpieceSeg;
 import com.dasima.drawrun.domain.masterpiece.mapper.MasterpieceMapper;
-import com.dasima.drawrun.domain.course.entity.Path;
 import com.dasima.drawrun.domain.user.entity.User;
 import com.dasima.drawrun.domain.user.repository.UserRepository;
 import com.dasima.drawrun.global.util.KakaoAddressGenerator;
@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -233,6 +232,16 @@ public class MasterpieceServiceImpl implements MasterpieceService{
                 MasterpieceParticipant.builder()
                         .masterpieceSegId(masterpieceJoinRequest.getMasterpieceSegId())
                         .state(0)
+                        .userId(userId)
+                        .build()
+        );
+    }
+
+    public int unjoin(MasterpieceJoinRequest masterpieceJoinRequest, int userId) {
+        return masterpieceMapper.unjoin(
+                MasterpieceParticipant.builder()
+                        .masterpieceSegId(masterpieceJoinRequest.getMasterpieceSegId())
+                        .state(1)
                         .userId(userId)
                         .build()
         );

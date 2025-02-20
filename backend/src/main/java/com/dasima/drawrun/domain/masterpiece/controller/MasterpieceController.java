@@ -1,12 +1,10 @@
 package com.dasima.drawrun.domain.masterpiece.controller;
 
 
-import com.dasima.drawrun.domain.masterpiece.dto.request.CheckRequest;
 import com.dasima.drawrun.domain.masterpiece.dto.request.MasterpieceCompleteRequest;
 import com.dasima.drawrun.domain.masterpiece.dto.request.MasterpieceJoinRequest;
 import com.dasima.drawrun.domain.masterpiece.dto.request.MasterpieceSaveRequest;
 import com.dasima.drawrun.domain.masterpiece.service.MasterpieceService;
-import com.dasima.drawrun.domain.user.entity.User;
 import com.dasima.drawrun.global.security.UserPrinciple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -52,6 +50,14 @@ public class MasterpieceController {
                                   @RequestBody MasterpieceJoinRequest masterpieceJoinRequest){
         return ResponseEntity.ok(masterpieceService.join(masterpieceJoinRequest, userPrinciple.getUserId()));
     }
+
+    // 참여 취소하기
+    @PostMapping("/unjoin")
+    public ResponseEntity<?> unjoin(@AuthenticationPrincipal UserPrinciple userPrinciple,
+                                    @RequestBody MasterpieceJoinRequest masterpieceJoinRequest) {
+        return ResponseEntity.ok(masterpieceService.unjoin(masterpieceJoinRequest, userPrinciple.getUserId()));
+    }
+
 
     // 완료
     // 완료하면서 전체 완료도 확인한다.

@@ -80,6 +80,12 @@
         insert into masterpiece_participant
         values (0, #{userId}, #{state}, #{masterpieceSegId}, now())
     </insert>
+
+    <delete id="unjoin" parameterType="MasterpieceParticipant">
+ delete from masterpiece_participant
+ where masterpiece_seg_id = #{masterpieceSegId}
+    </delete>
+
     <insert id="save" parameterType="MasterpieceBoard" useGeneratedKeys="true" keyProperty="masterpieceBoardId">
         insert into masterpiece_board
         values (0, #{userId}, #{restrictCount}, #{state}, #{userPathId}, now(), now(), #{expireDate})

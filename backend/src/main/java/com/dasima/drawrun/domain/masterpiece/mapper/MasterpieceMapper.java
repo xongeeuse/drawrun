@@ -1,6 +1,5 @@
 package com.dasima.drawrun.domain.masterpiece.mapper;
 
-import com.dasima.drawrun.domain.masterpiece.dto.request.MasterpieceJoinRequest;
 import com.dasima.drawrun.domain.masterpiece.entity.MasterpieceBoard;
 import com.dasima.drawrun.domain.masterpiece.entity.MasterpieceParticipant;
 import com.dasima.drawrun.domain.masterpiece.entity.MasterpieceSeg;
@@ -21,6 +20,8 @@ public interface MasterpieceMapper {
 
     MasterpieceParticipant searchparticipant(int masterpieceSegId);
     int join(MasterpieceParticipant masterpieceParticipant);
+
+    int unjoin(MasterpieceParticipant masterpieceParticipant);
     int complete(int masterpieceSegId);
     List<MasterpieceSeg> check(int masterpieceBoardId);
     int updatestate(int masterpieceBoardId);
