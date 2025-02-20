@@ -98,11 +98,11 @@
 
 ## 기술 스택
 
-[![stackticon](https://firebasestorage.googleapis.com/v0/b/stackticon-81399.appspot.com/o/images%2F1740072335809?alt=media&token=b3dab147-e6f2-49ea-bf8a-eda13f2d35e6)](https://github.com/msdio/stackticon)
-[![stackticon](https://firebasestorage.googleapis.com/v0/b/stackticon-81399.appspot.com/o/images%2F1740072418339?alt=media&token=d22c87ac-6fe6-4750-a3fe-67a63bcac951)](https://github.com/msdio/stackticon)
-[![stackticon](https://firebasestorage.googleapis.com/v0/b/stackticon-81399.appspot.com/o/images%2F1740072468571?alt=media&token=3139cace-309c-4116-8f8e-c861f1a965a0)](https://github.com/msdio/stackticon)
-[![stackticon](https://firebasestorage.googleapis.com/v0/b/stackticon-81399.appspot.com/o/images%2F1740072507945?alt=media&token=9b08e689-9649-49b3-9ea0-d7df3a2b05ce)](https://github.com/msdio/stackticon)
-[![stackticon](https://firebasestorage.googleapis.com/v0/b/stackticon-81399.appspot.com/o/images%2F1740072548203?alt=media&token=f899ac58-5e5c-4816-94dd-cb9bf8972db0)](https://github.com/msdio/stackticon)
+![stackticon](https://firebasestorage.googleapis.com/v0/b/stackticon-81399.appspot.com/o/images%2F1740072335809?alt=media&token=b3dab147-e6f2-49ea-bf8a-eda13f2d35e6)
+![stackticon](https://firebasestorage.googleapis.com/v0/b/stackticon-81399.appspot.com/o/images%2F1740072418339?alt=media&token=d22c87ac-6fe6-4750-a3fe-67a63bcac951)
+![stackticon](https://firebasestorage.googleapis.com/v0/b/stackticon-81399.appspot.com/o/images%2F1740072468571?alt=media&token=3139cace-309c-4116-8f8e-c861f1a965a0)
+![stackticon](https://firebasestorage.googleapis.com/v0/b/stackticon-81399.appspot.com/o/images%2F1740072507945?alt=media&token=9b08e689-9649-49b3-9ea0-d7df3a2b05ce)
+![stackticon](https://firebasestorage.googleapis.com/v0/b/stackticon-81399.appspot.com/o/images%2F1740072548203?alt=media&token=f899ac58-5e5c-4816-94dd-cb9bf8972db0)
 
 <br>
 
