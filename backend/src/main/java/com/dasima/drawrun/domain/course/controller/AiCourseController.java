@@ -76,6 +76,37 @@ public class AiCourseController {
                     .path(path)
                     .build())
             );
+        } else if(Math.abs(dto.getLat() - 35.095513) < THRESHOLD &&
+            Math.abs(dto.getLon() - 128.850622) < THRESHOLD) {
+            // 강서구 하트
+            List<Coordinate> path = Arrays.asList(
+                new Coordinate(35.095513, 128.850622),
+                new Coordinate(35.097363, 128.849302),
+                new Coordinate(35.09791, 128.847365),
+                new Coordinate(35.096858, 128.844757),
+                new Coordinate(35.094889, 128.842666),
+                new Coordinate(35.092252, 128.842748),
+                new Coordinate(35.091919, 128.844525),
+                new Coordinate(35.09045, 128.846079),
+                new Coordinate(35.09003, 128.847107),
+                new Coordinate(35.089344, 128.849227),
+                new Coordinate(35.08778, 128.850999),
+                new Coordinate(35.088763, 128.853585),
+                new Coordinate(35.090184, 128.853705),
+                new Coordinate(35.091008, 128.856213),
+                new Coordinate(35.092306, 128.857161),
+                new Coordinate(35.094798, 128.859269),
+                new Coordinate(35.097928, 128.857955),
+                new Coordinate(35.097952, 128.854784),
+                new Coordinate(35.096234, 128.852691),
+                new Coordinate(35.095505, 128.851996)
+            );
+
+            return ResponseEntity.ok(
+                new ApiResponseJson(true, 200, "제작에 성공했습니다.", FastApiResponse.builder()
+                    .path(path)
+                    .build())
+            );
         }
 
         // 좌표에 맞는 OSM 파일 가져오기.
