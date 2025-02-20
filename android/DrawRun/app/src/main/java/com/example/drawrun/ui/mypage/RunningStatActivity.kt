@@ -87,7 +87,7 @@ class RunningStatActivity : BaseActivity() {
                 (stat.data.averagePaceS % 60).toInt())
 
             totalDistanceTextView.text = String.format("%.2f km", stat.data.totalDistanceKm)
-            averageHeartbeatTextView.text = "${stat.data.averageHeartbeat}bpm"
+            averageHeartbeatTextView.text = "${stat.data.averageHeartbeat.toInt()}bpm"
         }
 
         // ✅ 오류 처리
