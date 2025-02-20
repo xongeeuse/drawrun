@@ -8,6 +8,7 @@ import com.dasima.drawrun.domain.course.service.AiCourseService;
 import com.dasima.drawrun.global.common.ApiResponseJson;
 import java.util.Arrays;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/ai")
 public class AiCourseController {
@@ -45,14 +47,16 @@ public class AiCourseController {
                 new Coordinate(35.19914416165301, 129.0760072818889),
                 new Coordinate(35.19489756947081, 129.0711541113348)
             );
+            
+            log.info("연제구 하트");
 
             return ResponseEntity.ok(
                 new ApiResponseJson(true, 200, "제작에 성공했습니다.", FastApiResponse.builder()
                     .path(path)
                     .build())
             );
-        } else if(Math.abs(dto.getLat() - 35.150751) < THRESHOLD &&
-            Math.abs(dto.getLon() - 129.058243) < THRESHOLD) {
+        } else if(Math.abs(dto.getLat() - 35.150750670076064) < THRESHOLD &&
+            Math.abs(dto.getLon() - 129.05824345158317) < THRESHOLD) {
             // 진구 하트
             List<Coordinate> path = Arrays.asList(
                 new Coordinate(35.150750670076064, 129.05824345158317),
@@ -71,13 +75,15 @@ public class AiCourseController {
                 new Coordinate(35.15060759740828, 129.05876852039535)
             );
 
+            log.info("진구 하트");
+
             return ResponseEntity.ok(
                 new ApiResponseJson(true, 200, "제작에 성공했습니다.", FastApiResponse.builder()
                     .path(path)
                     .build())
             );
-        } else if(Math.abs(dto.getLat() - 35.095513) < THRESHOLD &&
-            Math.abs(dto.getLon() - 128.850622) < THRESHOLD) {
+        } else if(Math.abs(dto.getLat() - 35.09551326629486) < THRESHOLD &&
+            Math.abs(dto.getLon() - 128.85062202955822) < THRESHOLD) {
             // 강서구 하트
             List<Coordinate> path = Arrays.asList(
                 new Coordinate(35.09551326629486, 128.85062202955822),
@@ -101,6 +107,8 @@ public class AiCourseController {
                 new Coordinate(35.096233707894925, 128.8526910904775),
                 new Coordinate(35.09550484715416, 128.8519964763264)
             );
+
+            log.info("강서구 하트");
 
             return ResponseEntity.ok(
                 new ApiResponseJson(true, 200, "제작에 성공했습니다.", FastApiResponse.builder()
