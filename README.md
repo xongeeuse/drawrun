@@ -1,5 +1,8 @@
 # SSAFY 12기 E208 다시마 - DrawRun
 
+### 💡 당신의 발걸음으로 도시를 캔버스로, GPS 아트 러닝
+
+
 
 <br>
 
@@ -25,6 +28,7 @@
  - ✅ 전국 어디서든 창의적인 경로를 따라 달릴 수 있는 경험 제공
  - ✅ 커뮤니티기능을 통해 타 유저의 러닝경로 러닝 가능능
 
+<br>
 
 ## DrawRun 기획 의도🎨 
 ### 1. GPS 아트 러닝의 국내 확산
@@ -37,20 +41,24 @@
 - 사용자의 GPS 아트 경로, 거리, 평균 심박수, 페이스 등의 데이터를 저장
 - 개인 러닝 히스토리를 시각화하여 운동 습관 관리 가능
 
+<br>
 
 ## 팀원 소개 🫂
 | 이름 | 역할 |
 |:--:|:--:|
-| 👑 **송지영 (팀장)** | App (Android) |
-| 🌟 **김나영** | App (Android) |
-| 🎉 **유지인** | App (Android) & WearOS |
-| 🐶 **이동규** | Back-End (Spring) & Infra |
-| ✏️ **김성현** | Back-End (Spring) & AI |
+| 👑 **[송지영 (팀장)](https://github.com/xongeeuse)** | App (Android) |
+| 🌟 **[김나영](https://github.com/skdud5126)** | App (Android) |
+| 🎉 **[유지인](https://github.com/Yu-jiin)** | App (Android) & WearOS |
+| 🐶 **[이동규](https://github.com/Iwannabegosu)** | Back-End (Spring) & Infra |
+| ✏️ **[김성현](https://github.com/SeonghyeonKim)** | Back-End (Spring) & AI |
 
+<br>
 
 ## 배포 링크
 
+[DrawRun 다운로드하러 가기]()
 
+<br>
 
 ## 주요 기능 🚀
 ### 1. 사용자 창작 경로  
@@ -74,21 +82,35 @@
 - **WearOS 연동으로 손목에서 실시간 경로 안내 제공**  
 - **스마트폰 없이도 지도 및 방향 안내 확인 가능**  
 
+<br>
 
 ## 시연 시나리오
 
-
+<br>
 
 
 ## 아키텍쳐 구조도
 
+<img src="./etc/architecture.png" alt="아키텍쳐 구조도" >
+
+<br>
 
 
 ## 기술 스택
 
+[![stackticon](https://firebasestorage.googleapis.com/v0/b/stackticon-81399.appspot.com/o/images%2F1740072335809?alt=media&token=b3dab147-e6f2-49ea-bf8a-eda13f2d35e6)](https://github.com/msdio/stackticon)
+[![stackticon](https://firebasestorage.googleapis.com/v0/b/stackticon-81399.appspot.com/o/images%2F1740072418339?alt=media&token=d22c87ac-6fe6-4750-a3fe-67a63bcac951)](https://github.com/msdio/stackticon)
+[![stackticon](https://firebasestorage.googleapis.com/v0/b/stackticon-81399.appspot.com/o/images%2F1740072468571?alt=media&token=3139cace-309c-4116-8f8e-c861f1a965a0)](https://github.com/msdio/stackticon)
+[![stackticon](https://firebasestorage.googleapis.com/v0/b/stackticon-81399.appspot.com/o/images%2F1740072507945?alt=media&token=9b08e689-9649-49b3-9ea0-d7df3a2b05ce)](https://github.com/msdio/stackticon)
+[![stackticon](https://firebasestorage.googleapis.com/v0/b/stackticon-81399.appspot.com/o/images%2F1740072548203?alt=media&token=f899ac58-5e5c-4816-94dd-cb9bf8972db0)](https://github.com/msdio/stackticon)
+
+<br>
 
 ## Dependency
 
+<br>
 
 ## 관련 링크
+
+<br>
 
