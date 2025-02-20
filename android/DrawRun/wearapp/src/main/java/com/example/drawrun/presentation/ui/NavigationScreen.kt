@@ -30,6 +30,46 @@ fun NavigationScreen(
     sensorViewModel: SensorViewModel,
     onNavigateToMain: () -> Unit
 ) {
+    var countdownValue by remember { mutableStateOf(3) }
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        coroutineScope.launch {
+            for (i in 3 downTo 1) {
+                countdownValue = i
+                delay(1000L) // 1초 대기
+            }
+            countdownValue = 0 // 카운트다운 종료 후 네비 화면 표시
+        }
+    }
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        if (countdownValue > 0) {
+            // ✅ 카운트다운 화면
+            Text(
+                text = "$countdownValue",
+                textAlign = TextAlign.Center,
+                style = androidx.wear.compose.material.MaterialTheme.typography.body1.copy(
+                    fontSize = 80.sp,
+                    color = Color(0xFF00FFAE)
+                )
+            )
+        } else {
+            // ✅ 네비게이션 화면 (카운트다운 종료 후 표시)
+            NavigationContent(dataViewModel, sensorViewModel)
+        }
+    }
+}
+
+@Composable
+fun NavigationContent(
+    dataViewModel: DataViewModel,
+    sensorViewModel: SensorViewModel
+//    onNavigateToMain: () -> Unit
+) {
     // ✅ UI 상태 업데이트 감지
     val updateTrigger by dataViewModel.updateTrigger.collectAsState(initial = false)
 
@@ -103,10 +143,10 @@ fun NavigationScreen(
                 Text(text = "평균 심박수: ${averageHeartRate ?: "N/A"} BPM", fontSize = 18.sp)
             }
 
-            LaunchedEffect(Unit) {
-                delay(4000)
-                onNavigateToMain()
-            }
+//            LaunchedEffect(Unit) {
+//                delay(4000)
+//                onNavigateToMain()
+//            }
         } else {
             // ✅ 원형 진행 바 UI
             Canvas(modifier = Modifier.fillMaxSize()) {
@@ -144,7 +184,7 @@ fun NavigationScreen(
                 Spacer(modifier = Modifier.height(5.dp))
                 Text(text = "${distanceToNextTurn.toInt()}m", fontSize = 20.sp)
 //                Text(text = voiceInstruction, fontSize = 18.sp, textAlign = TextAlign.Center)  // ✅ 안내문구 표시
-                Text(text = "❤️: ${heartRate?.toInt() ?: "0"} BPM", fontSize = 12.sp)
+                Text(text = "❤️ ${heartRate?.toInt() ?: "0"} BPM", fontSize = 12.sp)
 
             }
         }
