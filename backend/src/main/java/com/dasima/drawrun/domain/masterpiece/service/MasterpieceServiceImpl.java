@@ -17,6 +17,7 @@ import com.dasima.drawrun.domain.user.entity.User;
 import com.dasima.drawrun.domain.user.repository.UserRepository;
 import com.dasima.drawrun.global.util.KakaoAddressGenerator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.geo.Point;
 import org.springframework.data.mongodb.core.geo.GeoJsonLineString;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MasterpieceServiceImpl implements MasterpieceService{
     private final MasterpieceMapper masterpieceMapper;
 
@@ -105,11 +107,20 @@ public class MasterpieceServiceImpl implements MasterpieceService{
             // 구정보 추출
             String address = masterpieceBoard.getUserPath().getAddress();
             int guIndex = address.indexOf("구");
+            String lastInfo = null;
             String gu = null;
+            String dong = null;
+
 
             if (guIndex != -1) {
                 int start = address.lastIndexOf(" ", guIndex) + 1;
                 gu = address.substring(start, guIndex + 1);
+                lastInfo = gu;
+            } else{
+                int dongIndex = address.indexOf("동");
+                int start = address.lastIndexOf(" ",dongIndex) + 1;
+                dong = address.substring(start, dongIndex + 1);
+                lastInfo = dong;
             }
 
             User user = userRepository.findById(masterpieceBoard.getUserId()).orElse(null);
@@ -118,7 +129,7 @@ public class MasterpieceServiceImpl implements MasterpieceService{
             masterpieceListResponses.add(
                     MasterpieceListResponse.builder()
                             .dDay((int) ChronoUnit.DAYS.between(expireDate.toLocalDate(), createDate.toLocalDate()))
-                            .gu(gu)
+                            .gu(lastInfo)
                             .distance(masterpieceBoard.getUserPath().getDistance())
                             .pathImgUrl(masterpieceBoard.getUserPath().getPathImgUrl())
                             .profileImgUrl(user.getProfileImgUrl())
@@ -233,6 +244,8 @@ public class MasterpieceServiceImpl implements MasterpieceService{
         MasterpieceSeg masterpieceSegTmp = masterpieceMapper.returnpk(masterpieceSegId);
         int masterpieceBoardId = masterpieceSegTmp.getMasterpieceBoardId();
 
+        log.info("masterpieceBoradId : " + masterpieceBoardId);
+
         List<MasterpieceSeg> masterpieceSegs =  masterpieceMapper.check(masterpieceBoardId);
         int result = 1;
         for(MasterpieceSeg masterpieceSeg : masterpieceSegs){
@@ -244,7 +257,7 @@ public class MasterpieceServiceImpl implements MasterpieceService{
         //masterpiece board에 state를 1을 올려준다.
         if(result == 1)
             masterpieceMapper.updatestate(masterpieceBoardId);
-            // 아직 완주 못했다면
+             // 아직 완주 못했다면
         return isSuccess;
     }
 

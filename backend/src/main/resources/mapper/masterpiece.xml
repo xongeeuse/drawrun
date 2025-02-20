@@ -59,7 +59,7 @@
     <update id="updatestate" parameterType="integer">
         update masterpiece_board
         set state = 1
-        where masterpieceboard_id = #{masterpieceBoardId}
+        where masterpiece_board_id = #{masterpieceBoardId}
     </update>
 
     <select id ="check" parameterType="integer" resultMap="MasterpieceSegResultMap">
