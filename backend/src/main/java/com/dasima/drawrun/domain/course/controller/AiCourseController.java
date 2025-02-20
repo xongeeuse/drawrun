@@ -30,6 +30,7 @@ public class AiCourseController {
     @PostMapping("/make")
     public ResponseEntity<ApiResponseJson> makeAiCourse(@RequestBody AiCourseMakeRequest dto) {
         log.info("AI 경로 만들기 요청");
+        log.info(dto.getLat().toString() + ", " + dto.getLon().toString());
         
         if(Math.abs(dto.getLat() - 35.19438852987807) < THRESHOLD &&
             Math.abs(dto.getLon() - 129.07154837589184) < THRESHOLD) {
