@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#171515"
+    tools:context=".ui.mypage.RunningStatActivity">
+
+    <!-- ✅ 타이틀 -->
+    <TextView
+        android:id="@+id/runningStatTitleTextView"
+        android:layout_width="280dp"
+        android:layout_height="82dp"
+        android:layout_marginTop="24dp"
+        android:fontFamily="@font/praise_regular"
+        android:text="Running Total"
+        android:textColor="@android:color/white"
+        android:textSize="50sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.179"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- ✅ 중앙 정렬된 컨테이너 -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/infoContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/runningStatTitleTextView"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigationLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="40dp"
+        android:layout_marginBottom="40dp">
+
+        <!-- ✅ 1️⃣ 총 운동 시간 -->
+        <LinearLayout
+            android:id="@+id/totalTimeContainer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/averagePaceContainer"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/totalTimeIcon"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:src="@drawable/icon_time"
+                android:contentDescription="총 운동 시간" />
+
+            <TextView
+                android:id="@+id/totalTimeLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="총 운동 시간"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:layout_marginTop="8dp"/>
+
+            <TextView
+                android:id="@+id/totalTimeTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="14:15:28"
+                android:textColor="#FFD700"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
+
+        <!-- ✅ 2️⃣ 평균 페이스 -->
+        <LinearLayout
+            android:id="@+id/averagePaceContainer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            app:layout_constraintStart_toEndOf="@id/totalTimeContainer"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/totalTimeContainer">
+
+            <ImageView
+                android:id="@+id/averagePaceIcon"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:src="@drawable/icon_speed"
+                android:contentDescription="평균 페이스" />
+
+            <TextView
+                android:id="@+id/averagePaceLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="평균 페이스"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:layout_marginTop="8dp"/>
+
+            <TextView
+                android:id="@+id/averagePaceTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="12'22\"
+                android:textColor="#FF00FF"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
+
+        <!-- ✅ 3️⃣ 총 거리 -->
+        <LinearLayout
+            android:id="@+id/totalDistanceContainer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/averageHeartbeatContainer"
+            app:layout_constraintTop_toBottomOf="@id/totalTimeContainer"
+            android:layout_marginTop="70dp">
+
+            <ImageView
+                android:id="@+id/totalDistanceIcon"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:src="@drawable/map_ai_icon"
+                android:contentDescription="총 거리" />
+
+            <TextView
+                android:id="@+id/totalDistanceLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="총 거리"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:layout_marginTop="8dp"/>
+
+            <TextView
+                android:id="@+id/totalDistanceTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="18.12 km"
+                android:textColor="#1E90FF"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
+
+        <!-- ✅ 4️⃣ 평균 심박수 -->
+        <LinearLayout
+            android:id="@+id/averageHeartbeatContainer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            app:layout_constraintStart_toEndOf="@id/totalDistanceContainer"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/totalDistanceContainer">
+
+            <ImageView
+                android:id="@+id/averageHeartbeatIcon"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:src="@drawable/icon_heartbeat"
+                android:contentDescription="평균 심박수" />
+
+            <TextView
+                android:id="@+id/averageHeartbeatLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="평균 심박수"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:layout_marginTop="8dp"/>
+
+            <TextView
+                android:id="@+id/averageHeartbeatTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="136 bpm"
+                android:textColor="#FF4500"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- ✅ 하단 네비게이션 -->
+    <include
+        layout="@layout/layout_bottom_navigation"
+        android:id="@+id/bottomNavigationLayout"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
