@@ -17,6 +17,7 @@ import com.dasima.drawrun.domain.user.entity.User;
 import com.dasima.drawrun.domain.user.repository.UserRepository;
 import com.dasima.drawrun.global.util.KakaoAddressGenerator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.geo.Point;
 import org.springframework.data.mongodb.core.geo.GeoJsonLineString;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MasterpieceServiceImpl implements MasterpieceService{
     private final MasterpieceMapper masterpieceMapper;
 
@@ -233,6 +235,8 @@ public class MasterpieceServiceImpl implements MasterpieceService{
         MasterpieceSeg masterpieceSegTmp = masterpieceMapper.returnpk(masterpieceSegId);
         int masterpieceBoardId = masterpieceSegTmp.getMasterpieceBoardId();
 
+        log.info("masterpieceBoradId : " + masterpieceBoardId);
+
         List<MasterpieceSeg> masterpieceSegs =  masterpieceMapper.check(masterpieceBoardId);
         int result = 1;
         for(MasterpieceSeg masterpieceSeg : masterpieceSegs){
@@ -244,7 +248,7 @@ public class MasterpieceServiceImpl implements MasterpieceService{
         //masterpiece board에 state를 1을 올려준다.
         if(result == 1)
             masterpieceMapper.updatestate(masterpieceBoardId);
-            // 아직 완주 못했다면
+             // 아직 완주 못했다면
         return isSuccess;
     }
 
