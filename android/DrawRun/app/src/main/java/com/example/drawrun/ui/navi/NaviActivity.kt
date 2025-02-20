@@ -31,6 +31,7 @@ import com.example.drawrun.R
 import com.example.drawrun.data.repository.MasterpieceRepository
 import com.example.drawrun.databinding.ActivityNaviBinding
 import com.example.drawrun.dto.course.PathPoint
+import com.example.drawrun.ui.common.BaseActivity
 import com.example.drawrun.ui.runrecord.RunRecordActivity
 import com.example.drawrun.utils.RetrofitInstance
 import com.example.drawrun.viewmodel.MasterpieceViewModel
@@ -87,7 +88,10 @@ import java.io.File
 import java.io.FileOutputStream
 import java.util.Locale
 
-class NaviActivity : AppCompatActivity() {
+class NaviActivity : BaseActivity() {
+
+    override fun getLayoutId(): Int = R.layout.activity_navi
+
     private lateinit var binding: ActivityNaviBinding
     private lateinit var mapboxMap: MapboxMap
     private lateinit var mapboxNavigation: MapboxNavigation
@@ -122,6 +126,7 @@ class NaviActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityNaviBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setupBottomNavigation()
 
         binding.progressBar.visibility = View.VISIBLE
 
