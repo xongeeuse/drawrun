@@ -59,7 +59,7 @@
         android:fontFamily="@font/pretendard_regular"
         android:text="User Name"
         android:textColor="@android:color/white"
-        android:textSize="17sp"
+        android:textSize="19sp"
         android:textStyle="bold"
         app:layout_constraintStart_toEndOf="@id/userProfileImageView"
         app:layout_constraintTop_toTopOf="@id/userProfileImageView" />

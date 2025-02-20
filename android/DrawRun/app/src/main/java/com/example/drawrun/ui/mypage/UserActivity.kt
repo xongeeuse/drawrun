@@ -105,7 +105,7 @@ class UserActivity : BaseActivity() {
         userViewModel.userData.observe(this, Observer { response ->
             val userData = response.data
 
-            userNameTextView.text = userData.nickname
+            userNameTextView.text = "${userData.nickname} 님"
             Glide.with(this)
                 .load(userData.profileImgUrl ?: R.drawable.user_icon)
                 .placeholder(R.drawable.user_icon)
