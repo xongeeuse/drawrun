@@ -80,7 +80,7 @@ class RunRecordActivity : ComponentActivity() {
         Log.d("RunRecordActivity", "🟢 받은 trackingSnapshotUrl: $trackingSnapshotUrl")
 
         // ✅ UI 업데이트
-        updateUI(distanceInKm, totalDuration, averageHeartRate)
+        updateUI(totalDistance, totalDuration, averageHeartRate)
 
         // NaviActivity에서 전달된 데이터 받기
         val isMasterpieceRequest = intent.getBooleanExtra("isMasterpieceRequest", false)
