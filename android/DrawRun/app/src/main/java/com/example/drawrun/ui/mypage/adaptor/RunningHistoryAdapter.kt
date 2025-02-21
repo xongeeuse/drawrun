@@ -77,11 +77,11 @@ class RunningHistoryAdapter(private val historyList: List<UserHistory>) :
 
     // 🟢 시간 변환 함수: "X분 Y초" 형식
     private fun formatTime(seconds: Int): String {
-        val minutes = seconds / 60
+        val hours = seconds / 3600
+        val minutes = (seconds % 3600) / 60
         val remainingSeconds = seconds % 60
-        return "${minutes}분 ${remainingSeconds}초"
+        return "${hours}시간 ${minutes}분 ${remainingSeconds}초"
     }
-
     // 페이스 변환 함수
     private fun formatPace(seconds: Int): String {
         val minutes = seconds / 60
