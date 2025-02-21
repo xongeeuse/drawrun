@@ -1,0 +1,64 @@
+CREATE DATABASE  IF NOT EXISTS `drawrun` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `drawrun`;
+-- MySQL dump 10.13  Distrib 8.0.41, for Win64 (x86_64)
+--
+-- Host: 13.124.222.21    Database: drawrun
+-- ------------------------------------------------------
+-- Server version	9.2.0
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!50503 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `statistics`
+--
+
+DROP TABLE IF EXISTS `statistics`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `statistics` (
+  `statistics_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `accumulated_distance` double DEFAULT '0',
+  `accumulated_time` bigint DEFAULT '0',
+  `accumulated_heartbeat` bigint DEFAULT '0',
+  `accumulated_pace` bigint DEFAULT '0',
+  `accumulated_cadence` bigint DEFAULT '0',
+  `average_heartbeat` double DEFAULT '0',
+  `average_pace` double DEFAULT '0',
+  `average_cadence` double DEFAULT '0',
+  `longest_streak` int DEFAULT '0',
+  `current_streak` int DEFAULT '0',
+  `latest_run` date DEFAULT NULL,
+  PRIMARY KEY (`statistics_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb3;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `statistics`
+--
+
+LOCK TABLES `statistics` WRITE;
+/*!40000 ALTER TABLE `statistics` DISABLE KEYS */;
+INSERT INTO `statistics` VALUES (1,2,96.18801974120548,1045,9,955,9,1,106.11111111111111,1,2,1,'2025-02-20'),(2,1,397.100761942424,1716,1063,227,21,50.61904761904762,10.80952380952381,1,2,1,'2025-02-20'),(3,6,13.178078641587105,2056,4,985,18,0.2222222222222222,54.72222222222222,1,2,1,'2025-02-20'),(4,10,0.4005825356632571,29,-1,10,1,-1,10,1,1,1,'2025-02-20'),(5,8,0.9309882028975505,120,-2,81,2,-1,40.5,1,1,1,'2025-02-20'),(6,11,1.140143010964504,161,-1,141,1,-1,141,1,1,1,'2025-02-20'),(7,12,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
+/*!40000 ALTER TABLE `statistics` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2025-02-21  9:08:33
